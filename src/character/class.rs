@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use super::features::{PresentedOption, Feature};
-use super::stats::{SkillType, StatType};
+use super::stats::{EquipmentProficiencies, SkillType, StatType};
 use super::spells::Spellcasting;
 use super::items::{Item, WeaponType, ArmorCategory};
 use serde::{Serialize, Deserialize};
@@ -25,6 +25,7 @@ pub struct Class {
     /// The first field of the tuple is how many to choose, so 3 is choose 3 skills.
     pub skill_proficiency_choices: (usize,PresentedOption<SkillType>),
     pub spellcasting: Option<Spellcasting>,
+    pub equipment_proficiencies: EquipmentProficiencies,
     /// The features that appear on a class's table, rather than text features.
     /// They're indexed by name, and returns the values for all 20 levels.
     pub class_specific_leveled: HashMap<String, [String; 20]>,

@@ -16,3 +16,6 @@ pub use character::{Character, SpeccedClass};
 
 #[cfg(test)]
 mod character_tests;
+
+#[cfg(test)]
+mod stats_tests;
