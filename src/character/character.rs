@@ -1,13 +1,14 @@
 use serde::{Serialize, Deserialize};
 
 use crate::character::class::ItemCategory;
+use crate::character::items::ArmorCategory;
 
 use super::background::Background;
 use super::race::Race;
-use super::stats::{Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, StatType, Stats, PROFICIENCY_BY_LEVEL};
+use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, StatType, Stats, PROFICIENCY_BY_LEVEL};
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
-use super::items::{Item, ItemType};
+use super::items::{Item, ItemType, WeaponType};
 use super::spells::{SpellSlots, Spellcasting};
 use super::class::{Class, Subclass};
 
@@ -50,6 +51,7 @@ pub struct Character {
     pub bonus_features: Vec<Feature>,
     /// The first field is the item, second is count, and 3rd is if it's equipped or not.
     pub items: Vec<(Item, usize, bool)>, 
+    equipment_proficiencies: EquipmentProficiencies,
     pub class_skill_proficiencies: Vec<PresentedOption<SkillType>>,
     class_saving_throw_proficiencies: Vec<StatType>,
     pub hp: usize,
@@ -64,6 +66,7 @@ impl Character {
             classes: vec![SpeccedClass::from_class(class, 1)],
             background: background.clone(),
             items: vec![],
+            equipment_proficiencies: class.equipment_proficiencies.clone(),
             race: race.clone(),
             base_stats,
             bonus_features: vec![],
@@ -476,6 +479,41 @@ impl Character {
         self.level_up_multiple(class, level_offset as usize) 
     }
 
+
+    pub fn equipment_proficiencies(&self) -> EquipmentProficiencies {
+        let feature_effects = self.race_features()
+            .into_iter()
+            .chain(self.subrace_features().into_iter())
+            .chain(self.bonus_features.iter())
+            .map(|v| v.effects.iter())
+            .flatten();
+
+        let mut equipment_proficiencies = self.equipment_proficiencies.clone();
+
+
+        for feature_effect in feature_effects {
+            match feature_effect {
+                FeatureEffect::WeaponProficiency(w) => {
+                    match w {
+                        WeaponType::Simple => equipment_proficiencies.simple_weapons = true,
+                        WeaponType::SimpleRanged => equipment_proficiencies.simple_weapons = true,
+                        WeaponType::Martial => equipment_proficiencies.martial_weapons = true,
+                        WeaponType::MartialRanged => equipment_proficiencies.martial_weapons = true,
+                    }
+                }
+                FeatureEffect::ArmorProficiency(a) => {
+                    match a {
+                        ArmorCategory::Light => equipment_proficiencies.light_armor = true,
+                        ArmorCategory::Medium => equipment_proficiencies.medium_armor = true,
+                        ArmorCategory::Heavy => equipment_proficiencies.heavy_armor = true,
+                    }
+                }
+                _ => (),
+            }
+        }
+
+        equipment_proficiencies
+    }
 }
 
 /// A class as it's used for a character. This contains all the relevant information from a class

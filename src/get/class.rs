@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use serde_json::{Value, Map};
-use crate::{character::items::WeaponType, get::{
+use crate::{character::{items::WeaponType, stats::EquipmentProficiencies}, get::{
     feature::get_feature, get_page::get_raw_json, item::get_item, json_tools::{
         array_index_values, choice, parse_string, unwrap_number, ValueError, ValueExt
     }, subclass::get_subclass
@@ -46,18 +46,66 @@ async fn subclasses(map: &Value) -> Result<Vec<Subclass>, ValueError> {
     Ok(subclasses)
 }
 
-fn saves(json: &Value) -> Vec<StatType> {
-    let saving_throws_option = json.get("saving_throws");
-    let saving_throws = match saving_throws_option {
-        Some(v) => v,
-        _ => return vec![], 
-    };
+fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, ValueError> {
+    let proficiencies_json = json.get_array("proficiencies")?;
+    let mut proficiency_strings_vec: Vec<String> = vec![];
+    for proficiency_json in proficiencies_json.iter() {
+        let name = proficiency_json.get_str("name")?;
+        if name.get(..12) != Some("Saving throw:") {
+            proficiency_strings_vec.push(name);
+        }
+    }
+
+    let mut equipment = EquipmentProficiencies::default();
+
+
+    let other = proficiency_strings_vec.into_iter().filter(|v| {
+        match v.as_ref() {
+            "Simple Weapons" => {
+                equipment.simple_weapons = true;
+                false
+            },
+            "Martial Weapons" => {
+                equipment.martial_weapons = true;
+                false
+            },
+            "Light Armor" => {
+                equipment.light_armor = true;
+                false
+            },
+            "Medium Armor" => {
+                equipment.medium_armor = true;
+                false
+            },
+            "Heavy Armor" => {
+                equipment.heavy_armor = true;
+                false
+            },
+            "Shields" => {
+                equipment.shields = true;
+                false
+            }
+            _ => true,
+
+        }
+    }).collect();
+
+    equipment.other = other;
+
+    Ok(equipment)
+
+}
+
+fn saves(json: &Value) -> Result<Vec<StatType>, ValueError> {
+    let saving_throws = json.get("saving_throws")
+        .ok_or_else(|| ValueError::ValueMismatch("saving throws top index".to_string()))?;
+
     array_index_values(saving_throws, "name")
         .unwrap_or(vec![])
         .into_iter()
         .map(|s| StatType::from_shorthand(s.as_str()))
+        .map(|s| s.map_err(|_| ValueError::ValueMismatch("stat types".to_string())))
         .collect::<Result<Vec<_>, _>>()
-        .unwrap_or(vec![])
 }
 
 fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>), ValueError> {
@@ -357,7 +405,8 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
     let subclasses: Vec<Subclass> = subclasses(&json).await
         .map_err(|v| v.prepend("Subclass "))?;
 
-    let saving_throw_proficiencies: Vec<StatType> = saves(&json);
+    let saving_throw_proficiencies: Vec<StatType> = saves(&json).unwrap_or(vec![]);
+    let equipment_proficiencies = equipment_proficiencies(&json)?;
     let skill_proficiency_choices: (usize, PresentedOption<SkillType>) = proficiency_choices(&json)?;
     let beginning_items = items(&json).await
         .map_err(|v| v.prepend("items "))?;
@@ -392,6 +441,7 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
         features,
         beginning_items,
         saving_throw_proficiencies,
+        equipment_proficiencies,
         hit_die,
         skill_proficiency_choices,
         spellcasting,

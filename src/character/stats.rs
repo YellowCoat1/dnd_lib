@@ -1,5 +1,5 @@
 //! Stats, Skills, and other number-based data for characters.
-use std::ops::{Add, Deref, DerefMut, Sub};
+use std::{collections::HashSet, ops::{Add, Deref, DerefMut, Sub}};
 use strum::{EnumIter, IntoEnumIterator};
 
 use serde::{Serialize, Deserialize};
@@ -579,5 +579,5 @@ pub struct EquipmentProficiencies {
     pub medium_armor: bool,
     pub heavy_armor: bool,
     pub shields: bool,
-    pub other: Vec<String>,
+    pub other: HashSet<String>,
 }

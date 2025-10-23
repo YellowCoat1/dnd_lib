@@ -1,6 +1,6 @@
 /// Features, or etc listed effects. 
 use serde::{Serialize, Deserialize};
-use super::stats::{StatType, SkillType};
+use super::{items::{ArmorCategory, WeaponType}, stats::{SkillType, StatType}};
 pub use super::choice::{PresentedOption, chosen};
 
 /// A feature represents a general effect/trait. Any extra effect from a race, class, etc is a feature.
@@ -46,6 +46,9 @@ pub enum FeatureEffect {
     /// Basic ability score modifier
     AddModifier(StatType, isize),
     AddSkillProficiency(SkillType),
+    WeaponProficiency(WeaponType),
+    ArmorProficiency(ArmorCategory),
+    EtcProficiency(String),
     AddSkillModifier(SkillType, isize),
     ACBonus(isize),
     AbilityScoreIncrease(AbilityScoreIncrease),
