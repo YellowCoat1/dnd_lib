@@ -348,14 +348,14 @@ impl Character {
 
     /// Gets the current ac of the character based off equipped items and features.
     pub fn ac(&self) -> isize {
-        let stats = self.stats();
-        self.ac_with_stats(&stats)
+        let stats = self.stats().modifiers();
+        self.ac_with_modifiers(&stats)
     }
 
 
-    /// Getting the ac, with inputted stats. This is intended to be a more efficienct version of
+    /// Getting the ac, with inputted modifiers. This is intended to be a more efficienct version of
     /// [Character::ac] if you already have the stats on-hand.
-    pub fn ac_with_stats(&self, stats: &Stats) -> isize {
+    pub fn ac_with_modifiers(&self, stats: &Modifiers) -> isize {
         let equipped_items = self.equipped_items();
 
 

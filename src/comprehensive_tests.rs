@@ -50,8 +50,9 @@ async fn level_3_elf_monk() {
     assert!(s_with_prof.contains(&SkillType::Religion), "Character did not ahve a proficiency in Religion");
 
     // choosing the subrace
-    // there's only one option, so we just choose the one available
+    // there's only one option, (high elf) so we just choose the one available
     georg.race.subraces.choose_in_place(0);
+
 
     // level georg to level 3
     georg.level_up_to_level(&monk, 3);
@@ -62,8 +63,8 @@ async fn level_3_elf_monk() {
         strength: 10,
         dexterity: 16,
         constitution: 13,
-        intelligence: 12,
-        wisdom: 16,
+        intelligence: 13,
+        wisdom: 15,
         charisma: 8,
     };
     assert_eq!(georg.stats(), final_stats);
@@ -72,26 +73,30 @@ async fn level_3_elf_monk() {
     let skills = georg.skill_modifiers();
     let correct_skills = SkillModifiers {
         acrobatics: 5,
-        animal_handling: 3,
+        animal_handling: 2,
         arcana: 1,
         athletics: 2,
         deception: -1,
         history: 1,
-        insight: 5,
+        insight: 4,
         intimidation: -1,
         investigation: 1,
-        medicine: 3,
+        medicine: 2,
         nature: 1,
-        perception: 5,
+        perception: 2,
         performance: -1,
         persuasion: -1,
         religion: 3,
         sleight_of_hand: 3,
         stealth: 3,
-        survival: 3,
+        survival: 2,
     };
 
     assert_eq!(skills, correct_skills);
+
+
+    let ac = georg.ac();
+    assert_eq!(ac, 15);
 
 
 }

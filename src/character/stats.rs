@@ -361,7 +361,6 @@ pub struct Skill {
 
 /// Calculated modifiers for skills
 #[derive(Debug)]
-#[derive(PartialEq)]
 pub struct SkillModifiers {
     pub acrobatics: isize,
     pub animal_handling: isize,
@@ -429,6 +428,30 @@ impl SkillModifiers {
         }
     }
 
+}
+
+
+impl PartialEq for SkillModifiers {
+    fn eq(&self, other: &Self) -> bool {
+        self.acrobatics == other.acrobatics
+        && self.animal_handling == other.animal_handling
+        && self.arcana == other.arcana
+        && self.athletics == other.athletics
+        && self.deception == other.deception
+        && self.history == other.history
+        && self.insight == other.insight
+        && self.intimidation == other.intimidation
+        && self.investigation == other.investigation
+        && self.medicine == other.medicine
+        && self.nature == other.nature
+        && self.perception == other.perception
+        && self.performance == other.performance
+        && self.persuasion == other.persuasion
+        && self.religion == other.religion
+        && self.sleight_of_hand == other.sleight_of_hand
+        && self.stealth == other.stealth
+        && self.survival == other.survival
+    }
 }
 
 impl SkillProficiencies {
