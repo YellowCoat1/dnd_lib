@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use super::{items::DamageRoll, stats::StatType};
+use super::{items::{Action, DamageRoll}, stats::StatType};
 
 /// A spell.
 /// 
@@ -21,7 +21,14 @@ pub struct Spell {
     pub school: School,
     pub components: Vec<char>,
     pub material: Option<String>,
-    pub damage: Option<Vec<DamageRoll>>,
+    /// if there is damage, this shows it for each of the levels. There also may be multiple
+    /// different types, like chromatic orb's multiple damage types.
+    pub damage: Option<Vec<Vec<DamageRoll>>>,
+}
+
+pub struct SpellAction {
+    pub action: Action,
+    pub spell_level: usize,
 }
 
 /// A school of magic.

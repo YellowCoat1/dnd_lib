@@ -45,7 +45,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, ValueError> {
 }
 
 
-fn spell_damage(v: Option<&Value>) -> Result<Option<Vec<DamageRoll>>, ValueError> {
+fn spell_damage(v: Option<&Value>) -> Result<Option<Vec<Vec<DamageRoll>>>, ValueError> {
     v.map(|v| {
         let damage_type_name =  v.get_map("damage_type")?.get_str("name")?;
         let damage_type = DamageType::from_string(&damage_type_name)
@@ -69,9 +69,9 @@ fn spell_damage(v: Option<&Value>) -> Result<Option<Vec<DamageRoll>>, ValueError
             .map(|v| {
                 DamageRoll::from_str(v, damage_type)
                     .ok_or_else(|| ValueError::ValueMismatch("damage value".to_string()))
+                    .map(|v| vec![v])
             })
             .collect::<Result<Vec<_>,_>>()?;
-        
         Ok(damage_vec)
     }).transpose()
 }
@@ -90,8 +90,8 @@ mod tests {
         let damage = acid_arrow.damage.expect("acid arrow should have damage!");
         let acid = DamageType::Acid;
         let second_level_damage = damage.get(0).expect("acid arrow should have 2nd level damage!");
-        assert_eq!(*second_level_damage, DamageRoll::new(4, 4, acid));
+        assert_eq!(second_level_damage[0], DamageRoll::new(4, 4, acid));
         let ninth_level_damage = damage.get(7).expect("acid arrow should have 9th level damage!");
-        assert_eq!(*ninth_level_damage, DamageRoll::new(11, 4, acid));
+        assert_eq!(ninth_level_damage[0], DamageRoll::new(11, 4, acid));
     }
 }

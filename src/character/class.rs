@@ -110,6 +110,7 @@ mod tests {
             saving_throw_proficiencies: vec![],
             hit_die: 4,
             skill_proficiency_choices: (0, PresentedOption::Base(SkillType::Investigation)),
+            equipment_proficiencies: EquipmentProficiencies::default(),
             spellcasting: None,
             class_specific_leveled: HashMap::new(),
         };

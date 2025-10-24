@@ -97,6 +97,4 @@ async fn level_3_elf_monk() {
 
     let ac = georg.ac();
     assert_eq!(ac, 15);
-
-
 }

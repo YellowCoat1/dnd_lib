@@ -64,7 +64,7 @@ fn weapon(map: &Value) -> Result<Weapon, ValueError> {
         _ => return Err(ValueError::ValueMismatch("Weapon Type".to_string())),
     };
 
-    let properties = properties(map)?;
+    let properties = properties(map, damage.damage_type)?;
 
     let weapon = Weapon {
         damage,
@@ -76,11 +76,34 @@ fn weapon(map: &Value) -> Result<Weapon, ValueError> {
     Ok(weapon)
 }
 
-fn properties(map: &Value) -> Result<WeaponProperties, ValueError> {
-    let arr = map.get_array("properties");
+fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, ValueError> {
+    let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
-    let properties = WeaponProperties::default();
-    arr.iter()
+    let mut properties = WeaponProperties::default();
+    for v in arr.iter() {
+        let index = v.get_str("index")?;
+        match index.as_str() {
+            "ammunition" => {properties.ammunition = true},
+            "finesse" => {properties.finesse = true},
+            "heavy" => {properties.heavy = true},
+            "light" => {properties.light = true},
+            "loading" => {properties.loading = true},
+            "monk" => {properties.monk = true},
+            "reach" => {properties.reach = true},
+            "special" => {properties.special = true},
+            "thrown" => {properties.thrown = true},
+            "two_handed" => {properties.two_handed = true},
+            "versitile" => {
+                let damage_val = two_handed_damage
+                    .ok_or_else(|| ValueError::ValueMismatch("Two handed damage".to_string()))?;
+                let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
+                    .ok_or_else(|| ValueError::ValueMismatch("Two handed damage roll".to_string()))?;
+                properties.versitile = Some(damage);
+            }
+            _ => (),
+        }
+    }
+    Ok(properties)
 }
 fn armor(map: &Value) -> Result<Armor, ValueError> {
 

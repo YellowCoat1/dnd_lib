@@ -1,3 +1,5 @@
+use std::iter;
+
 use serde::{Serialize, Deserialize};
 
 use crate::character::class::ItemCategory;
@@ -9,7 +11,7 @@ use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, Ski
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
 use super::items::{Action, Item, ItemType, Weapon, WeaponType};
-use super::spells::{Spell, SpellSlots, Spellcasting};
+use super::spells::{Spell, SpellAction, SpellSlots, Spellcasting};
 use super::class::{Class, Subclass};
 
 
@@ -277,17 +279,24 @@ impl Character {
     ///     }
     /// ```
     pub fn spellcasting_scores(&self, class_index: usize) -> Option<(isize, isize)> {
+        let modifiers = self.stats().modifiers();
+        self.spellcasting_scores_with_modifiers(class_index, &modifiers)
+
+    }
+
+    fn spellcasting_scores_with_modifiers(&self, class_index: usize, modifiers: &Modifiers) -> Option<(isize, isize)> {
         let spellcasting_ability = &self.classes.get(class_index)?
             .spellcasting.as_ref()?
             .0
             .spellcasting_ability;
-        let spellcasting_mod = self.stats().modifiers().get_stat_type(&spellcasting_ability).clone();
+        let spellcasting_mod = modifiers.get_stat_type(&spellcasting_ability).clone();
 
         let spell_save_dc = 8 + self.proficiency_bonus() + spellcasting_mod;
         let spell_attack_mod = self.proficiency_bonus() + spellcasting_mod;
 
         Some((spell_save_dc, spell_attack_mod))
     }
+
 
     pub fn item_features(&self) -> Vec<&Feature> {
         self.items.iter()
@@ -528,12 +537,12 @@ impl Character {
         equipment_proficiencies
     }
 
-    pub fn actions(&self) -> Vec<Action> {
+    pub fn weapon_actions(&self) -> Vec<Action> {
         let modifiers = self.stats().modifiers();
         let equipment_proficiencies = self.equipment_proficiencies();
         let proficiency_modifier = self.proficiency_bonus();
-        let weapon_actions = self.equipped_items()
-            .iter()
+        self.equipped_items()
+            .into_iter()
             .filter_map(|v| {
                 match &v.0.item_type {
                     ItemType::Weapon(w) => Some((&v.0.name, w)),
@@ -544,11 +553,55 @@ impl Character {
                 weapon_actions(name, weapon, &modifiers, &equipment_proficiencies, proficiency_modifier).into_iter()
             })
             .flatten()
-            .collect();
-
-        weapon_actions
+            .collect()
     }
+
+    pub fn spell_actions(&self) -> Vec<SpellAction> {
+        let modifiers = self.stats().modifiers();
+        let mut char_spell_actions = vec![];
+        for (index, class) in self.classes.iter().enumerate().filter(|v| v.1.spellcasting.is_some()) {
+            let spellcasting_stuff = self.spellcasting_scores_with_modifiers(index, &modifiers).zip(class.spellcasting.as_ref());
+            let ((_, spell_attack_mod), (_, spells)) = match spellcasting_stuff {
+                Some(s) => s,
+                _ => continue,
+            };
+
+            let class_spell_actions =  spells.into_iter() 
+                .filter_map(|s| spell_actions(s, spell_attack_mod))
+                .map(|v| v.into_iter())
+                .flatten()
+                .collect::<Vec<_>>();
+            char_spell_actions.extend(class_spell_actions);
+
+        }
+        char_spell_actions
+    }
+
+
 }
+
+fn spell_actions(spell: &Spell, spell_attack_mod: isize) -> Option<Vec<SpellAction>>  {
+    Some(spell.damage.as_ref()?.into_iter()
+        .enumerate()
+        .flat_map(|(n, dv)| {
+            dv.into_iter().map(move |d| (n + spell.level, d))
+        })
+        .map(|(spell_level, damage)| {
+            SpellAction {
+                spell_level,
+                action: Action { 
+                    name: spell.name.clone(), 
+                    attack_bonus: spell_attack_mod, 
+                    damage_roll: damage.clone(), 
+                    damage_roll_bonus: 0, 
+                    two_handed: false, 
+                    second_attack: false 
+                }
+            }
+        })
+        .collect())
+}
+
 
 fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProficiencies, proficiency_mod: isize) -> Vec<Action> {
     let finesse = w.properties.finesse;

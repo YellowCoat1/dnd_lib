@@ -154,9 +154,9 @@ pub enum WeaponType {
 #[derive(Copy, Clone)]
 #[derive(Debug)]
 pub struct DamageRoll {
-    number: usize, 
-    dice: usize, 
-    damage_type: DamageType
+    pub number: usize, 
+    pub dice: usize, 
+    pub damage_type: DamageType
 }
 
 pub struct Action {
