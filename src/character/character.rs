@@ -8,8 +8,8 @@ use super::race::Race;
 use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, StatType, Stats, PROFICIENCY_BY_LEVEL};
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
-use super::items::{Action, DamageRoll, Item, ItemType, Weapon, WeaponType};
-use super::spells::{SpellSlots, Spellcasting};
+use super::items::{Action, Item, ItemType, Weapon, WeaponType};
+use super::spells::{Spell, SpellSlots, Spellcasting};
 use super::class::{Class, Subclass};
 
 
@@ -279,6 +279,7 @@ impl Character {
     pub fn spellcasting_scores(&self, class_index: usize) -> Option<(isize, isize)> {
         let spellcasting_ability = &self.classes.get(class_index)?
             .spellcasting.as_ref()?
+            .0
             .spellcasting_ability;
         let spellcasting_mod = self.stats().modifiers().get_stat_type(&spellcasting_ability).clone();
 
@@ -479,6 +480,18 @@ impl Character {
         self.level_up_multiple(class, level_offset as usize) 
     }
 
+    /// Gets every spell availiable to the character.
+    /// Returns a list of spells, and the indexes to the [SpeccedClass]es that they come from.
+    pub fn spells(&self) -> Vec<(&Spell, usize)> {
+        self.classes.iter()
+            .enumerate()
+            .filter_map(|(n, v)| v.spellcasting.as_ref().map(|v| (&v.1, n)))
+            .map(|(v, n)| {
+                v.iter().zip(vec![n; v.len()].into_iter())
+            })
+            .flatten()
+            .collect()
+    }
 
     pub fn equipment_proficiencies(&self) -> EquipmentProficiencies {
         let feature_effects = self.race_features()
@@ -616,7 +629,7 @@ pub struct SpeccedClass {
     pub current_class_features: Vec<Vec<PresentedOption<Feature>>>,
     pub items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     pub subclass: PresentedOption<Subclass>,
-    pub spellcasting: Option<Spellcasting>,
+    pub spellcasting: Option<(Spellcasting, Vec<Spell>)>,
     pub hit_die: usize,
 }
 
@@ -635,7 +648,7 @@ impl SpeccedClass {
             current_class_features: class.features[0..level].iter().cloned().collect(),
             items: class.beginning_items.iter().cloned().collect(),
             subclass,
-            spellcasting: class.spellcasting.clone(),
+            spellcasting: class.spellcasting.clone().map(|v| (v, vec![])),
             hit_die: class.hit_die,
         }
     }
