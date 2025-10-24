@@ -1,4 +1,4 @@
-use crate::{character::{self, stats::{SkillModifiers, SkillType, Stats}}, get::{get_background, get_class, get_race}};
+use crate::{character::{self, stats::{SkillModifiers, SkillType, Stats}}, get::{get_background, get_class, get_race, get_spell}};
 
 #[tokio::test]
 async fn level_3_elf_monk() {

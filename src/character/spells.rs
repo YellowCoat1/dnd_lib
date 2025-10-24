@@ -27,8 +27,25 @@ pub struct Spell {
 }
 
 pub struct SpellAction {
-    pub action: Action,
-    pub spell_level: usize,
+    pub name: String,
+    pub spell_level: isize,
+    pub damage_roll: DamageRoll,
+    pub spell_attack_mod: isize,
+}
+
+impl Action for SpellAction {
+    fn name(&self) -> &String {
+        &self.name
+    }
+    fn damage_roll(&self) -> DamageRoll {
+        self.damage_roll
+    }
+    fn attack_bonus(&self) -> isize {
+        self.spell_attack_mod
+    }
+    fn damage_roll_bonus(&self) -> isize {
+        0
+    }
 }
 
 /// A school of magic.

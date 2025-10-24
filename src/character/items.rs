@@ -159,13 +159,35 @@ pub struct DamageRoll {
     pub damage_type: DamageType
 }
 
-pub struct Action {
+pub trait Action {
+    fn name(&self) -> &String;
+    fn attack_bonus(&self) -> isize;
+    fn damage_roll(&self) -> DamageRoll;
+    fn damage_roll_bonus(&self) -> isize;
+}
+
+pub struct WeaponAction {
     pub name: String,
     pub attack_bonus: isize,
     pub damage_roll: DamageRoll,
     pub damage_roll_bonus: isize,
     pub two_handed: bool,
     pub second_attack: bool,
+}
+
+impl Action for WeaponAction {
+    fn name(&self) -> &String {
+        &self.name
+    }
+    fn attack_bonus(&self) -> isize {
+        self.attack_bonus
+    }
+    fn damage_roll(&self) -> DamageRoll {
+        self.damage_roll
+    }
+    fn damage_roll_bonus(&self) -> isize {
+        self.damage_roll_bonus
+    }
 }
 
 impl DamageRoll {

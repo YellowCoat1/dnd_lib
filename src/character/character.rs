@@ -10,7 +10,7 @@ use super::race::Race;
 use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, StatType, Stats, PROFICIENCY_BY_LEVEL};
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
-use super::items::{Action, Item, ItemType, Weapon, WeaponType};
+use super::items::{Item, ItemType, Weapon, WeaponAction, WeaponType};
 use super::spells::{Spell, SpellAction, SpellSlots, Spellcasting};
 use super::class::{Class, Subclass};
 
@@ -537,7 +537,7 @@ impl Character {
         equipment_proficiencies
     }
 
-    pub fn weapon_actions(&self) -> Vec<Action> {
+    pub fn weapon_actions(&self) -> Vec<WeaponAction> {
         let modifiers = self.stats().modifiers();
         let equipment_proficiencies = self.equipment_proficiencies();
         let proficiency_modifier = self.proficiency_bonus();
@@ -588,22 +588,17 @@ fn spell_actions(spell: &Spell, spell_attack_mod: isize) -> Option<Vec<SpellActi
         })
         .map(|(spell_level, damage)| {
             SpellAction {
-                spell_level,
-                action: Action { 
-                    name: spell.name.clone(), 
-                    attack_bonus: spell_attack_mod, 
-                    damage_roll: damage.clone(), 
-                    damage_roll_bonus: 0, 
-                    two_handed: false, 
-                    second_attack: false 
-                }
+                spell_level: spell_level as isize,
+                name: spell.name.clone(), 
+                spell_attack_mod, 
+                damage_roll: damage.clone(), 
             }
         })
         .collect())
 }
 
 
-fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProficiencies, proficiency_mod: isize) -> Vec<Action> {
+fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProficiencies, proficiency_mod: isize) -> Vec<WeaponAction> {
     let finesse = w.properties.finesse;
     let versitile = w.properties.versitile;
     let two_handed = w.properties.two_handed;
@@ -629,7 +624,7 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
     let damage_roll = w.damage;
     let damage_roll_bonus = modifier + bonus;
 
-    let base_attack = Action {
+    let base_attack = WeaponAction {
         name: name.clone(),
         attack_bonus,
         damage_roll,
@@ -642,7 +637,7 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
 
     // add second attack
     if light {
-        attacks.push(Action {
+        attacks.push(WeaponAction {
             name: name.clone(),
             attack_bonus:  attack_bonus,
             damage_roll,
@@ -654,7 +649,7 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
 
     // add possible two-handed attack
     if let Some(d) = versitile {
-        attacks.push(Action {
+        attacks.push(WeaponAction {
             name: name.clone(),
             attack_bonus,
             damage_roll: d,
