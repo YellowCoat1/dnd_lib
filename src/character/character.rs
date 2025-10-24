@@ -8,7 +8,7 @@ use super::race::Race;
 use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, StatType, Stats, PROFICIENCY_BY_LEVEL};
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
-use super::items::{Item, ItemType, WeaponType};
+use super::items::{Action, DamageRoll, Item, ItemType, Weapon, WeaponType};
 use super::spells::{SpellSlots, Spellcasting};
 use super::class::{Class, Subclass};
 
@@ -514,6 +514,91 @@ impl Character {
 
         equipment_proficiencies
     }
+
+    pub fn actions(&self) -> Vec<Action> {
+        let modifiers = self.stats().modifiers();
+        let equipment_proficiencies = self.equipment_proficiencies();
+        let proficiency_modifier = self.proficiency_bonus();
+        let weapon_actions = self.equipped_items()
+            .iter()
+            .filter_map(|v| {
+                match &v.0.item_type {
+                    ItemType::Weapon(w) => Some((&v.0.name, w)),
+                    _ => None,
+                }
+            })
+            .map(|(name, weapon)| {
+                weapon_actions(name, weapon, &modifiers, &equipment_proficiencies, proficiency_modifier).into_iter()
+            })
+            .flatten()
+            .collect();
+
+        weapon_actions
+    }
+}
+
+fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProficiencies, proficiency_mod: isize) -> Vec<Action> {
+    let finesse = w.properties.finesse;
+    let versitile = w.properties.versitile;
+    let two_handed = w.properties.two_handed;
+    let light = w.properties.light;
+
+    let modifier = if finesse && m.dexterity > m.strength {
+        m.dexterity
+    } else {
+        m.strength
+    };
+
+    let proficient = match (p.simple_weapons, p.martial_weapons, &w.weapon_type) {
+        (_, true, WeaponType::Martial) => true,
+        (_, true, WeaponType::MartialRanged) => true,
+        (true, _, WeaponType::Simple) => true,
+        (true, _, WeaponType::SimpleRanged) => true,
+        _ => if p.other.contains(name) {true} else {false},
+    };
+
+    let bonus = if proficient {proficiency_mod} else {0};
+
+    let attack_bonus = modifier+bonus+(w.attack_roll_bonus as isize);
+    let damage_roll = w.damage;
+    let damage_roll_bonus = modifier + bonus;
+
+    let base_attack = Action {
+        name: name.clone(),
+        attack_bonus,
+        damage_roll,
+        damage_roll_bonus,
+        two_handed,
+        second_attack: false,
+    };
+
+    let mut attacks = vec![base_attack];
+
+    // add second attack
+    if light {
+        attacks.push(Action {
+            name: name.clone(),
+            attack_bonus:  attack_bonus,
+            damage_roll,
+            damage_roll_bonus: modifier,
+            two_handed: false,
+            second_attack: true,
+        });
+    }
+
+    // add possible two-handed attack
+    if let Some(d) = versitile {
+        attacks.push(Action {
+            name: name.clone(),
+            attack_bonus,
+            damage_roll: d,
+            damage_roll_bonus,
+            two_handed: true,
+            second_attack: false,
+        });
+    }
+
+    attacks
 }
 
 /// A class as it's used for a character. This contains all the relevant information from a class
@@ -536,6 +621,7 @@ pub struct SpeccedClass {
 }
 
 impl SpeccedClass {
+
     
     /// Get a specced class from a class, up to the specified level.
     fn from_class(class: &Class, level: usize) -> SpeccedClass {

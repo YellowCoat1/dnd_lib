@@ -1,7 +1,7 @@
 use memoizee::memoize;
 use serde_json::Value;
 use super::{get_page::get_raw_json, json_tools::{parse_string, ValueExt}, ValueError};
-use crate::character::items::{Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponType};
+use crate::character::items::{Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties, WeaponType};
 
 pub async fn get_item(name: &str) -> Result<Item, ValueError> {
     let index = parse_string(name);
@@ -64,15 +64,24 @@ fn weapon(map: &Value) -> Result<Weapon, ValueError> {
         _ => return Err(ValueError::ValueMismatch("Weapon Type".to_string())),
     };
 
+    let properties = properties(map)?;
+
     let weapon = Weapon {
         damage,
         attack_roll_bonus: 0,
+        properties,
         weapon_type,
     };
 
     Ok(weapon)
 }
 
+fn properties(map: &Value) -> Result<WeaponProperties, ValueError> {
+    let arr = map.get_array("properties");
+    let two_handed_damage = map.get_map("two_handed_damage").ok();
+    let properties = WeaponProperties::default();
+    arr.iter()
+}
 fn armor(map: &Value) -> Result<Armor, ValueError> {
 
     let armor_class_map = map.get_map("armor_class")?;

@@ -113,7 +113,27 @@ pub struct Weapon {
     pub damage: DamageRoll,
     pub attack_roll_bonus: usize,
     pub weapon_type: WeaponType,
+    pub properties: WeaponProperties,
 }
+
+#[derive(Clone)]
+#[derive(Debug)]
+#[derive(Default)]
+#[derive(Serialize, Deserialize)]
+pub struct WeaponProperties {
+    pub ammunition: bool,
+    pub finesse: bool,
+    pub heavy: bool,
+    pub light: bool,
+    pub loading: bool,
+    pub monk: bool,
+    pub reach: bool,
+    pub special: bool,
+    pub thrown: bool,
+    pub two_handed: bool,
+    pub versitile: Option<DamageRoll>,
+}
+
 
 #[derive(Clone)]
 #[derive(Debug)]
@@ -137,6 +157,15 @@ pub struct DamageRoll {
     number: usize, 
     dice: usize, 
     damage_type: DamageType
+}
+
+pub struct Action {
+    pub name: String,
+    pub attack_bonus: isize,
+    pub damage_roll: DamageRoll,
+    pub damage_roll_bonus: isize,
+    pub two_handed: bool,
+    pub second_attack: bool,
 }
 
 impl DamageRoll {
