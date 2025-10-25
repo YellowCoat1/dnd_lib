@@ -10,7 +10,7 @@ fn shorthands() {
 #[test]
 fn modifiers() {
     // setting strength to 20, wisdom to 12, and charisam to 14
-    let stats = Stats::from_arr(&[20, 10, 10, 10, 12, 14]);
+    let stats = Stats::from(&[20, 10, 10, 10, 12, 14]);
 
     let proficiency_bonus = 2;
     let modifiers = stats.modifiers();
@@ -41,13 +41,13 @@ fn modifiers() {
 
 #[test]
 fn add_stats() {
-    let stats = Stats::from_arr(&[20, 10, 10, 10, 12, 14]);
+    let stats = Stats::from(&[20, 10, 10, 10, 12, 14]);
 
     let subbed_stats = stats.clone() - 2;
-    assert_eq!(subbed_stats, Stats::from_arr(&[18, 8, 8, 8, 10, 12]));
+    assert_eq!(subbed_stats, Stats::from(&[18, 8, 8, 8, 10, 12]));
     
-    let special_added_stats = stats.clone() + Stats::from_arr(&[0, 0, 0, 2, 2, 0]);
-    assert_eq!(special_added_stats, Stats::from_arr(&[20, 10, 10, 12, 14, 14]));
+    let special_added_stats = stats.clone() + Stats::from(&[0, 0, 0, 2, 2, 0]);
+    assert_eq!(special_added_stats, Stats::from(&[20, 10, 10, 12, 14, 14]));
     
     let mut grabbed_field_stats = stats.clone();
     *grabbed_field_stats.get_stat_type_mut(&StatType::Constitution) = 16;

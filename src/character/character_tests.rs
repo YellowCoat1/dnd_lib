@@ -1,4 +1,3 @@
-use crate::character::SpeccedClass;
 use crate::get::{get_class, get_background, get_race};
 use super::stats::Stats;
 use super::character::Character;
@@ -39,7 +38,7 @@ async fn char_spells() {
 
     let (wizard, acolyte, elf) = (wizard_future.await.unwrap(), acolyte_future.await.unwrap(), elf_future.await.unwrap());
 
-    let stats = Stats::from_arr(&[10, 10, 10, 13, 10, 10]);
+    let stats = Stats::from(&[10, 10, 10, 13, 10, 10]);
 
     // this is john. john has a base int score of 13, and john is a high elf. His int should be 14.
     let mut john = Character::new(String::from("john"), &wizard, &acolyte, &elf, stats);

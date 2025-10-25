@@ -1,14 +1,11 @@
 //! D&D items, item types, and damage types.
-use std::cmp::PartialEq;
+use std::{cmp::PartialEq, str::FromStr};
 
 use serde::{Serialize, Deserialize};
 
-use super::features::Feature;
+use super::{features::Feature, stats::EquipmentProficiencies};
 
-#[derive(Copy, Clone)]
-#[derive(Debug)]
-#[derive(PartialEq)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum DamageType {
     Acid,
     Bludgeoning,
@@ -25,9 +22,10 @@ pub enum DamageType {
     Thunder,
 }
 
-impl DamageType {
-    pub fn from_string(name: &str) -> Result<DamageType, ()> {
-        match name.to_lowercase().as_str() {
+impl FromStr for DamageType {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
             "acid" => Ok(DamageType::Acid),
             "bludgeoning" => Ok(DamageType::Bludgeoning),
             "cold" => Ok(DamageType::Cold),
@@ -47,9 +45,7 @@ impl DamageType {
 }
 
 /// A general type an item could be.
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ItemType {
     Weapon(Weapon),
     Armor(Armor),
@@ -60,25 +56,21 @@ pub enum ItemType {
 /// A single item. 
 ///
 /// Often, items with counts are stored as a (Item, usize) tuple.
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Item {
     pub name: String,
+    /// Optional description
     pub description: Option<String>,
+    /// What type of item this is (weapon, armor, etc).
     pub item_type: ItemType,
+    /// Any extra features/effects this item grants
     pub features: Vec<Feature>,
 }
 
-impl PartialEq for Item {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-    }
-}
-
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(Serialize, Deserialize)]
+/// A character's armor.
+///
+/// Note that this doesn't include shields, they have their own kind.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Armor {
     pub ac: isize,
     pub category: ArmorCategory,
@@ -87,39 +79,40 @@ pub struct Armor {
 }
 
 impl Armor {
-    pub fn get_ac(&self, dex: isize) -> isize {
+    /// Get the ac of the armor if you used it.
+    pub fn total_ac(&self, dex: isize) -> isize {
         self.ac + match self.category {
             ArmorCategory::Light => dex,
-            ArmorCategory::Medium => if dex > 2 {2} else {dex},
+            ArmorCategory::Medium => dex.min(2),
             ArmorCategory::Heavy => 0,
         }
     }
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(PartialEq)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// The different categories for armor.
 pub enum ArmorCategory {
+    /// Light armor, e.g. leather. Dexterity bonus gets added to the ac.
     Light,
+    // Medium armor, e.g. Scale Mail. Dexterity bonus, up to 2, gets added to the ac.
     Medium,
+    // Heavy armor, e.g. Plate. Dexterity bonus does not get added to the ac, though they have the
+    // highest base ACs.
     Heavy,
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Weapon {
+    /// The damage the weapon causes on hit.
     pub damage: DamageRoll,
+    /// A flat attack roll bonus added before proficiencies or stats. E.g. a +2 greatsword would
+    /// have 2, but a regular greatsword would have 0.
     pub attack_roll_bonus: usize,
     pub weapon_type: WeaponType,
     pub properties: WeaponProperties,
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Default)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct WeaponProperties {
     pub ammunition: bool,
     pub finesse: bool,
@@ -131,14 +124,10 @@ pub struct WeaponProperties {
     pub special: bool,
     pub thrown: bool,
     pub two_handed: bool,
-    pub versitile: Option<DamageRoll>,
+    pub versatile: Option<DamageRoll>,
 }
 
-
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(PartialEq)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum WeaponType {
     Simple,
     SimpleRanged,
@@ -146,26 +135,50 @@ pub enum WeaponType {
     MartialRanged,
 }
 
+/// Takes equipment proficiencies and a weapon type, returns if the proficiencies has that weapon
+/// type.
+pub fn is_proficient_with(weapon: &WeaponType, proficiencies: &EquipmentProficiencies) -> bool {
+    match (proficiencies.simple_weapons, proficiencies.martial_weapons, weapon) {
+        (_, true, WeaponType::Martial) => true,
+        (_, true, WeaponType::MartialRanged) => true,
+        (true, _, WeaponType::Simple) => true,
+        (true, _, WeaponType::SimpleRanged) => true,
+        _ => false,
+    }
+}
 
-/// A damage roll in the format AdB xyz damage, 
+
+/// A damage roll in the format XdY (type) damage, 
 /// e.g. 1d6 piercing.
-#[derive(Serialize, Deserialize)]
-#[derive(PartialEq)]
-#[derive(Copy, Clone)]
-#[derive(Debug)]
+///
+/// This doesn't also store added damage, e.g. 1d6+2. If you want to store that, use a (DamageRoll, 
+///  isize)
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct DamageRoll {
+    /// The number of dice rolled
     pub number: usize, 
+    /// The numer of faces in the die (e.g. 4, 8, 20)
     pub dice: usize, 
+    /// The type of damage the roll causes.
     pub damage_type: DamageType
 }
 
+/// An action that a character could take.
+///
+/// This only covers damage-dealing actions, like a shortsword attack or a magic missle, and not
+/// etc actions, like a push.
 pub trait Action {
-    fn name(&self) -> &String;
+    fn name(&self) -> &str;
     fn attack_bonus(&self) -> isize;
     fn damage_roll(&self) -> DamageRoll;
     fn damage_roll_bonus(&self) -> isize;
 }
 
+/// An attack you can take with a weapon.
+///
+/// This is after calculations, so a WeaponAction has a static attack roll bonus and damage roll
+/// type.
+#[derive(Debug, Clone)]
 pub struct WeaponAction {
     pub name: String,
     pub attack_bonus: isize,
@@ -176,7 +189,7 @@ pub struct WeaponAction {
 }
 
 impl Action for WeaponAction {
-    fn name(&self) -> &String {
+    fn name(&self) -> &str {
         &self.name
     }
     fn attack_bonus(&self) -> isize {
@@ -199,14 +212,15 @@ impl DamageRoll {
         }
     }
 
-    /// Construct a damage roll from a string in the form of XdY. for example, 2d10.
+    /// Parses a string of the form "XdY" into a DamageRoll.
+    /// 
+    /// For example, "2d10" would be turned into a DamageRoll with 2 dice and 10 faces.
     pub fn from_str(s: &str, damage_type: DamageType) -> Option<DamageRoll> {
-        let p: Vec<&str> = s.split('d').collect();
-        if p.len() == 2 {
-            if let (Ok(a), Ok(b)) = (p[0].parse::<usize>(), p[1].parse::<usize>()) {
-                return Some(DamageRoll::new(a, b, damage_type));
-            }
-        }
-        None
+        let (a, b) = s.split_once('d')?;
+        Some(Self{
+            number: a.parse().ok()?,
+            dice: b.parse().ok()?,
+            damage_type,
+        })
     }
 }

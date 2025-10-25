@@ -1,13 +1,17 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use serde_json::{Value, Map};
-use crate::{character::{items::WeaponType, stats::EquipmentProficiencies}, get::{
-    feature::get_feature, get_page::get_raw_json, item::get_item, json_tools::{
+use crate::get::{
+    feature::get_feature, 
+    get_page::get_raw_json, 
+    item::get_item, 
+    json_tools::{
         array_index_values, choice, parse_string, unwrap_number, ValueError, ValueExt
-    }, subclass::get_subclass
-}};
+    }, 
+    subclass::get_subclass,
+};
 use crate::character::{
-    stats::{StatType, SkillType},
-    items::{Item, ItemType},
+    stats::{StatType, SkillType, EquipmentProficiencies},
+    items::{Item, ItemType, WeaponType},
     features::{Feature, PresentedOption},
     spells::{Spellcasting, SpellSlots},
     class::{Class, Subclass, ItemCategory},
@@ -282,8 +286,8 @@ fn spell_slots_from_map(map: &Map<String, Value>) -> Result<SpellSlots, ()>{
         return Err(());
     }
 
-    let spell_slots = SpellSlots(slot_vals[0], slot_vals[1], slot_vals[2], slot_vals[3], slot_vals[4], slot_vals[5], slot_vals[6],
-        slot_vals[7], slot_vals[8], slot_vals[9]);
+    let spell_slots = SpellSlots([slot_vals[0], slot_vals[1], slot_vals[2], slot_vals[3], slot_vals[4], slot_vals[5], slot_vals[6],
+        slot_vals[7], slot_vals[8], slot_vals[9]]);
 
 
     Ok(spell_slots)

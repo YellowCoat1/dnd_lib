@@ -4,9 +4,47 @@
 //! other datastructures in this crate (found in the [character] module) are centered around it,
 //! building the foundations for a complete D&D character.
 //!
-//! You'll most likely want to start by getting the basic structures ([class](character::class::Class), [background](character::background::Background), [race](character::race::Race), etc) from the [get] module, and using
+//! You'll most likely want to start by getting the basic structures ([class](character::class::Class), [background](character::Background), [race](character::Race), etc) from the [get] module, and using
 //! that to build a character.
-
+///
+/// ```ignore
+/// #[tokio::main]
+/// async fn main() {
+///     extern crate rand;
+///     use rand::Rng;
+///     use dnd_lib::get::{get_class, get_race, get_background};
+///     use dnd_lib::character::{stats::Stats, Character};
+///     let mut rng = rand::thread_rng();
+/// 
+///     let rogue = get_class("rogue").await.unwrap();
+///     let human = get_race("human").await.unwrap();
+///     let acolyte = get_background("acolyte").await.unwrap();
+///
+///     let mut john = Character::new(String::from("john"), &rogue, &acolyte, &human, Stats::default());
+///     
+///     // john sees an upcoming fight, and equips his dagger.
+///     john.items[1].2 = true;
+///
+///     // Uh-Oh! John is about to get hit! What's his AC?
+///     let ac = john.ac();
+///     // looks like it was less than needed. John gets hit with 3 damage.
+///     john.damage(3);
+///     // Now it's John's turn. He readies his dagger.
+///     let dagger_attack = &john.weapon_actions()[0];
+///     // John tries to attack...
+///     let attack_roll = rng.random_range(1_i32..=20_i32) as isize + dagger_attack.attack_bonus;
+///     // And it hits!
+///     let damage_roll = dagger_attack.damage_roll;
+///     // It does enough damage to kill the monster immediately!
+///
+///     // With the xp from that fight, john levels up.
+///     john.level_up(&rogue);
+///
+///     // Afterwards, john is smited from reality for the sin of existance.
+///     drop(john);
+/// }
+/// ```
+///
 pub mod character;
 pub mod get;
 pub mod save;

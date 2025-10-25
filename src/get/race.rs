@@ -13,8 +13,8 @@
 //! ```
 use memoizee::memoize;
 use serde_json::Value;
+use crate::character::{Race, Subrace};
 use crate::character::features::PresentedOption;
-use crate::character::race::{Race, Subrace};
 use super::get_page::get_raw_json;
 use super::json_tools::{parse_string, ValueError, ValueExt};
 use super::feature::get_feature_from_trait;

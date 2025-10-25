@@ -30,6 +30,7 @@ pub use item::get_item;
 pub use spell::get_spell;
 
 #[cfg(test)]
+#[cfg(feature = "network-intensive-tests")]
 mod class_tests;
 #[cfg(test)]
 mod race_tests;

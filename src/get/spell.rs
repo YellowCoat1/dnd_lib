@@ -1,6 +1,6 @@
 use serde_json::Value;
-use crate::character::spells::{School, Spell};
-use crate::character::items::{DamageRoll, DamageType};
+use crate::character::spells::Spell;
+use crate::character::items::DamageRoll;
 use crate::get::json_tools::parse_string;
 use super::get_page::get_raw_json;
 use super::json_tools::{ValueExt, ValueError, string_array};
@@ -17,7 +17,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, ValueError> {
     let casting_time = json.get_str("casting_time")?;
     let level = json.get_usize("level")?;
     let range = json.get_str("range")?;
-    let school = School::from_string(json.get_map("school")?.get_str("name")?.as_str())
+    let school = json.get_map("school")?.get_str("name")?.as_str().parse()
         .map_err(|_| ValueError::ValueMismatch("spell school".to_string()))?;
     let components: Vec<char> = string_array(json.get_array("components")?)?
         .iter()
@@ -48,7 +48,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, ValueError> {
 fn spell_damage(v: Option<&Value>) -> Result<Option<Vec<Vec<DamageRoll>>>, ValueError> {
     v.map(|v| {
         let damage_type_name =  v.get_map("damage_type")?.get_str("name")?;
-        let damage_type = DamageType::from_string(&damage_type_name)
+        let damage_type = damage_type_name.parse()
             .map_err(|_| ValueError::ValueMismatch("damage type".to_string()))?;
 
         let damage_map = v

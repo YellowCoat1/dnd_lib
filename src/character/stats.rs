@@ -1,20 +1,21 @@
-//! Stats, Skills, and other number-based data for characters.
-use std::{collections::HashSet, ops::{Add, Deref, DerefMut, Sub}};
+//! Defines stats, saving throws, skills, and proficieny.
+
+use std::{
+        collections::HashSet, 
+        ops::{Add, Deref, DerefMut, Sub}
+};
 use strum::{EnumIter, IntoEnumIterator};
 
 use serde::{Serialize, Deserialize};
 
 // proficiency bonus values for each level
-pub const PROFICIENCY_BY_LEVEL: [isize; 20] = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6];
+pub const PROFICIENCY_BY_LEVEL: [isize; 20] = 
+    [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6];
 
 
-/// Base stats.
+/// Base ability scores.
 /// These are total scores, not modifiers.
-/// 
-#[derive(PartialEq)]
-#[derive(Clone, Copy)]
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub strength: isize,
     pub dexterity: isize,
@@ -26,7 +27,7 @@ pub struct Stats {
 
 impl From<&[isize; 6]> for Stats {
     fn from(arr: &[isize; 6]) -> Self {
-        Stats {
+        Self {
             strength:       arr[0],
             dexterity:      arr[1],
             constitution:   arr[2],
@@ -37,38 +38,33 @@ impl From<&[isize; 6]> for Stats {
     }
 }
 
-impl Into<Vec<isize>> for Stats {
-    fn into(self) -> Vec<isize> {
-        vec![self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma]
+impl From<Stats> for Vec<isize> {
+    fn from(value: Stats) -> Self {
+        vec![value.strength, value.dexterity, value.constitution, value.intelligence, value.wisdom, value.charisma]
     }
 }
 
 impl Stats {
-    pub fn from_arr(arr: &[isize; 6]) -> Stats{
-        arr.into()
-    }
-
-    pub fn to_vec(&self) -> Vec<isize> {
-        self.clone().into()
-    }
-
-    /// Gets the stat modifiers from base scores.
+    /// Returns the modifier for each ability score.
+    ///
+    /// Modifiers are computed as floor((score - 10) / 2)
     pub fn modifiers(&self) -> Modifiers {
 
         fn calc_mod(stat: isize) -> isize {
             ( ((stat as f64)-10.0)/2.0 ).floor() as isize
         }
 
-        Modifiers(Stats {
+        Modifiers{ stats: Stats {
             strength: calc_mod(self.strength),
             dexterity: calc_mod(self.dexterity),
             constitution: calc_mod(self.constitution),
             wisdom: calc_mod(self.wisdom),
             intelligence: calc_mod(self.intelligence),
             charisma: calc_mod(self.charisma),
-        })
+        }}
     }
     
+    /// Returns a mutable refrence to the value of the given stat type.
     pub fn get_stat_type_mut (&mut self, stat_type: &StatType) -> &mut isize {
         match stat_type {
            StatType::Strength => &mut self.strength,
@@ -80,6 +76,7 @@ impl Stats {
         }
     }
 
+    /// Returns a refrence to the value of the given stat type.
     pub fn get_stat_type(&self, stat_type: &StatType) -> &isize {
         match stat_type {
             StatType::Strength => &self.strength,
@@ -155,29 +152,37 @@ impl Default for Stats {
     }
 }
 
-/// A struct holding modifiers for stats.
-///
-/// It's just a wrapper around a Stats instance, since modifiers are essentially just stats on a different scale.
-pub struct Modifiers(pub Stats);
+// A wrapper for [Stats] where each field is a modifier instead of a base score.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Modifiers {pub stats: Stats}
 
 impl Deref for Modifiers {
     type Target = Stats;
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.stats
     }
 }
 impl DerefMut for Modifiers {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.stats
     }
 }
 
-/// An individual stat type.
-#[derive(Serialize, Deserialize)]
-#[derive(PartialEq)]
-#[derive(EnumIter)]
-#[derive(Debug)]
-#[derive(Clone, Copy)]
+impl Default for Modifiers {
+    fn default() -> Self {
+        Self { stats: Stats { 
+            strength: 0, 
+            dexterity: 0, 
+            constitution: 0, 
+            wisdom: 0, 
+            intelligence: 0, 
+            charisma: 0 
+        }}
+    }
+}
+
+/// Enumerates all six core ability score types. 
+#[derive(Clone, Copy, Debug, PartialEq, EnumIter, Serialize, Deserialize)]
 pub enum StatType {
     Strength,
     Dexterity,
@@ -190,6 +195,8 @@ pub enum StatType {
 impl <'a>StatType {
     /// Getting a StatType from it's shorthand (e.g. "dex")
     /// if you want to get a StatType from it's full name, just take the first three characters.
+    ///
+    /// Returns the associated [StatType] of a 3 character string, or otherwise returns an `Err(())`.
     pub fn from_shorthand(shorthand: &str) -> Result<StatType, ()> {
         match shorthand.to_lowercase().as_str() {
             "str" => Ok(StatType::Strength),
@@ -202,6 +209,7 @@ impl <'a>StatType {
         }
     }
 
+    /// Get the string name of a stat type.
     pub fn get_name(&'a self) -> &'a str {
         match self {
             StatType::Strength => "Strength",
@@ -213,18 +221,22 @@ impl <'a>StatType {
         }
     }
 
+    /// Get the shorthand of a stat type.
+    ///
+    /// this is equivalent to `get_name()[..3]`, and can be used as a deterministic name for the
+    /// stat.
     pub fn get_shorthand(&'a self) -> &'a str {
         &self.get_name()[..3]
     }
 }
 
 
-/// A character's saving throw proficiencies.
+/// Boolean flags indicating proficiency in each saving throw.
 ///
-/// If you need the number modfier of a save, use [modifiers](Saves::modifiers).
-#[derive(Default)]
-#[derive(Clone)]
-#[derive(Serialize, Deserialize)]
+/// A "true" field means the character is proficient in that save.
+///
+/// If you need the numeric modfier of a save, use [modifiers](Saves::modifiers).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Saves {
     pub strength: bool,
     pub dexterity: bool,
@@ -235,10 +247,8 @@ pub struct Saves {
 }
 
 impl Saves {
-    /// Gets the individual save modifiers.
-    ///
-    /// An individual Saves struct only shows if a character has proficieny or not in each skill,
-    /// this calculates the actual modifiers used for the save.
+    /// Returns the total saving throw modifiers, combining ability modifiers and any proficieny
+    /// bonuses.
     pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> Modifiers {
 
         // essentially just takes the base stats, converts it to the modfiers, then adds
@@ -247,16 +257,17 @@ impl Saves {
         let calc_bonus = |b| if b {proficiency_bonus} else {0};
             
         let base_modifiers = stats.modifiers();
-        Modifiers(Stats {
+        Modifiers{ stats: Stats {
             strength: base_modifiers.strength + calc_bonus(self.strength),
             dexterity: base_modifiers.dexterity + calc_bonus(self.dexterity),
             constitution: base_modifiers.constitution + calc_bonus(self.constitution),
             intelligence: base_modifiers.intelligence + calc_bonus(self.intelligence),
             wisdom: base_modifiers.wisdom + calc_bonus(self.wisdom),
             charisma: base_modifiers.charisma + calc_bonus(self.charisma),
-        })
+        }}
     }
 
+    /// Add a saving throw proficiency from an ability score type
     pub fn add_proficiency_from_type(&mut self, stat_type: StatType) {
        match stat_type {
            StatType::Strength => self.strength = true,
@@ -270,7 +281,7 @@ impl Saves {
 }
 
 
-/// Stores the proficieny/mastery for all skills 
+/// Tracks proficiency and expertise for every skill.
 #[derive(Default)]
 #[derive(Serialize, Deserialize)]
 pub struct SkillProficiencies {
@@ -293,30 +304,49 @@ pub struct SkillProficiencies {
     pub stealth: Skill,
     pub survival: Skill,
 }
-
+ 
+/// Enumerates the different skills a character has. (e.g. Deception, Religion, Medicine)
 #[derive(Serialize, Deserialize)]
 #[derive(PartialEq)]
 #[derive(EnumIter)]
 #[derive(Debug)]
 #[derive(Clone, Copy)]
 pub enum SkillType {
+    /// Uses dexterity
     Acrobatics,
+    /// Uses wisdom
     AnimalHandling,
+    /// Uses intelligence
     Arcana,
+    /// Uses strength
     Athletics,
+    /// Uses charisma
     Deception,
+    /// Uses intelligence
     History,
+    /// Uses wisdom
     Insight,
+    /// Uses charisma
     Intimidation,
+    /// Uses intelligence
     Investigation,
+    /// Uses wisdom
     Medicine,
+    /// Uses intelligence
     Nature,
+    /// Uses wisdom
     Perception,
+    /// Uses charisma
     Performance,
+    /// Uses charisma
     Persuasion,
+    /// Uses intelligence
     Religion,
+    /// Uses dexterity
     SleightOfHand,
+    /// Uses dexterity
     Stealth,
+    /// Uses wisdom
     Survival,
 }
 
@@ -455,21 +485,15 @@ impl PartialEq for SkillModifiers {
 }
 
 impl SkillProficiencies {
+    /// Computes total modifiers for all skills based on ability modifiers and proficiency bonuses.
+    ///
+    /// Proficency in a skill adds proficiency once. Expertise adds the proficency bonus again.
     pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> SkillModifiers{
         // stat modifiers. Shorthanded name since it's a very short lived and highly used var.
         let sm = stats.modifiers();
         // proficiency modifier
         // calculates how much is added due to the proficiency bonus and mastery, if any
-        let pm = |skill: &Skill| {
-            let mut total = 0;
-            if skill.proficiency {
-                total += proficiency_bonus;
-            }
-            if skill.expertise {
-                total += proficiency_bonus;
-            }
-            total
-        };
+        let pm = |s: &Skill| proficiency_bonus * (s.proficiency as isize + s.expertise as isize);
 
         SkillModifiers {
             acrobatics: sm.dexterity + pm(&self.acrobatics),
@@ -494,7 +518,7 @@ impl SkillProficiencies {
     }
 
 
-
+    /// Gets a reference to the skill data for the specified skill type
     pub fn get_from_type(&self, stat_type: SkillType) -> &Skill {
         match stat_type {
             SkillType::Acrobatics => &self.acrobatics,
@@ -518,6 +542,7 @@ impl SkillProficiencies {
         }
     }
 
+    /// Gets a reference to the skill data for the specified skill type
     pub fn get_mut_from_type(&mut self, stat_type: SkillType) -> &mut Skill {
         match stat_type {
             SkillType::Acrobatics => &mut self.acrobatics,
@@ -541,10 +566,6 @@ impl SkillProficiencies {
         }
     }
 
-
-
-
-
     pub fn add_proficiency_from_type(&mut self, stat_type: SkillType) {
         self.get_mut_from_type(stat_type).proficiency = true;
     }
@@ -553,7 +574,7 @@ impl SkillProficiencies {
         self.get_mut_from_type(stat_type).expertise = true;
     }
 
-
+    /// Returns a vector of the skills that have proficiency.
     pub fn skills_with_proficiency(&self) -> Vec<(SkillType, &Skill)> {
         let mut v = vec![];
         for t in SkillType::iter() {

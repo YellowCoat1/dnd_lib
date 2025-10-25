@@ -67,10 +67,7 @@ pub struct Subclass {
 ///
 /// E.g. "A longbow", "Light armor", "A simple weapon".
 /// Can be filled in by the user into the base ([ItemCategory::Item]) type.
-#[derive(Debug)]
-#[derive(Clone)]
-#[derive(PartialEq)]
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ItemCategory {
     Item(Item),
     Weapon(WeaponType),

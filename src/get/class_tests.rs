@@ -8,7 +8,6 @@ use super::{
   feature::get_feature,
 };
    
-#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn wizard_retrieval() {
     let wizard = get_class("wizard")
@@ -68,7 +67,7 @@ fn wizard_spells(class: &Class) {
         .get(5-1)
         .expect("Wizard doesn't have spell slots at level 5");
 
-    let expected_spell_slots = SpellSlots(4, 4, 3, 2, 0, 0, 0, 0, 0, 0);
+    let expected_spell_slots = SpellSlots([4, 4, 3, 2, 0, 0, 0, 0, 0, 0]);
 
     assert_eq!(*level_one_spell_slots, expected_spell_slots, "Wizard has wrong spell slots");
 }

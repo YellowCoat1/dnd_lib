@@ -1,4 +1,10 @@
-use crate::{character::{self, stats::{SkillModifiers, SkillType, Stats}}, get::{get_background, get_class, get_race, get_spell}};
+use crate::{
+    character::{
+        Character,
+        stats::{SkillModifiers, SkillType, Stats}
+    }, 
+    get::{get_background, get_class, get_race}
+};
 
 #[tokio::test]
 async fn level_3_elf_monk() {
@@ -21,7 +27,7 @@ async fn level_3_elf_monk() {
     };
 
     // georg is level 1
-    let mut georg = character::Character::new("gerog".to_string(), &monk, &acolyte, &elf, stats);
+    let mut georg = Character::new("gerog".to_string(), &monk, &acolyte, &elf, stats);
 
     // add class items
     let class_items = &mut georg.classes.get_mut(0).expect("character should have a class").items;

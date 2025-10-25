@@ -4,7 +4,7 @@ use super::json_tools::{ValueError, ValueExt};
 use super::item::get_item;
 use crate::character::features::Feature;
 use crate::character::{
-    background::Background,
+    Background,
     stats::SkillType,
     features::PresentedOption,
 };

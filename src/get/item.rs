@@ -48,7 +48,7 @@ fn weapon(map: &Value) -> Result<Weapon, ValueError> {
 
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
-    let damage_type = DamageType::from_string(&damage_type)
+    let damage_type = damage_type.parse()
         .map_err(|_| ValueError::ValueMismatch("damage type".to_string()))?;
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
@@ -98,7 +98,7 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
                     .ok_or_else(|| ValueError::ValueMismatch("Two handed damage".to_string()))?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
                     .ok_or_else(|| ValueError::ValueMismatch("Two handed damage roll".to_string()))?;
-                properties.versitile = Some(damage);
+                properties.versatile = Some(damage);
             }
             _ => (),
         }

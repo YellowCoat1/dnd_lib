@@ -1,6 +1,4 @@
 //! shared tools for handling incoming json from the api.
-use std::str::FromStr;
-
 use serde_json::{Value, Map, Number};
 
 use crate::character::features::PresentedOption;

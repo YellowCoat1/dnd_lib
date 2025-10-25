@@ -1,7 +1,7 @@
 use super::json_tools::{ValueError, ValueExt};
 use super::get_page::get_raw_json;
 use serde_json::Value;
-use crate::character::race::Subrace;
+use crate::character::Subrace;
 use crate::character::stats::StatType;
 use crate::get::json_tools::parse_string;
 use super::feature::get_feature_from_trait;
