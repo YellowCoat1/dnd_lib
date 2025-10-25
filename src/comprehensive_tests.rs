@@ -104,3 +104,27 @@ async fn level_3_elf_monk() {
     let ac = georg.ac();
     assert_eq!(ac, 15);
 }
+
+#[tokio::test]
+async fn level_5_halfling_rogue() {
+    let halfling_future = get_race("halfling");
+    let rogue_future = get_class("rogue");
+    let acolyte_future = get_background("acolyte");
+
+    let halfling = halfling_future.await.expect("couldn't get halfling");
+    let rogue = rogue_future.await.expect("couldnt't get rogue");
+    let acolyte = acolyte_future.await.expect("couldn't get acolyte");
+
+    // Chosen using standard array
+    let stats = Stats {
+        strength: 10,
+        dexterity: 14,
+        constitution: 13,
+        intelligence: 12,
+        wisdom: 15,
+        charisma: 8,
+    };
+
+    // aaaa is level 1
+    let mut _aaaa = Character::new("gerog".to_string(), &rogue, &acolyte, &halfling, stats);
+}

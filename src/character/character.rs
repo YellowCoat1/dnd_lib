@@ -95,6 +95,9 @@ impl Character {
         new_character.add_item_list(items);
         new_character.hp = new_character.max_hp();
 
+        // add class items
+        new_character.add_class_items();
+
         new_character
     }
 

@@ -371,8 +371,14 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
                     if key == "martial_arts" {
                         let count = o.get("dice_count")
                             .ok_or_else(|| class_specific_err.clone().append(" martial arts dice count"))?;
-                        let value = o.get("dice_count")
+                        let value = o.get("dice_value")
                             .ok_or_else(|| class_specific_err.clone().append(" martial arts dice value"))?;
+                        format!("{}d{}", count, value)
+                    } else if key == "sneak_attack" {
+                        let count = o.get("dice_count")
+                            .ok_or_else(|| class_specific_err.clone().append(" sneak attack dice count"))?;
+                        let value = o.get("dice_value") 
+                            .ok_or_else(|| class_specific_err.clone().append(" sneak attack dice value"))?;
                         format!("{}d{}", count, value)
                     } else {
                         return Err(class_specific_err.clone().append(" unrecognized val obj"));
