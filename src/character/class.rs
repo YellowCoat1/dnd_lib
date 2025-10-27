@@ -17,7 +17,7 @@ pub struct Class {
     pub name: String,
     pub subclasses: Vec<Subclass>,
     /// features are listed by level.
-    pub features: Vec<Vec<PresentedOption<Feature>>>,
+    pub features: [Vec<PresentedOption<Feature>>; 20],
     pub beginning_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     pub saving_throw_proficiencies: Vec<StatType>,
     /// The dice size of a hit die, e.g. 12 is 1d12.
@@ -94,10 +94,9 @@ mod tests {
             effects: vec![],
         };
 
-        let features = vec![
-            vec![PresentedOption::Base(feature_1.clone())],
-            vec![PresentedOption::Base(feature_2.clone())],
-        ];
+        let mut features: [Vec<PresentedOption<Feature>>; 20] = Default::default();
+        features[0] = vec![PresentedOption::Base(feature_1.clone())];
+        features[1] = vec![PresentedOption::Base(feature_2.clone())];
         
         let test_class = Class {
             name: "test class".to_string(),
