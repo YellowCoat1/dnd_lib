@@ -51,7 +51,7 @@ pub trait ValueExt {
     fn get_usize(&self, key: &str) -> Result<usize, ValueError>;
     fn get_bool(&self, key: &str) -> Result<bool, ValueError>;
     fn get_map(&self, key: &str) -> Result<&Value, ValueError>;
-    fn get_array(&self, key: &str) -> Result<&Vec<Value>, ValueError>;
+    fn get_array(&self, key: &str) -> Result<&[Value], ValueError>;
 }
 
 impl ValueExt for Value {
@@ -89,10 +89,11 @@ impl ValueExt for Value {
 
     }
 
-    fn get_array(&self, key: &str) -> Result<&Vec<Value>, ValueError> {
+    fn get_array(&self, key: &str) -> Result<&[Value], ValueError> {
         self.get(key)
             .and_then(|v| v.as_array())
             .ok_or_else(|| ValueError::ValueMismatch(key.to_string()))
+            .map(|v| v.as_slice())
     }
 }
 
@@ -102,7 +103,7 @@ pub fn parse_string(s: &str) -> String {
     s.to_lowercase().replace(" ", "-")
 }
 
-pub fn string_array(arr: &Vec<Value>) -> Result<Vec<String>, ValueError> {
+pub fn string_array(arr: &[Value]) -> Result<Vec<String>, ValueError> {
     arr.iter()
         .map(|v| match v {
             Value::String(s) => Ok(s.to_string()),
@@ -113,7 +114,7 @@ pub fn string_array(arr: &Vec<Value>) -> Result<Vec<String>, ValueError> {
 pub fn object_index_value<'a>(object: &'a Value, index_name: &str) -> Result<&'a String, ()> {
     match &object[index_name] {
         Value::String(s) => Ok(s),
-        _ => return Err(()),
+        _ => Err(()),
     }
 }
 
@@ -135,7 +136,8 @@ pub fn unwrap_number(num: &Number) -> usize {
 }
 
 // description, count, value_choices
-pub fn choice<'a>(map_value: &'a Value) -> Result<(String, usize, PresentedOption<&'a Map<String, Value>>), ()> {
+type NameCountMap<'a> = (String, usize, PresentedOption<&'a Map<String, Value>>);
+pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, ()> {
     let map = match map_value {
         Value::Object(o) => o,
         _ => return Err(()),
@@ -156,7 +158,7 @@ pub fn choice<'a>(map_value: &'a Value) -> Result<(String, usize, PresentedOptio
         _ => return Err(()),
     };
 
-    let value_choices = process_bare_choice(&choice_arr)?;
+    let value_choices = process_bare_choice(choice_arr)?;
 
     Ok((description, count, value_choices))
 }
@@ -185,7 +187,7 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
                 Some(Value::Array(a)) => a,
                 _ => return Err(())
             };
-            if items_arr.len() < 1 {return Err(())};
+            if items_arr.is_empty() {return Err(())};
             return process_bare_choice(&items_arr[0]);
         }
         return Ok(PresentedOption::Base(choice_array));
@@ -203,7 +205,7 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
     if let Some(Value::Array(a)) = choice_array.get("options") {
         let assembled_choice: Vec<PresentedOption<&Map<String, Value>>> = a
             .iter()
-            .map(|v| process_bare_choice(v))
+            .map(process_bare_choice)
             .collect::<Result< Vec<PresentedOption<&Map<String, Value>>>, ()>>()?;
         return Ok(PresentedOption::Choice(assembled_choice));
     };

@@ -8,7 +8,7 @@ use super::{
 
 /// A spell definition, either manually created or loaded from the API.
 ///
-//// `damage` represents spell damage scaling by level:
+/// `damage` represents spell damage scaling by level:
 /// - Outer index = spell level (starting from base level)
 /// - Inner index = multiple damage rolls per level (e.g., multi-damage spells like Chromatic Orb)// so spell.damage.unwrap()\[0\] returns it's regular damage.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -98,7 +98,7 @@ impl FromStr for School {
             "illusion" => Ok(School::Illusion),
             "necromancy" => Ok(School::Necromancy),
             "transmutation" => Ok(School::Transmutation),
-            _ => return Err(()),
+            _ => Err(()),
         }
     }
 }

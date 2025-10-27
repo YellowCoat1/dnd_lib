@@ -56,7 +56,7 @@ pub async fn get_race_raw(index_name: String) -> Result<Race, ValueError> {
 
     let subrace_array = race_json.get_array("subraces")?;
     let subraces_raw = process_subraces(subrace_array).await?;
-    let subraces = PresentedOption::Choice(subraces_raw.into_iter().map(|v| PresentedOption::Base(v)).collect());
+    let subraces = PresentedOption::Choice(subraces_raw.into_iter().map(PresentedOption::Base).collect());
     Ok(Race {
         name,
         size,
@@ -68,7 +68,7 @@ pub async fn get_race_raw(index_name: String) -> Result<Race, ValueError> {
     })
 }
 
-fn process_languages(arr: &Vec<Value>) -> Result<Vec<String>, ValueError> {
+fn process_languages(arr: &[Value]) -> Result<Vec<String>, ValueError> {
     let mut languages = vec![];
 
     for language  in arr.iter() {
@@ -79,7 +79,7 @@ fn process_languages(arr: &Vec<Value>) -> Result<Vec<String>, ValueError> {
     Ok(languages)
 }
 
-async fn process_subraces(arr: &Vec<Value>) -> Result<Vec<Subrace>, ValueError> {
+async fn process_subraces(arr: &[Value]) -> Result<Vec<Subrace>, ValueError> {
     let mut subraces = Vec::with_capacity(arr.len());
     for val in arr {
         let name = val.get_str("index")?;

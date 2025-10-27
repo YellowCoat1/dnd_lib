@@ -105,17 +105,17 @@ fn saves(json: &Value) -> Result<Vec<StatType>, ValueError> {
         .ok_or_else(|| ValueError::ValueMismatch("saving throws top index".to_string()))?;
 
     array_index_values(saving_throws, "name")
-        .unwrap_or(vec![])
+        .unwrap_or_default()
         .into_iter()
         .map(|s| StatType::from_shorthand(s.as_str()))
-        .map(|s| s.map_err(|_| ValueError::ValueMismatch("stat types".to_string())))
+        .map(|s| s.ok_or_else(|| ValueError::ValueMismatch("stat types".to_string())))
         .collect::<Result<Vec<_>, _>>()
 }
 
 fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>), ValueError> {
     let proficiency_choice_array = map.get_array("proficiency_choices")?;
 
-    let first_choice = proficiency_choice_array.get(0)
+    let first_choice = proficiency_choice_array.first()
         .ok_or_else(|| ValueError::ValueMismatch("First proficiency choice".to_string()))?;
 
     let proficiency_choices_err = ValueError::ValueMismatch("Proficiency choices".to_string());
@@ -128,23 +128,21 @@ fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>
     // converts from json to skill types
     let proficiency_options  =  options.map(|val| {
         let val = val.get("item")
-            .map(|v| v.as_object())
-            .flatten()
+            .and_then(|v| v.as_object())
             .ok_or_else(|| proficiency_choices_err.clone().prepend("item for"))?;
 
         let name = val.get("name")
-            .map(|v| v.as_str())
-            .flatten()
+            .and_then(|v| v.as_str())
             .ok_or_else(|| proficiency_choices_err.clone().prepend("name for "))?;
 
         let proficiency_name = name.get(7..)
             .ok_or_else(|| proficiency_choices_err.clone().prepend("name for "))?;
 
         SkillType::from_name(proficiency_name)
-            .map_err(|_| proficiency_choices_err.clone().prepend("skill type for "))
+            .ok_or_else(|| proficiency_choices_err.clone().prepend("skill type for "))
     }).collect_result()?;
 
-    return Ok((count, proficiency_options))
+    Ok((count, proficiency_options))
 }
 
 async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, ValueError>  {
@@ -182,9 +180,8 @@ async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<V
     let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, ValueError>> = map_option.map_async(|m| async move {
 
         let count = m.get("count")
-            .map(|v| v.as_number())
-            .flatten()
-            .map(|v| unwrap_number(v))
+            .and_then(|v| v.as_number())
+            .map(unwrap_number)
             .unwrap_or(1);
 
         // if its an equipment category rather than an item,
@@ -207,7 +204,7 @@ async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<V
         Ok(vec![(ItemCategory::Item(item), count)])
     }).await;
 
-    Ok(v.collect_result()?)
+    v.collect_result()
 }
 
 
@@ -235,7 +232,7 @@ async fn process_equipment(val: &Value) -> Result<Item, ValueError> {
     get_item(&index).await
 }
 
-async fn class_features(levels_arr: &Vec<Value>)  -> Result<Vec<Vec<PresentedOption<Feature>>>, ()> {
+async fn class_features(levels_arr: &[Value])  -> Result<Vec<Vec<PresentedOption<Feature>>>, ()> {
     let mut levels_vec = Vec::with_capacity(20);
 
     for level in levels_arr.iter() {
@@ -308,7 +305,8 @@ fn spellcasting_type(name: &str) -> Option<SpellCasterType> {
     }
 }
 
-fn spell_slots(levels_arr: &Vec<Value>) -> Result<Option<([SpellSlots; 20], [usize; 20])>, ()> {
+type SlotsAndCantrips = ([SpellSlots; 20], [usize; 20]);
+fn spell_slots(levels_arr: &Vec<Value>) -> Result<Option<SlotsAndCantrips>, ()> {
     let mut spell_slots_vec = Vec::with_capacity(20);
 
     for level_val in levels_arr {
@@ -345,7 +343,8 @@ fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, ()> {
         .get_map("spellcasting_ability").map_err(|_| ())?
         .get_str("index").map_err(|_| ())?;
 
-    let ability_score = StatType::from_shorthand(&ability_score_string)?;
+    let ability_score = StatType::from_shorthand(&ability_score_string)
+        .ok_or(())?;
 
     Ok(Some(ability_score))
 }
@@ -367,7 +366,7 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
 
     let class_specific_err = ValueError::ValueMismatch("class specific level features".to_string());
 
-    let level_1 = levels.get(0)
+    let level_1 = levels.first()
         .ok_or_else(||ValueError::ValueMismatch("levels".to_string()))?;
     let level_1_class_specific = level_1.get_map("class_specific")?;
     let level_1_class_specific_map = match level_1_class_specific {
@@ -375,7 +374,7 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
         _ => return Err(class_specific_err.clone().append(" map"))
     };
     
-    for key in level_1_class_specific_map.keys().cloned() {
+    for key in level_1_class_specific_map.keys() {
         map.insert(key.replace("_", " "), vec![]);
     }
 
@@ -431,7 +430,7 @@ fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Val
     let name = json.get_str("index")
         .map_err(|_| ValueError::ValueMismatch("Couldn't get name".to_string()))?;
     let casting_ability = spellcasting_ability(&json).map_err(|_| ValueError::ValueMismatch("spellcasting ability".to_string()))?;
-    let slots_per_level = spell_slots(&levels_arr).ok().flatten();
+    let slots_per_level = spell_slots(levels_arr).ok().flatten();
     let caster_type_option: Option<SpellCasterType> = spellcasting_type(name.as_ref());
 
 
@@ -460,7 +459,7 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
     let subclasses: Vec<Subclass> = subclasses(&json).await
         .map_err(|v| v.prepend("Subclass "))?;
 
-    let saving_throw_proficiencies: Vec<StatType> = saves(&json).unwrap_or(vec![]);
+    let saving_throw_proficiencies: Vec<StatType> = saves(&json).unwrap_or_default();
     let equipment_proficiencies = equipment_proficiencies(&json)?;
     let skill_proficiency_choices: (usize, PresentedOption<SkillType>) = proficiency_choices(&json)?;
     let beginning_items = items(&json).await
@@ -469,12 +468,9 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
     let levels_arr = levels.as_array()
         .ok_or_else(|| ValueError::ValueMismatch("levels array".to_string()))?;
     
-    let features = match class_features(&levels_arr).await {
-        Ok(v) => v,
-        _ => vec![],
-    };
+    let features = class_features(levels_arr).await.unwrap_or_else(|_| vec![]);
 
-    let class_specific_leveled = class_specific(&levels_arr)?;
+    let class_specific_leveled = class_specific(levels_arr)?;
     
     let spellcasting = process_spellcasting(json, levels_arr, spells)?;
 

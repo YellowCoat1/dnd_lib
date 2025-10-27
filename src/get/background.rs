@@ -17,8 +17,8 @@ pub async fn get_background(name: &str) -> Result<Background, ValueError> {
     let proficiencies = json.get_array("starting_proficiencies")?
         .iter().map(|v| {
             SkillType::from_name(&v.get_str("name")?[7..])
-                .map(|u|  PresentedOption::Base(u))
-                .map_err(|_| ValueError::ValueMismatch(String::from("starting proficiency")))
+                .map(PresentedOption::Base)
+                .ok_or_else(|| ValueError::ValueMismatch(String::from("starting proficiency")))
         }).collect::<Result<Vec<PresentedOption<SkillType>>, ValueError>>()?;
 
     let equipment_array = json.get_array("starting_equipment")?;

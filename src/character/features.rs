@@ -29,7 +29,7 @@ impl PartialEq for Feature {
 
 /// An ability score increase for a character, usually granted at certain class levels.
 ///
-//// Players can choose to:
+/// Players can choose to:
 /// - Increase two ability scores by +1 each
 /// - Increase one ability score by +2
 /// - Optionally, take a bonus feature.

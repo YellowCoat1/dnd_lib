@@ -197,15 +197,15 @@ impl <'a>StatType {
     /// if you want to get a StatType from it's full name, just take the first three characters.
     ///
     /// Returns the associated [StatType] of a 3 character string, or otherwise returns an `Err(())`.
-    pub fn from_shorthand(shorthand: &str) -> Result<StatType, ()> {
+    pub fn from_shorthand(shorthand: &str) -> Option<StatType> {
         match shorthand.to_lowercase().as_str() {
-            "str" => Ok(StatType::Strength),
-            "dex" => Ok(StatType::Dexterity),
-            "con" => Ok(StatType::Constitution),
-            "int" => Ok(StatType::Intelligence),
-            "wis" => Ok(StatType::Wisdom),
-            "cha" => Ok(StatType::Charisma),
-            _ => Err(())
+            "str" => Some(StatType::Strength),
+            "dex" => Some(StatType::Dexterity),
+            "con" => Some(StatType::Constitution),
+            "int" => Some(StatType::Intelligence),
+            "wis" => Some(StatType::Wisdom),
+            "cha" => Some(StatType::Charisma),
+            _ => None
         }
     }
 
@@ -353,27 +353,27 @@ pub enum SkillType {
 
 impl SkillType {
     // converts from string name to skill type. non case sensitive.
-    pub fn from_name(name: &str) -> Result<SkillType, ()> {
+    pub fn from_name(name: &str) -> Option<SkillType> {
         match name.to_lowercase().as_str() {
-            "acrobatics" => Ok(SkillType::Acrobatics),
-            "animal handling" => Ok(SkillType::AnimalHandling),
-            "arcana" => Ok(SkillType::Arcana),
-            "athletics" => Ok(SkillType::Athletics),
-            "deception" => Ok(SkillType::Deception),
-            "history" => Ok(SkillType::History),
-            "insight" => Ok(SkillType::Insight),
-            "intimidation" => Ok(SkillType::Intimidation),
-            "investigation" => Ok(SkillType::Investigation),
-            "medicine" => Ok(SkillType::Medicine),
-            "nature" => Ok(SkillType::Nature),
-            "perception" => Ok(SkillType::Perception),
-            "performance" => Ok(SkillType::Performance),
-            "persuasion" => Ok(SkillType::Persuasion),
-            "religion" => Ok(SkillType::Religion),
-            "sleight of hand" => Ok(SkillType::SleightOfHand),
-            "stealth" => Ok(SkillType::Stealth),
-            "survival" => Ok(SkillType::Survival),
-            _ => Err(())
+            "acrobatics" => Some(SkillType::Acrobatics),
+            "animal handling" => Some(SkillType::AnimalHandling),
+            "arcana" => Some(SkillType::Arcana),
+            "athletics" => Some(SkillType::Athletics),
+            "deception" => Some(SkillType::Deception),
+            "history" => Some(SkillType::History),
+            "insight" => Some(SkillType::Insight),
+            "intimidation" => Some(SkillType::Intimidation),
+            "investigation" => Some(SkillType::Investigation),
+            "medicine" => Some(SkillType::Medicine),
+            "nature" => Some(SkillType::Nature),
+            "perception" => Some(SkillType::Perception),
+            "performance" => Some(SkillType::Performance),
+            "persuasion" => Some(SkillType::Persuasion),
+            "religion" => Some(SkillType::Religion),
+            "sleight of hand" => Some(SkillType::SleightOfHand),
+            "stealth" => Some(SkillType::Stealth),
+            "survival" => Some(SkillType::Survival),
+            _ => None,
         }
     }
 }

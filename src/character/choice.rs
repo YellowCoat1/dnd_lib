@@ -17,7 +17,7 @@ pub enum PresentedOption<T> {
     Choice(Vec<PresentedOption<T>>),
 }
 
-impl<'a, T> PresentedOption<T> {
+impl<T> PresentedOption<T> {
 
     /// Returns a reference to the sub-choice at the index, if it exists.
     /// - If this is a [PresentedOption::Base], returns a reference to itself.
@@ -35,7 +35,7 @@ impl<'a, T> PresentedOption<T> {
     /// ```
     pub fn choose(&self, index: usize) -> Option<&PresentedOption<T>> {
         match self {
-            PresentedOption::Base(_) => Some(&self),
+            PresentedOption::Base(_) => Some(self),
             PresentedOption::Choice(v) => v.get(index),
         }
     }
@@ -80,10 +80,10 @@ impl<'a, T> PresentedOption<T> {
     /// Gets an array of the choices.
     ///
     /// Returns an error if it's a [PresentedOption::Base].
-    pub fn choices(&self) -> Result<&[PresentedOption<T>], ()> {
+    pub fn choices(&self) -> Option<&[PresentedOption<T>]> {
         match self {
-            PresentedOption::Base(_) => return Err(()),
-            PresentedOption::Choice(v) => Ok(v.as_slice()),
+            PresentedOption::Base(_) => None,
+            PresentedOption::Choice(v) => Some(v.as_slice()),
         }
     }
 

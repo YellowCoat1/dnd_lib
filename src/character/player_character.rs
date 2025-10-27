@@ -133,7 +133,7 @@ impl Character {
         self.add_item_list(items);
     }
 
-    fn selected_items(items: &Vec<(ItemCategory, usize)>) -> Vec<(Item, usize)> {
+    fn selected_items(items: &[(ItemCategory, usize)]) -> Vec<(Item, usize)> {
         items.iter().filter_map(|v| if let ItemCategory::Item(i) = &v.0 {Some((i.clone(), v.1))} else {None}).collect()
     }
 
@@ -165,7 +165,7 @@ impl Character {
     /// This takes the character's base stats, adds any increase from racial bonuses, and finally
     /// adds on any bonus from class ability score increases.
     pub fn stats(&self) -> Stats {
-        let mut new_stats = self.base_stats.clone();
+        let mut new_stats = self.base_stats;
 
         for (race_stat_change, amount) in self.race.ability_bonuses.iter() {
             *new_stats.get_stat_type_mut(race_stat_change) += amount;
@@ -183,8 +183,7 @@ impl Character {
         let feature_effects = self.class_features()
             .into_iter()
             .chain(self.bonus_features.iter())
-            .map(|v| &v.effects)
-            .flatten();
+            .flat_map(|v| &v.effects);
 
         for feature in feature_effects {
             match feature {
@@ -213,10 +212,10 @@ impl Character {
         let mut base = Saves::default();
 
         for save in self.class_saving_throw_proficiencies.iter() {
-            base.add_proficiency_from_type(save.clone());
+            base.add_proficiency_from_type(*save);
         }
 
-        for effect in self.total_features().into_iter().map(|t| t.effects.iter()).flatten() {
+        for effect in self.total_features().into_iter().flat_map(|t| t.effects.iter()) {
             if let FeatureEffect::AddSaveProficiency(s) = effect {
                 base.add_proficiency_from_type(*s);
             }
@@ -229,9 +228,9 @@ impl Character {
     pub fn save_mods(&self) -> Modifiers {
         let mut modifiers = self.saves().modifiers(&self.base_stats, self.proficiency_bonus());
 
-        for effect in self.total_features().into_iter().map(|t| t.effects.iter()).flatten() {
+        for effect in self.total_features().into_iter().flat_map(|t| t.effects.iter()) {
             if let FeatureEffect::AddSaveModifier(t, m) = effect {
-                *modifiers.get_stat_type_mut(&t) += m;
+                *modifiers.get_stat_type_mut(t) += m;
             }
         }
 
@@ -247,11 +246,11 @@ impl Character {
         let background_skills: Vec<&SkillType> = chosen(&self.background.proficiencies);
 
         for skill in chosen_class_skills.iter().chain(background_skills.iter()) {
-            let cloned_skill = (*skill).clone();
+            let cloned_skill = *(*skill);
             base.add_proficiency_from_type(cloned_skill);
         }
 
-        for effect in self.total_features().iter().map(|t| t.effects.iter()).flatten() { 
+        for effect in self.total_features().iter().flat_map(|t| t.effects.iter()) { 
             match effect {
                 FeatureEffect::AddSkillProficiency(s) => base.add_proficiency_from_type(*s),
                 FeatureEffect::Expertise([s1, s2]) => {
@@ -275,11 +274,8 @@ impl Character {
     pub fn skill_modifiers(&self) -> SkillModifiers {
         let mut modifiers = self.skills().modifiers(&self.stats(), self.proficiency_bonus());
 
-        for effect in self.total_features().iter().map(|t| t.effects.iter()).flatten() {
-            match effect {
-                FeatureEffect::AddSkillModifier(t, n) => *modifiers.get_skill_type_mut(*t) += *n,
-                _ => (),
-            }
+        for effect in self.total_features().iter().flat_map(|t| t.effects.iter()) {
+            if let FeatureEffect::AddSkillModifier(t, n) = effect { *modifiers.get_skill_type_mut(*t) += *n }
         }
 
         modifiers
@@ -331,7 +327,7 @@ impl Character {
             .spellcasting.as_ref()?
             .0
             .spellcasting_ability;
-        let spellcasting_mod = modifiers.get_stat_type(&spellcasting_ability).clone();
+        let spellcasting_mod = *modifiers.get_stat_type(spellcasting_ability);
 
         let spell_save_dc = 8 + self.proficiency_bonus() + spellcasting_mod;
         let spell_attack_mod = self.proficiency_bonus() + spellcasting_mod;
@@ -347,10 +343,9 @@ impl Character {
         self.classes.iter()
             .enumerate()
             .filter_map(|(n, v)| v.spellcasting.as_ref().map(|v| (&v.1, n)))
-            .map(|(v, n)| {
-                v.iter().zip(vec![n; v.len()].into_iter())
+            .flat_map(|(v, n)| {
+                v.iter().zip(vec![n; v.len()])
             })
-            .flatten()
             .collect()
     }
 
@@ -409,12 +404,11 @@ impl Character {
     /// Note that this only decrements the spell slot at the spell's level.
     pub fn cast<T: Castable>(&mut self, casted: T, spell_list: Option<bool>) -> bool {
         
-        if let None = spell_list {
+        if spell_list.is_none() {
             let v = self.classes
                 .iter()
-                .find(|c| matches!(c.spellcasting, Some(_)))
-                .map(|v| v.spellcasting.as_ref())
-                .flatten()
+                .find(|c| c.spellcasting.is_some())
+                .and_then(|v| v.spellcasting.as_ref())
                 .map(|v| v.0.spellcaster_type);
 
             match v {
@@ -422,13 +416,14 @@ impl Character {
                 Some(SpellCasterType::Warlock) => self.cast_with_pact(casted.level()),
                 Some(_) => self.cast_with_slots(casted.level()),
             }
-        } else {
-            let b = spell_list.unwrap();
+        } else if let Some(b) = spell_list {
             if b {
                 self.cast_with_pact(casted.level())
             } else {
                 self.cast_with_slots(casted.level())
             }
+        } else {
+            false
         }
         
     }
@@ -613,14 +608,14 @@ impl Character {
     /// This finds the hp of the character, assuming that you took the average value.
     pub fn max_hp(&self) -> usize {
         let level = self.level();
-        let hit_die = self.classes.get(0).expect("Character should have a class").hit_die;
+        let hit_die = self.classes.first().expect("Character should have a class").hit_die;
         let hit_die_avg = (((hit_die as f32)+1.0)/2.0).ceil() as usize;
         let con = self.stats().modifiers().constitution.max(1) as usize;
 
         let mut hp = hit_die + con + (level-1)*(hit_die_avg + con);
 
         // some features 
-        for effect in self.race_features().iter().map(|v| v.effects.iter()).flatten() {
+        for effect in self.race_features().iter().flat_map(|v| v.effects.iter()) {
             if let FeatureEffect::LeveledHpIncrease = effect {
                 hp += level;
             }
@@ -636,11 +631,7 @@ impl Character {
         match o {
             Some(s) => {
                 self.hp = s;
-                if self.hp != 0 {
-                    false
-                } else {
-                    true
-                }
+                self.hp == 0
             }
             None => {
                 self.hp = 0;
@@ -677,13 +668,13 @@ impl Character {
     /// Level up multiple times. Same as calling [Character::level_up] repeatedly.
     pub fn level_up_multiple(&mut self, class: &Class, times: usize) -> Option<usize> {
         if times <= 1 {
-            return self.level_up(&class)
+            return self.level_up(class)
         }
         for _ in 0..times-1 {
-            self.level_up(&class)?;
+            self.level_up(class)?;
         }
 
-        self.level_up(&class)
+        self.level_up(class)
     }
 
     /// Level up until the total level (not class level) is equal to the given number.
@@ -706,7 +697,7 @@ impl Character {
     pub fn equipment_proficiencies(&self) -> EquipmentProficiencies {
         let feature_effects = self.race_features()
             .into_iter()
-            .chain(self.subrace_features().into_iter())
+            .chain(self.subrace_features())
             .chain(self.bonus_features.iter())
             .flat_map(|v| v.effects.iter());
 
@@ -790,7 +781,7 @@ impl Character {
                 _ => continue,
             };
 
-            let class_spell_actions =  spells.into_iter() 
+            let class_spell_actions =  spells.iter() 
                 .filter_map(|s| spell_actions(s, attack_mod))
                 .flat_map(|v| v.into_iter())
                 .collect::<Vec<_>>();
@@ -804,17 +795,17 @@ impl Character {
 }
 
 fn spell_actions(spell: &Spell, spell_attack_mod: isize) -> Option<Vec<SpellAction>>  {
-    Some(spell.damage.as_ref()?.into_iter()
+    Some(spell.damage.as_ref()?.iter()
         .enumerate()
         .flat_map(|(n, dv)| {
-            dv.into_iter().map(move |d| (n + spell.level, d))
+            dv.iter().map(move |d| (n + spell.level, d))
         })
         .map(|(spell_level, damage)| {
             SpellAction {
                 spell_level: spell_level as isize,
                 name: spell.name.clone(), 
                 spell_attack_mod, 
-                damage_roll: damage.clone(), 
+                damage_roll: *damage, 
             }
         })
         .collect())
@@ -856,7 +847,7 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
     if light {
         attacks.push(WeaponAction {
             name: name.clone(),
-            attack_bonus:  attack_bonus,
+            attack_bonus,
             damage_roll,
             damage_roll_bonus: modifier,
             two_handed: false,
@@ -930,9 +921,9 @@ impl SpeccedClass {
 
         SpeccedClass {
             class: class.name.clone(),
-            level: level,
-            current_class_features: class.features[0..level].iter().cloned().collect(),
-            items: class.beginning_items.iter().cloned().collect(),
+            level,
+            current_class_features: class.features.get(0..level).expect("class doesn't have proper features!").to_vec(),
+            items: class.beginning_items.to_vec(),
             subclass,
             spellcasting: class.spellcasting.clone().map(|v| (v, vec![])),
             hit_die: class.hit_die,
@@ -942,17 +933,15 @@ impl SpeccedClass {
     /// Get the total class's features.
     fn get_features(&self) -> Vec<&Feature> {
         self.current_class_features.iter()
-            .map(|level_features| chosen(level_features))
-            .flatten()
+            .flat_map(|level_features| chosen(level_features))
             .collect()
     }
 
     fn get_subclass_features(&self) -> Option<Vec<&Feature>> {
         let subclass = self.subclass.is_base()?;
         let features: Vec<_>  = subclass
-            .features[0..self.level as usize].iter()
-            .map(|v| v.iter())
-            .flatten()
+            .features[0..self.level].iter()
+            .flat_map(|v| v.iter())
             .filter_map(|v| v.is_base())
             .collect();
         Some(features)

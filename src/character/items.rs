@@ -138,13 +138,13 @@ pub enum WeaponType {
 /// Takes equipment proficiencies and a weapon type, returns if the proficiencies has that weapon
 /// type.
 pub fn is_proficient_with(weapon: &WeaponType, proficiencies: &EquipmentProficiencies) -> bool {
-    match (proficiencies.simple_weapons, proficiencies.martial_weapons, weapon) {
-        (_, true, WeaponType::Martial) => true,
-        (_, true, WeaponType::MartialRanged) => true,
-        (true, _, WeaponType::Simple) => true,
-        (true, _, WeaponType::SimpleRanged) => true,
-        _ => false,
-    }
+    matches!(
+        (proficiencies.simple_weapons, proficiencies.martial_weapons, weapon), 
+        (_, true, WeaponType::Martial) | 
+        (_, true, WeaponType::MartialRanged) | 
+        (true, _, WeaponType::Simple) | 
+        (true, _, WeaponType::SimpleRanged)
+    )
 }
 
 

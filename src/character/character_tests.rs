@@ -1,6 +1,6 @@
 use crate::get::{get_class, get_background, get_race};
 use super::stats::Stats;
-use super::character::Character;
+use super::player_character::Character;
 
 //#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
