@@ -108,17 +108,99 @@ impl FromStr for School {
 ///
 /// 0th levels is cantrips, so instead of spell slots, it's cantrips know.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct SpellSlots(pub [usize; 10]);
+pub struct SpellSlots(pub [usize; 9]);
+
+/// Represents pact magic spell slots.
+///
+/// In D&D, a warlock's pact magic behaves differently than typical spell slots, and when
+/// multiclassing they are counted differently. For typical spell slots, see [SpellSlots]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PactSlots {
+    pub num: usize,
+    pub level: usize,
+}
+
+impl From<(usize, usize)> for PactSlots {
+    fn from(value: (usize, usize)) -> Self {
+        PactSlots {
+            num: value.0,
+            level: value.1,
+        }
+    }
+}
 
 /// Spellcasting data for a class, including slots, ability, and spell lists.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Spellcasting {
     /// The spell slots for each class level
-    pub spell_slots_per_level: Vec<SpellSlots>,
+    pub spell_slots_per_level: [SpellSlots; 20],
+    /// How many cantrips for every level
+    pub cantrips_per_level: [usize; 20],
     /// The ability type used for spellcasting (e.g. Intelligence, Wisdom, Charisma)
     pub spellcasting_ability: StatType,
-    /// The list of spells availible for each spell level (0-9)
-    pub spell_list: [Vec<String>; 10]
+    /// The list of spells availible for each spell level (1-9)
+    pub spell_list: [Vec<String>; 10],
+    /// Cantrips availible per level
+    pub spellcaster_type: SpellCasterType,
 }
 
+/// Type of spellcaster (full caster, half caster, quarter-caster)
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum SpellCasterType {
+    Full,
+    Half,
+    Quarter,
+    /// Warlocks get a special case, since they have a seperate spell slots list.
+    Warlock,
+}
 
+/// The spell slots for every level of a full spell caster.
+pub const CASTER_SLOTS: [[usize; 9]; 20] = [
+    [2, 0, 0, 0, 0, 0, 0, 0, 0],
+    [3, 0, 0, 0, 0, 0, 0, 0, 0],
+    [4, 2, 0, 0, 0, 0, 0, 0, 0],
+    [4, 3, 0, 0, 0, 0, 0, 0, 0],
+    [4, 3, 2, 0, 0, 0, 0, 0, 0],
+    [4, 3, 3, 0, 0, 0, 0, 0, 0],
+    [4, 3, 3, 1, 0, 0, 0, 0, 0],
+    [4, 3, 3, 2, 0, 0, 0, 0, 0],
+    [4, 3, 3, 3, 1, 0, 0, 0, 0],
+    [4, 3, 3, 3, 2, 0, 0, 0, 0],
+    [4, 3, 3, 3, 2, 1, 0, 0, 0],
+    [4, 3, 3, 3, 2, 1, 0, 0, 0],
+    [4, 3, 3, 3, 2, 1, 1, 0, 0],
+    [4, 3, 3, 3, 2, 1, 1, 0, 0],
+    [4, 3, 3, 3, 2, 1, 1, 1, 0],
+    [4, 3, 3, 3, 2, 1, 1, 1, 0],
+    [4, 3, 3, 3, 2, 1, 1, 1, 1],
+    [4, 3, 3, 3, 3, 1, 1, 1, 1],
+    [4, 3, 3, 3, 3, 2, 1, 1, 1],
+    [4, 3, 3, 3, 3, 2, 2, 1, 1],
+];
+    
+/// Warlock pact casting.
+///
+/// Lists by level. The first in the tuple is the amount of spell slots, and the second is the spell
+/// level.
+pub const PACT_CASTING_SLOTS: [(usize, usize); 20] = [
+    (1, 1),
+    (2, 1),
+    (2, 2),
+    (2, 2),
+    (2, 3),
+    (2, 3),
+    (2, 4),
+    (2, 4),
+    (2, 5),
+    (2, 5),
+    (3, 5),
+    (3, 5),
+    (3, 5),
+    (3, 5),
+    (3, 5),
+    (3, 5),
+    (4, 5),
+    (4, 5),
+    (4, 5),
+    (4, 5),
+];

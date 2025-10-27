@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde_json::{Value, Map};
-use crate::get::{
+use crate::{character::spells::SpellCasterType, get::{
     feature::get_feature, 
     get_page::get_raw_json, 
     item::get_item, 
@@ -8,7 +8,7 @@ use crate::get::{
         array_index_values, choice, parse_string, unwrap_number, ValueError, ValueExt
     }, 
     subclass::get_subclass,
-};
+}};
 use crate::character::{
     stats::{StatType, SkillType, EquipmentProficiencies},
     items::{Item, ItemType, WeaponType},
@@ -276,7 +276,7 @@ async fn get_features_from_class_level(level: &Value) -> Result<Vec<PresentedOpt
     Ok(features_vec)
 }
 
-fn spell_slots_from_map(map: &Map<String, Value>) -> Result<SpellSlots, ()>{
+fn spell_slots_from_map(map: &Map<String, Value>) -> Result<(SpellSlots, usize), ()>{
     let slot_vals = map.values().map(|v| match v {
         Value::Number(n) => Ok(unwrap_number(n)),
         _ => Err(())
@@ -286,14 +286,29 @@ fn spell_slots_from_map(map: &Map<String, Value>) -> Result<SpellSlots, ()>{
         return Err(());
     }
 
-    let spell_slots = SpellSlots([slot_vals[0], slot_vals[1], slot_vals[2], slot_vals[3], slot_vals[4], slot_vals[5], slot_vals[6],
+    let spell_slots = SpellSlots([slot_vals[1], slot_vals[2], slot_vals[3], slot_vals[4], slot_vals[5], slot_vals[6],
         slot_vals[7], slot_vals[8], slot_vals[9]]);
 
 
-    Ok(spell_slots)
+    Ok((spell_slots, slot_vals[0]))
 }
 
-fn spell_slots(levels_arr: &Vec<Value>) -> Result<Option<Vec<SpellSlots>>, ()> {
+fn spellcasting_type(name: &str) -> Option<SpellCasterType> {
+    match name {
+        "wizard" => Some(SpellCasterType::Full),
+        "cleric" => Some(SpellCasterType::Full),
+        "druid" => Some(SpellCasterType::Full),
+        "sorcerer" => Some(SpellCasterType::Full),
+        "bard" => Some(SpellCasterType::Full),
+        "paladin" => Some(SpellCasterType::Half),
+        "ranger" => Some(SpellCasterType::Half),
+        "artificer" => Some(SpellCasterType::Half),
+        "warlock" => Some(SpellCasterType::Warlock),
+        _ => None,
+    }
+}
+
+fn spell_slots(levels_arr: &Vec<Value>) -> Result<Option<([SpellSlots; 20], [usize; 20])>, ()> {
     let mut spell_slots_vec = Vec::with_capacity(20);
 
     for level_val in levels_arr {
@@ -310,8 +325,15 @@ fn spell_slots(levels_arr: &Vec<Value>) -> Result<Option<Vec<SpellSlots>>, ()> {
         let spell_slots = spell_slots_from_map(spellcasting_map)?;
         spell_slots_vec.push(spell_slots);
     }
+    let (spell_slots, cantrip_slots): (Vec<_>, Vec<_>) = spell_slots_vec.into_iter().unzip();
 
-    Ok(Some(spell_slots_vec))
+    let spell_slots = spell_slots.try_into()
+        .map_err(|_| ())?;
+    let cantrip_slots = cantrip_slots.try_into()
+        .map_err(|_| ())?;
+    
+
+    Ok(Some((spell_slots, cantrip_slots)))
 }
 
 fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, ()> {
@@ -328,7 +350,7 @@ fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, ()> {
     Ok(Some(ability_score))
 }
 
-fn spell_list(spells: Value) -> Result<[Vec<String>; 10], ValueError> {
+fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], ValueError> {
     let spells_input_array = spells.get_array("results")?;
     let mut spells_stored_array: [Vec<String>; 10] =  Default::default();
     for spell_input in spells_input_array.iter() {
@@ -405,6 +427,29 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
     Ok(mapped)
 }
 
+fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Value, reqwest::Error>) -> Result<Option<Spellcasting>, ValueError> {
+    let name = json.get_str("index")
+        .map_err(|_| ValueError::ValueMismatch("Couldn't get name".to_string()))?;
+    let casting_ability = spellcasting_ability(&json).map_err(|_| ValueError::ValueMismatch("spellcasting ability".to_string()))?;
+    let slots_per_level = spell_slots(&levels_arr).ok().flatten();
+    let caster_type_option: Option<SpellCasterType> = spellcasting_type(name.as_ref());
+
+
+    zip3(casting_ability, slots_per_level, caster_type_option)
+        .map(|(spellcasting_ability, (spell_slots_per_level, cantrips_per_level), spellcaster_type)| {
+            let spell_list = process_spell_list(spells?)?;
+
+            Ok(Spellcasting {
+                spellcasting_ability,
+                spell_slots_per_level,
+                cantrips_per_level,
+                spell_list,
+                spellcaster_type,
+            })
+        })
+        .transpose()
+}
+
 async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest::Error>) -> Result<Class, ValueError> {
 
     let name: String = json.get_str("index")
@@ -430,20 +475,8 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
     };
 
     let class_specific_leveled = class_specific(&levels_arr)?;
-
-
-    let spellcasting_ability = spellcasting_ability(&json).map_err(|_| ValueError::ValueMismatch("spellcasting ability".to_string()))?;
-    let spell_slots_per_level = spell_slots(&levels_arr).ok().flatten();
-    let spellcasting = if let (Some(ability), Some(slots)) = (spellcasting_ability, spell_slots_per_level) {
-        let spell_list = spell_list(spells?)?;
-        Some(Spellcasting {
-            spellcasting_ability: ability,
-            spell_slots_per_level: slots,
-            spell_list,
-        })
-    } else {
-        None
-    };
+    
+    let spellcasting = process_spellcasting(json, levels_arr, spells)?;
 
     let class = Class {
         name,
@@ -459,4 +492,8 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
     };
 
     Ok(class)
+}
+
+fn zip3<A, B, C>(a: Option<A>, b: Option<B>, c: Option<C>) -> Option<(A, B, C)> {
+    Some((a?, b?, c?))
 }

@@ -31,8 +31,8 @@ async fn level_3_elf_monk() {
 
     // add class items
     let class_items = &mut georg.classes.get_mut(0).expect("character should have a class").items;
+    class_items[0].choose_in_place(0);
     class_items[1].choose_in_place(0);
-    class_items[2].choose_in_place(0);
     georg.add_class_items();
     // equip the shortsword
     georg.items[3].2 = true;

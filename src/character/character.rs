@@ -9,7 +9,7 @@ use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, Ski
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
 use super::items::{Item, ItemType, Weapon, WeaponAction, WeaponType};
-use super::spells::{Spell, SpellAction, SpellSlots, Spellcasting};
+use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS, PACT_CASTING_SLOTS};
 use super::class::{Class, Subclass};
 
 
@@ -46,14 +46,17 @@ use super::class::{Class, Subclass};
 ///
 /// It's also important to select the items available through your starting class. Those are
 /// available through `Character.classes[0].items`.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Character {
     pub name: String,
     /// Individual classes that the character has specced into.
     pub classes: Vec<SpeccedClass>,
     pub race: Race,
     pub background: Background,
+    /// Lists active spell slots. These can be spent.
     pub available_spell_slots: Option<SpellSlots>,
+    /// Lists active pact magic slots. These can be spent. Seperate from regular spell slots.
+    pub availible_pact_slots: Option<PactSlots>,
     base_stats: Stats,
     /// Extra features from etc sources that aren't listed otherwise. Feel free to append on any
     /// extra feature you want your character to have.
@@ -83,6 +86,7 @@ impl Character {
             base_stats,
             bonus_features: vec![],
             available_spell_slots: None,
+            availible_pact_slots: None,
             class_skill_proficiencies: vec![class.skill_proficiency_choices.1.clone(); class.skill_proficiency_choices.0],
             class_saving_throw_proficiencies: class.saving_throw_proficiencies.clone(),
             hp: 1,
@@ -290,6 +294,8 @@ impl Character {
         self.items.iter().filter_map(|(i, c, h)| if *h {Some((i,c))} else {None}).collect()
     }
 
+    // ---------- SPELLS ----------
+
     /// gets the spell save dc and spell attack modifier of the specified class.
     /// 
     /// The first field of the tuple is the spell save dc, and the second is the spell attack
@@ -348,6 +354,118 @@ impl Character {
             .collect()
     }
 
+    /// Gets total spell slots, the base spell slots the class has access to after a long rest.
+    pub fn spell_slots(&self) -> Option<SpellSlots> {
+        let caster_classes = self.classes.iter()
+            .filter_map(|v| v.spellcasting.as_ref().map(|s| (s.0.spellcaster_type, v.level)));
+
+        let slots_level: usize = caster_classes.map(|(caster_type, level)| {
+            match caster_type {
+                SpellCasterType::Full => level,
+                SpellCasterType::Half => level / 2,
+                SpellCasterType::Quarter => level / 3,
+                SpellCasterType::Warlock => 0,
+            }
+        }).sum();
+
+        if slots_level == 0 {
+            return None;
+        }
+
+        Some(SpellSlots(CASTER_SLOTS[slots_level-1]))
+    }
+
+    /// Gets total pact magic slots, the base pact magic slots the class has access to after a
+    /// short or long rest.
+    ///
+    /// Pact slots are treated differenty than spell slots. For regular spell slots, see
+    /// [Character::spell_slots].
+    pub fn pact_slots(&self) -> Option<PactSlots> {
+
+        let (_, slots_level) = self.classes.iter()
+            .filter_map(|v| v.spellcasting.as_ref().map(|s| (s.0.spellcaster_type, v.level)))
+            .find(|(s, _)| matches!(s, SpellCasterType::Warlock))?;
+
+        if slots_level == 0 {
+            return None;
+        }
+
+        Some(PactSlots::from(PACT_CASTING_SLOTS[slots_level-1]))
+    }
+
+    /// Cast the spell, expending a spell slot.
+    ///
+    /// Returns false if the spell could not be cast. For example, if the character is not a
+    /// spellcaster, or if there are no spell slots left of the specified type.
+    ///
+    /// the third argument is which spell list to pull from. Set this to None regularly. 
+    ///
+    /// Spells can be casted either with regular spell slots or warlock pact magic. Typically this doesn't come into effect, though
+    /// if you're multiclassing you can choose which to use. If spell_list is none, then it uses
+    /// whichever came first. Spell slots if you were another spellcaster first, pact magic if you
+    /// were a warlock first. If it's a Some(false), it uses Spell slots, and if it's Some(True),
+    /// it uses pact magic.
+    ///
+    /// Note that this only decrements the spell slot at the spell's level.
+    pub fn cast<T: Castable>(&mut self, casted: T, spell_list: Option<bool>) -> bool {
+        
+        if let None = spell_list {
+            let v = self.classes
+                .iter()
+                .find(|c| matches!(c.spellcasting, Some(_)))
+                .map(|v| v.spellcasting.as_ref())
+                .flatten()
+                .map(|v| v.0.spellcaster_type);
+
+            match v {
+                None => false,
+                Some(SpellCasterType::Warlock) => self.cast_with_pact(casted.level()),
+                Some(_) => self.cast_with_slots(casted.level()),
+            }
+        } else {
+            let b = spell_list.unwrap();
+            if b {
+                self.cast_with_pact(casted.level())
+            } else {
+                self.cast_with_slots(casted.level())
+            }
+        }
+        
+    }
+
+    fn cast_with_slots(&mut self, level: usize) -> bool {
+        let spell_slots = match &mut self.available_spell_slots {
+            Some(s) => s,
+            _ => return false,
+        };
+
+        let spell_slot = &mut spell_slots.0[level-1];
+        
+        if *spell_slot < 1 {
+            return false
+        }
+
+        *spell_slot -= 1;
+        true
+    }
+    
+    fn cast_with_pact(&mut self, level: usize) -> bool {
+        let spell_slot = match &mut self.availible_pact_slots {
+            Some(s) => s,
+            _ => return false,
+        };
+
+        if spell_slot.level < level {
+            return false
+        }
+
+        if spell_slot.num < 1 {
+            return false
+        }
+
+        spell_slot.num -= 1;
+        true
+    }
 
     // ----------- FEATURES ------------
 
@@ -765,7 +883,7 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
 /// for a character at their level.
 ///
 /// A lot of the details about a SpeccedClass's fields are the same as a [Class].
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct SpeccedClass {
     /// The name of the class the [SpeccedClass] is from.
     pub class: String,
@@ -845,6 +963,22 @@ impl SpeccedClass {
         if self.level >= 20 {return}
         self.current_class_features.push(class.features[self.level].clone());
         self.level += 1;
+    }
+}
+
+pub trait Castable {
+    fn level(&self) -> usize;
+}
+
+impl Castable for Spell {
+    fn level(&self) -> usize {
+        self.level
+    }
+}
+
+impl Castable for SpellAction {
+    fn level(&self) -> usize {
+        self.spell_level.try_into().expect("spell level was negative")
     }
 }
 
