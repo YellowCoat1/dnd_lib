@@ -82,6 +82,20 @@ pub enum FeatureEffect {
     /// Adds +1 HP for every character level
     LeveledHpIncrease,
 
+    /// Implements monk unarmored movement
+    /// Shouldn't be added outside of monk.
     UnarmoredMovement,
+    /// Adds a flat bonus to your speed
     SpeedBonus(usize),
+
+    /// Adds a flying speed to the character
+    FlyingSpeed(usize),
+    /// Adds a hovering speed to the character
+    HoveringSpeed(usize),
+    /// Adds a burrowing speed to the character
+    BurrowingSpeed(usize),
+    /// Adds a climbing speed to the character
+    ClimbingSpeed(usize),
+    /// Adds a swimming speed to the character
+    SwimmingSpeed(usize),
 }

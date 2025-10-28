@@ -265,6 +265,8 @@ async fn level_5_halfling_rogue() {
     // This grants 11+DEX, which here is 11+4.
     assert_eq!(bingus.ac(), 15);
 
+    assert_eq!(bingus.speed(), 25);
+
     // Testing saving throw modifiers
     let saves = bingus.save_mods();
     assert_eq!(saves, Modifiers{stats: Stats::from(&[0, 7, 2, 4, 1, -1])});

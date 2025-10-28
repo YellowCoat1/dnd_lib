@@ -577,3 +577,16 @@ pub struct EquipmentProficiencies {
     pub shields: bool,
     pub other: HashSet<String>,
 }
+
+/// Represents the different types of speed any creature can have. E.g. hovering, climbing,
+/// swimming
+/// 
+/// Most of these are only used in rare cases. The walking speed is almost always a given.
+pub struct Speeds {
+    pub walking: Option<usize>,
+    pub flying: Option<usize>,
+    pub hovering: Option<usize>,
+    pub burrowing: Option<usize>,
+    pub climbing: Option<usize>,
+    pub swimming: Option<usize>,
+}

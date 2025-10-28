@@ -5,7 +5,7 @@ use crate::character::items::{is_proficient_with, ArmorCategory};
 
 use super::background::Background;
 use super::race::Race;
-use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, StatType, Stats, PROFICIENCY_BY_LEVEL};
+use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, Speeds, StatType, Stats, PROFICIENCY_BY_LEVEL};
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
 use super::items::{Item, ItemType, Weapon, WeaponAction, WeaponType};
@@ -657,6 +657,46 @@ impl Character {
 
         self.race.speed + speed_bonus
     }
+
+    /// Returns the different speeds of the character, e.g. flying and climbing.
+    /// 
+    /// Most of these speeds, besides walking, is rare for a character to have.
+    pub fn speeds(&self) -> Speeds {
+        let mut speeds = Speeds {
+            walking: Some(self.speed()),
+            flying: None,
+            hovering: None,
+            burrowing: None,
+            climbing: None,
+            swimming: None,
+        };
+
+        let effects = self.race_features().into_iter()
+            .chain(self.bonus_features.iter())
+            .flat_map(|v| v.effects.iter());
+
+
+        macro_rules! add_speed {
+            ($speed_field: expr, $applying: expr) => {
+                $speed_field = $speed_field.map(|s| s.max($applying))
+            };
+        }
+
+        for effect in effects {
+            match effect {
+                FeatureEffect::FlyingSpeed(s) => add_speed!(speeds.flying, *s),
+                FeatureEffect::HoveringSpeed(s) => add_speed!(speeds.hovering, *s),
+                FeatureEffect::BurrowingSpeed(s) => add_speed!(speeds.burrowing, *s),
+                FeatureEffect::ClimbingSpeed(s) => add_speed!(speeds.climbing, *s),
+                FeatureEffect::SwimmingSpeed(s) => add_speed!(speeds.swimming, *s),
+                _ => panic!()
+            };
+        }
+
+
+        speeds
+    }
+
 
     fn unarmored_movement(&self) -> usize {
         let level = self.classes.iter().find(|v| v.class == "Monk")
