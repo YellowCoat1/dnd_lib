@@ -89,7 +89,7 @@ mod tests {
         assert_eq!(acid_arrow.range, "90 feet");
         let damage = acid_arrow.damage.expect("acid arrow should have damage!");
         let acid = DamageType::Acid;
-        let second_level_damage = damage.get(0).expect("acid arrow should have 2nd level damage!");
+        let second_level_damage = damage.first().expect("acid arrow should have 2nd level damage!");
         assert_eq!(second_level_damage[0], DamageRoll::new(4, 4, acid));
         let ninth_level_damage = damage.get(7).expect("acid arrow should have 9th level damage!");
         assert_eq!(ninth_level_damage[0], DamageRoll::new(11, 4, acid));

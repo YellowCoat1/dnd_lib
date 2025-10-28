@@ -56,7 +56,7 @@ mod tests {
     async fn retrieve_subclass() {
         let champion = get_subclass("champion").await.unwrap();
         assert_eq!(champion.name, "Champion");
-        let improved_critical = match champion.features[2].get(0).expect("champion should have a third level feature") {
+        let improved_critical = match champion.features[2].first().expect("champion should have a third level feature") {
             PresentedOption::Base(b) => b,
             _ => panic!("feature was an unexpected type!"),
         };

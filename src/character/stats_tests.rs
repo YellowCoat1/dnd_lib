@@ -41,15 +41,14 @@ fn modifiers() {
 
 #[test]
 fn add_stats() {
-    let stats = Stats::from(&[20, 10, 10, 10, 12, 14]);
+    let mut stats = Stats::from(&[20, 10, 10, 10, 12, 14]);
 
-    let subbed_stats = stats.clone() - 2;
+    let subbed_stats = stats - 2;
     assert_eq!(subbed_stats, Stats::from(&[18, 8, 8, 8, 10, 12]));
     
-    let special_added_stats = stats.clone() + Stats::from(&[0, 0, 0, 2, 2, 0]);
+    let special_added_stats = stats + Stats::from(&[0, 0, 0, 2, 2, 0]);
     assert_eq!(special_added_stats, Stats::from(&[20, 10, 10, 12, 14, 14]));
     
-    let mut grabbed_field_stats = stats.clone();
-    *grabbed_field_stats.get_stat_type_mut(&StatType::Constitution) = 16;
-    assert_eq!(grabbed_field_stats.constitution, 16);
+    *stats.get_stat_type_mut(&StatType::Constitution) = 16;
+    assert_eq!(stats.constitution, 16);
 }
