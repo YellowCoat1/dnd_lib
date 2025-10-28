@@ -68,6 +68,9 @@ pub struct Character {
     class_saving_throw_proficiencies: Vec<StatType>,
     pub hp: usize,
     pub temp_hp: usize,
+
+    /// Etc field for describing the character
+    pub story: CharacterStory,
 }
 
 impl Character {
@@ -91,6 +94,7 @@ impl Character {
             class_saving_throw_proficiencies: class.saving_throw_proficiencies.clone(),
             hp: 1,
             temp_hp: 0,
+            story: CharacterStory::default(),
         };
 
         // add background items
@@ -1037,3 +1041,14 @@ impl Castable for SpellAction {
     }
 }
 
+/// A struct that contains all the etc strings you may want for describing the character.
+///
+/// All of the fields are split by paragraphs.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct CharacterStory {
+    pub organizations: Vec<String>,
+    pub allies: Vec<String>,
+    pub enemies: Vec<String>,
+    pub backstory: Vec<String>,
+    pub other: Vec<String>,
+}

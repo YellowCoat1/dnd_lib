@@ -13,7 +13,7 @@ mod race;
 pub use race::{Race, Subrace};
 pub mod class;
 mod player_character;
-pub use player_character::{Character, SpeccedClass, Castable};
+pub use player_character::{Character, SpeccedClass, Castable, CharacterStory};
 
 #[cfg(test)]
 mod character_tests;
