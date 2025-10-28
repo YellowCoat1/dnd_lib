@@ -1,1 +1,0 @@
-matches!((proficiencies.simple_weapons, proficiencies.martial_weapons, weapon), (_, true, WeaponType::Martial) | (_, true, WeaponType::MartialRanged) | (true, _, WeaponType::Simple) | (true, _, WeaponType::SimpleRanged)

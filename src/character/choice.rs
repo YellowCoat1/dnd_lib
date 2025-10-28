@@ -76,6 +76,13 @@ impl<T> PresentedOption<T> {
             PresentedOption::Base(ref t) => Some(t),
         }
     }
+
+    pub fn as_base_mut(&mut self) -> Option<&mut T> {
+        match self {
+            PresentedOption::Choice(_) => None,
+            PresentedOption::Base(t) => Some(t)
+        }
+    }
     
     /// Gets an array of the choices.
     ///

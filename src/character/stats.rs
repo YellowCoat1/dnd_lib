@@ -254,10 +254,12 @@ impl Saves {
         // essentially just takes the base stats, converts it to the modfiers, then adds
         // proficiency to the fields that are proficient.
 
+
         let calc_bonus = |b| if b {proficiency_bonus} else {0};
             
         let base_modifiers = stats.modifiers();
-        Modifiers{ stats: Stats {
+
+        Modifiers{ stats: Stats { 
             strength: base_modifiers.strength + calc_bonus(self.strength),
             dexterity: base_modifiers.dexterity + calc_bonus(self.dexterity),
             constitution: base_modifiers.constitution + calc_bonus(self.constitution),
@@ -282,8 +284,7 @@ impl Saves {
 
 
 /// Tracks proficiency and expertise for every skill.
-#[derive(Default)]
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct SkillProficiencies {
     pub acrobatics: Skill,
     pub animal_handling: Skill,
@@ -380,9 +381,7 @@ impl SkillType {
 
 
 /// Stores the proficiency/mastery of a single skill type.
-#[derive(Default)]
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Skill {
     pub proficiency: bool,
     pub expertise: bool,
@@ -390,7 +389,7 @@ pub struct Skill {
 
 
 /// Calculated modifiers for skills
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SkillModifiers {
     pub acrobatics: isize,
     pub animal_handling: isize,
@@ -458,30 +457,6 @@ impl SkillModifiers {
         }
     }
 
-}
-
-
-impl PartialEq for SkillModifiers {
-    fn eq(&self, other: &Self) -> bool {
-        self.acrobatics == other.acrobatics
-        && self.animal_handling == other.animal_handling
-        && self.arcana == other.arcana
-        && self.athletics == other.athletics
-        && self.deception == other.deception
-        && self.history == other.history
-        && self.insight == other.insight
-        && self.intimidation == other.intimidation
-        && self.investigation == other.investigation
-        && self.medicine == other.medicine
-        && self.nature == other.nature
-        && self.perception == other.perception
-        && self.performance == other.performance
-        && self.persuasion == other.persuasion
-        && self.religion == other.religion
-        && self.sleight_of_hand == other.sleight_of_hand
-        && self.stealth == other.stealth
-        && self.survival == other.survival
-    }
 }
 
 impl SkillProficiencies {

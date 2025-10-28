@@ -64,6 +64,10 @@ fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Value
 
 
     let other = proficiency_strings_vec.into_iter().filter(|v| {
+        if v.contains("Saving Throw: ") {
+            return false
+        }
+
         match v.as_ref() {
             "Simple Weapons" => {
                 equipment.simple_weapons = true;
@@ -468,7 +472,12 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
     let levels_arr = levels.as_array()
         .ok_or_else(|| ValueError::ValueMismatch("levels array".to_string()))?;
     
-    let features = class_features(levels_arr).await.unwrap_or_else(|_| vec![]);
+    let features_vec = class_features(levels_arr).await
+        .unwrap_or_else(|_| vec![]);
+
+    let features: [_; 20] = features_vec.try_into()
+        .map_err(|_| ValueError::ValueMismatch("Features was not for every level".to_string()))?;
+    
 
     let class_specific_leveled = class_specific(levels_arr)?;
     

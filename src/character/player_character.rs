@@ -226,7 +226,7 @@ impl Character {
 
     /// Returns the modifiers the character has in each saving throw.
     pub fn save_mods(&self) -> Modifiers {
-        let mut modifiers = self.saves().modifiers(&self.base_stats, self.proficiency_bonus());
+        let mut modifiers = self.saves().modifiers(&self.stats(), self.proficiency_bonus());
 
         for effect in self.total_features().into_iter().flat_map(|t| t.effects.iter()) {
             if let FeatureEffect::AddSaveModifier(t, m) = effect {
@@ -955,6 +955,9 @@ impl SpeccedClass {
     }
 }
 
+/// Represents something you can cast.
+///
+/// This is mainly used for [Character::cast].
 pub trait Castable {
     fn level(&self) -> usize;
 }
