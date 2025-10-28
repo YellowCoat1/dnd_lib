@@ -494,7 +494,7 @@ impl Character {
     pub fn race_features(&self) -> Vec<&Feature> {
         self.race.traits
             .iter()
-            .filter_map(|race_trait| race_trait.is_base())
+            .filter_map(|race_trait| race_trait.as_base())
             .collect()
     }
 
@@ -502,14 +502,14 @@ impl Character {
     ///
     /// This does not include main race features.
     pub fn subrace_features(&self) -> Vec<&Feature> {
-        let subrace = match self.race.subraces.is_base() {
+        let subrace = match self.race.subraces.as_base() {
             Some(v) => v,
             _ => return vec![],
         };
 
         subrace.traits
             .iter()
-            .filter_map(|race_trait| race_trait.is_base())
+            .filter_map(|race_trait| race_trait.as_base())
             .collect()
     }
 
@@ -938,11 +938,11 @@ impl SpeccedClass {
     }
 
     fn get_subclass_features(&self) -> Option<Vec<&Feature>> {
-        let subclass = self.subclass.is_base()?;
+        let subclass = self.subclass.as_base()?;
         let features: Vec<_>  = subclass
             .features[0..self.level].iter()
             .flat_map(|v| v.iter())
-            .filter_map(|v| v.is_base())
+            .filter_map(|v| v.as_base())
             .collect();
         Some(features)
     }

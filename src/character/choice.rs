@@ -70,7 +70,7 @@ impl<T> PresentedOption<T> {
 
     /// Returns the list of choices if it's a [PresentedOption::Choice],
     /// otherwise it returns [None].
-    pub fn is_base(&self) -> Option<&T> {
+    pub fn as_base(&self) -> Option<&T> {
         match self {
             PresentedOption::Choice(_) => None,
             PresentedOption::Base(ref t) => Some(t),
