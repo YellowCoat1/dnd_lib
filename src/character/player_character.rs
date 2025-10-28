@@ -10,7 +10,7 @@ use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOpt
 use super::choice::chosen;
 use super::items::{Item, ItemType, Weapon, WeaponAction, WeaponType};
 use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS, PACT_CASTING_SLOTS};
-use super::class::{Class, Subclass};
+use super::class::{Class, Subclass, UNARMORED_MOVEMENT};
 
 
 /// A struct to represent a Dungeons and Dragons character.
@@ -641,6 +641,29 @@ impl Character {
     }
     
 
+    /// Gets the walking speed of the character
+    pub fn speed(&self) -> usize {
+        let speed_bonus: usize = self
+            .race_features().into_iter()
+            .chain(self.class_features())
+            .chain(self.bonus_features.iter())
+            .flat_map(|v| v.effects.iter())
+            .map(|effect| match effect {
+                FeatureEffect::SpeedBonus(n) => *n,
+                FeatureEffect::UnarmoredMovement => self.unarmored_movement(),
+                _ => 0
+            })
+            .sum();
+
+        self.race.speed + speed_bonus
+    }
+
+    fn unarmored_movement(&self) -> usize {
+        let level = self.classes.iter().find(|v| v.class == "Monk")
+            .expect("Unarmored defense without monk levels. Did you add it manually?")
+            .level;
+        UNARMORED_MOVEMENT[level-1]
+    }
 
     /// Attempts to increase the character's level by 1 in the given class.
     ///

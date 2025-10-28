@@ -81,4 +81,7 @@ pub enum FeatureEffect {
     Expertise([Option<SkillType>; 2]),
     /// Adds +1 HP for every character level
     LeveledHpIncrease,
+
+    UnarmoredMovement,
+    SpeedBonus(usize),
 }

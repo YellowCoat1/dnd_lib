@@ -5,6 +5,11 @@ use super::spells::Spellcasting;
 use super::items::{Item, WeaponType, ArmorCategory};
 use serde::{Serialize, Deserialize};
 
+
+// unarmored movement
+pub(crate) const UNARMORED_MOVEMENT: [usize; 20]  =
+[0, 10, 10, 10, 10, 15, 15, 15, 15, 20, 20, 20, 20, 25, 25, 25, 25, 30, 30, 30];
+
 /// A D&D Class.
 ///
 /// This is a static class that contains all the information needed for a character to take it. For
