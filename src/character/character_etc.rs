@@ -16,14 +16,14 @@ pub struct CharacterStory {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CharacterDescriptors {
-    gender: String,
-    eyes: String,
-    height: String,
-    faith: String,
-    hair: String,
-    skin: String,
-    age: usize,
-    weight: String,
-    size: Size,
-    alignment: Option<Alignment>,
+    pub gender: String,
+    pub eyes: String,
+    pub height: String,
+    pub faith: String,
+    pub hair: String,
+    pub skin: String,
+    pub age: usize,
+    pub weight: String,
+    pub size: Size,
+    pub alignment: Option<Alignment>,
 }

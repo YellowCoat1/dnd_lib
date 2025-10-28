@@ -109,6 +109,10 @@ impl Character {
 
         // add class items
         new_character.add_class_items();
+        
+
+        // set the correct size
+        new_character.descriptors.size = new_character.race.size;
 
         new_character
     }

@@ -1,10 +1,10 @@
 use super::race::get_race;
-use crate::character::{features::PresentedOption, stats::StatType};
+use crate::character::{features::PresentedOption, stats::{StatType, Size}};
 
 #[tokio::test]
 async fn get_elf() {
     let elf = get_race("elf").await.expect("failed to get elf!");
-    assert_eq!((elf.name, elf.speed, elf.size), ("Elf".to_string(), 30, "Medium".to_string()));
+    assert_eq!((elf.name, elf.speed, elf.size), ("Elf".to_string(), 30, Size::Medium));
     assert_eq!(elf.ability_bonuses.first().cloned(), Some((StatType::Dexterity, 2)));
     assert_eq!(elf.languages.first().cloned(), Some(String::from("Common")));
 

@@ -1,7 +1,7 @@
 use crate::{
     character::{
         features::{AbilityScoreIncrease, FeatureEffect},
-        stats::{Modifiers, SkillModifiers, SkillType, StatType, Stats}, 
+        stats::{Modifiers, Size, SkillModifiers, SkillType, StatType, Stats}, 
         Character
     }, 
     get::{get_background, get_class, get_race}
@@ -266,6 +266,8 @@ async fn level_5_halfling_rogue() {
     assert_eq!(bingus.ac(), 15);
 
     assert_eq!(bingus.speed(), 25);
+
+    assert_eq!(bingus.descriptors.size, Size::Small);
 
     // Testing saving throw modifiers
     let saves = bingus.save_mods();

@@ -591,7 +591,7 @@ pub struct Speeds {
     pub swimming: Option<usize>,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub enum Size {
     Tiny,
     Small,
@@ -601,7 +601,8 @@ pub enum Size {
     Huge,
     Gargantuan,
 }
-#[derive(Clone, Debug,  Serialize, Deserialize)]
+
+#[derive(Clone, Copy, Debug,  Serialize, Deserialize)]
 pub enum Alignment {
     LawfulGood,
     NeutralGood,

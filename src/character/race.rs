@@ -4,13 +4,15 @@ use crate::character::{
 };
 use serde::{Serialize, Deserialize};
 
+use super::stats::Size;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Race {
     pub name: String,
     pub speed: usize,
     pub ability_bonuses: Vec<(StatType, isize)>,
-    pub size: String,
+    pub size: Size,
     pub traits: Vec<PresentedOption<Feature>>,
     pub subraces: PresentedOption<Subrace>,
     pub languages: Vec<String>,

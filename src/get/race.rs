@@ -13,6 +13,7 @@
 //! ```
 use memoizee::memoize;
 use serde_json::Value;
+use crate::character::stats::Size;
 use crate::character::{Race, Subrace};
 use crate::character::features::PresentedOption;
 use super::get_page::get_raw_json;
@@ -35,7 +36,8 @@ pub async fn get_race_raw(index_name: String) -> Result<Race, ValueError> {
 
     let name = race_json.get_str("name")?;
     let speed: usize = race_json.get_usize("speed")?;
-    let size = race_json.get_str("size")?;
+    let size = process_size(&race_json.get_str("size")?)
+        .ok_or_else(||ValueError::ValueMismatch("size parsing".to_string()))?;
 
     let ability_bonuses_array= race_json.get_array("ability_bonuses")?;
     let ability_bonuses = process_ability_bonuses(ability_bonuses_array)?;
@@ -87,4 +89,16 @@ async fn process_subraces(arr: &[Value]) -> Result<Vec<Subrace>, ValueError> {
         subraces.push(subrace);
     }
     Ok(subraces)
+}
+
+fn process_size(s: &str) -> Option<Size> {
+    match s {
+        "Tiny" => Some(Size::Tiny),
+        "Small" => Some(Size::Small),
+        "Medium" => Some(Size::Medium),
+        "Large" => Some(Size::Large),
+        "Huge" => Some(Size::Huge),
+        "Gargantuan" => Some(Size::Gargantuan),
+        _ => None
+    }
 }
