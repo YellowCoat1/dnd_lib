@@ -8,7 +8,7 @@ use super::race::Race;
 use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, Speeds, StatType, Stats, PROFICIENCY_BY_LEVEL};
 use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
-use super::items::{Item, ItemType, Weapon, WeaponAction, WeaponType};
+use super::items::{DamageRoll, DamageType, Item, ItemType, Weapon, WeaponAction, WeaponType};
 use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS, PACT_CASTING_SLOTS};
 use super::class::{Class, Subclass, UNARMORED_MOVEMENT};
 use super::{CharacterDescriptors, CharacterStory};
@@ -820,7 +820,7 @@ impl Character {
         let modifiers = self.stats().modifiers();
         let equipment_proficiencies = self.equipment_proficiencies();
         let proficiency_modifier = self.proficiency_bonus();
-        self.equipped_items()
+        let mut weapon_actions: Vec<_> = self.equipped_items()
             .into_iter()
             .filter_map(|v| {
                 match &v.0.item_type {
@@ -831,8 +831,19 @@ impl Character {
             .flat_map(|(name, weapon)| {
                 weapon_actions(name, weapon, &modifiers, &equipment_proficiencies, proficiency_modifier).into_iter()
             })
-            .collect()
-        //TODO: add unarmed strike
+            .collect();
+
+        // Unarmed Strike
+        weapon_actions.push(WeaponAction {
+            name: "Unarmed Strike".to_string(),
+            attack_bonus: self.proficiency_bonus(),
+            damage_roll: DamageRoll::new(0, 4, DamageType::Bludgeoning),
+            damage_roll_bonus: modifiers.strength + self.proficiency_bonus(),
+            two_handed: false,
+            second_attack: false,
+        });
+
+        weapon_actions
     }
 
     /// Gets the attacks possible from all spells prepared in any class. The resulting
