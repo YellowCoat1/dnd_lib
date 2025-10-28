@@ -590,3 +590,26 @@ pub struct Speeds {
     pub climbing: Option<usize>,
     pub swimming: Option<usize>,
 }
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub enum Size {
+    Tiny,
+    Small,
+    #[default]
+    Medium,
+    Large,
+    Huge,
+    Gargantuan,
+}
+#[derive(Clone, Debug,  Serialize, Deserialize)]
+pub enum Alignment {
+    LawfulGood,
+    NeutralGood,
+    ChaoticGood,
+    LawfulNeutral,
+    TrueNeutral,
+    ChaoticNeutral,
+    LawfulEvil,
+    NeutralEvil,
+    ChaoticEvil,
+}

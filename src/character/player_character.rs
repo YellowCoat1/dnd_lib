@@ -11,6 +11,7 @@ use super::choice::chosen;
 use super::items::{Item, ItemType, Weapon, WeaponAction, WeaponType};
 use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS, PACT_CASTING_SLOTS};
 use super::class::{Class, Subclass, UNARMORED_MOVEMENT};
+use super::{CharacterDescriptors, CharacterStory};
 
 
 /// A struct to represent a Dungeons and Dragons character.
@@ -69,8 +70,10 @@ pub struct Character {
     pub hp: usize,
     pub temp_hp: usize,
 
-    /// Etc field for describing the character
+    /// Etc field for describing the character's story, enemies, personality, etc
     pub story: CharacterStory,
+    /// Etc field for describing the character's personal traits (eye color, height, alignment)
+    pub descriptors: CharacterDescriptors,
 }
 
 impl Character {
@@ -95,6 +98,7 @@ impl Character {
             hp: 1,
             temp_hp: 0,
             story: CharacterStory::default(),
+            descriptors: CharacterDescriptors::default(),
         };
 
         // add background items
@@ -1041,14 +1045,3 @@ impl Castable for SpellAction {
     }
 }
 
-/// A struct that contains all the etc strings you may want for describing the character.
-///
-/// All of the fields are split by paragraphs.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct CharacterStory {
-    pub organizations: Vec<String>,
-    pub allies: Vec<String>,
-    pub enemies: Vec<String>,
-    pub backstory: Vec<String>,
-    pub other: Vec<String>,
-}

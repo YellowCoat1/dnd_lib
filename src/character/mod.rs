@@ -12,8 +12,10 @@ pub use background::Background;
 mod race;
 pub use race::{Race, Subrace};
 pub mod class;
+mod character_etc;
+pub use character_etc::{CharacterStory, CharacterDescriptors};
 mod player_character;
-pub use player_character::{Character, SpeccedClass, Castable, CharacterStory};
+pub use player_character::{Character, SpeccedClass, Castable};
 
 #[cfg(test)]
 mod character_tests;
