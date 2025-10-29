@@ -74,6 +74,13 @@ pub struct Character {
     pub story: CharacterStory,
     /// Etc field for describing the character's personal traits (eye color, height, alignment)
     pub descriptors: CharacterDescriptors,
+
+    /// heroic inspiration
+    pub inspiration: bool,
+
+    /// hit dice. This is the amount spent. The total amount is equal to the level, or
+    /// [Character::level()]
+    pub spent_hit_dice: usize,
 }
 
 impl Character {
@@ -99,6 +106,8 @@ impl Character {
             temp_hp: 0,
             story: CharacterStory::default(),
             descriptors: CharacterDescriptors::default(),
+            inspiration: false,
+            spent_hit_dice: 0,
         };
 
         // add background items
@@ -877,7 +886,76 @@ impl Character {
         char_spell_actions
     }
 
+    /// A short rest.
+    ///
+    /// The 1st argument is the amount of hit die to spend.
+    ///
+    /// The 2nd argument is an optional manual override of the hit die rolls, which otherwise are
+    /// just the averages.
+    ///
+    /// Returns a bool of it it succeeded or not. The function fails if the amount of hit die are
+    /// more than what's available, or if the hit die override has a different length than the amount of hit die spent.
+    pub fn short_rest(&mut self, die_amount: usize, manual_hit_die: Option<Vec<usize>>) -> bool {
+        let hit_die = self.classes.first().expect("Character should have a class").hit_die;
 
+        if die_amount > self.level() - self.spent_hit_dice {
+            return false
+        }
+
+        let con_mod = if die_amount == 0 {0} else {
+            self.stats().modifiers().constitution.max(0) as usize
+        };
+
+        let hit_die_rolls = match manual_hit_die {
+            None => (die_average_max(hit_die) + con_mod) * die_amount,
+            Some(v) => {
+                if v.len() != die_amount {
+                    return false
+                }
+                v.into_iter()
+                    .map(|n| n+con_mod)
+                    .sum()
+            }
+
+        };
+
+        let max_hp = self.max_hp();
+        self.hp = (self.hp+hit_die_rolls).min(max_hp);
+
+        // if there's warlock spell slots, they're replenished.
+        if let Some(_) = self.availible_pact_slots {
+            self.availible_pact_slots = self.pact_slots();
+        }
+
+        true
+    }
+
+
+    /// Calculates and applies the effects of taking a long rest.
+    pub fn long_rest(&mut self) {
+        // regain all hp
+        self.hp = self.max_hp();
+
+        // if there are spell slots, regain them
+        if let Some(_) = self.available_spell_slots {
+            self.available_spell_slots = self.spell_slots();
+        }
+        // if there's warlock spell slots, they're replenished.
+        if let Some(_) = self.availible_pact_slots {
+            self.availible_pact_slots = self.pact_slots();
+        }
+
+        // regain spent hit dice
+        self.spent_hit_dice = self.spent_hit_dice.max(self.level()); // make sure it's valid
+        let regained = (self.level() as f32 / 2.0).ceil() as usize;
+        self.spent_hit_dice = self.spent_hit_dice.checked_sub(regained).unwrap_or(0);
+    }
+
+
+}
+
+fn die_average_max(d: usize) -> usize {
+    ((d as f32 + 1.0) / 2.0).ceil() as usize
 }
 
 fn spell_actions(spell: &Spell, spell_attack_mod: isize) -> Option<Vec<SpellAction>>  {
