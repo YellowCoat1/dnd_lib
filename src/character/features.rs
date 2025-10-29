@@ -1,7 +1,7 @@
 /// Features, or etc listed effects. 
 use serde::{Serialize, Deserialize};
 use super::{
-    items::{ArmorCategory, WeaponType}, 
+    items::{Action, ArmorCategory, DamageRoll, WeaponType}, 
     stats::{SkillType, StatType}
 };
 
@@ -43,6 +43,50 @@ pub enum AbilityScoreIncrease {
     /// an open ended option that you can fill with any feature you choose.
     AddedFeature(Option<Feature>), 
     Unchosen,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomAction {
+    pub name: String,
+    /// A number that is always added to the attack roll
+    pub static_attack_bonus: usize,
+    /// Stats that are added to the attack roll
+    pub attack_bonus_stats: Vec<StatType>,
+    /// If proficiency is added to the attack roll
+    pub add_prof_to_attack: bool,
+    /// the base damage roll and type
+    pub damage_roll: DamageRoll,
+    /// The number that is always added to the damage roll
+    pub static_damage_bonus: usize,
+    /// Stats that are always added to the damage roll
+    pub damage_bonus_stats: Vec<StatType>,
+    /// If proficiency is added to the damage
+    pub add_prof_to_damage: bool,
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComputedCustomAction {
+    pub name: String,
+    pub attack_bonus: isize,
+    pub damage_roll: DamageRoll,
+    pub damage_roll_bonus: isize
+}
+
+impl Action for ComputedCustomAction {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn damage_roll(&self) -> DamageRoll {
+        self.damage_roll
+    }
+    fn attack_bonus(&self) -> isize {
+        self.attack_bonus
+    }
+    fn damage_roll_bonus(&self) -> isize {
+        self.damage_roll_bonus
+    }
 }
 
 /// Different effects a feature can have.
@@ -98,4 +142,8 @@ pub enum FeatureEffect {
     ClimbingSpeed(usize),
     /// Adds a swimming speed to the character
     SwimmingSpeed(usize),
+
+    /// An extra damage roll added by a feature. It doesn't need to be a damage roll, it can just
+    /// be an extra damage (e.g. another 1d6 poison on every melee)
+    CustomAction(CustomAction),
 }

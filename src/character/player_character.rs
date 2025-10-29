@@ -6,7 +6,7 @@ use crate::character::items::{is_proficient_with, ArmorCategory};
 use super::background::Background;
 use super::race::Race;
 use super::stats::{EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType, Speeds, StatType, Stats, PROFICIENCY_BY_LEVEL};
-use super::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
+use super::features::{AbilityScoreIncrease, ComputedCustomAction, CustomAction, Feature, FeatureEffect, PresentedOption};
 use super::choice::chosen;
 use super::items::{DamageRoll, DamageType, Item, ItemType, Weapon, WeaponAction, WeaponType};
 use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS, PACT_CASTING_SLOTS};
@@ -884,6 +884,52 @@ impl Character {
 
         }
         char_spell_actions
+    }
+
+
+    /// Gets the extra attacks granted by any feature(s) that do so. 
+    /// The resulting [ComputedCustomAction] has the final calculations needed to preform an
+    /// attack.
+    ///
+    /// This may represent any extra feature that deals damage. Maybe your race has claws. Maybe
+    /// your class adds 1d6 to every melee attack. Maybe a magical item allows you to make a
+    /// special attack with it. Anything that isn't a regular attack with weapons or spells will
+    /// fit here.
+    pub fn ect_actions(&self) -> Vec<ComputedCustomAction> {
+        self.total_features()
+            .into_iter()
+            .flat_map(|v| v.effects.iter())
+            .filter_map(|v| match v {
+                FeatureEffect::CustomAction(a) => Some(a),
+                _ => None,
+            })
+            .map(|c| {
+                self.parse_custom_action(c)
+            })
+            .collect()
+    }
+
+    fn parse_custom_action(&self, c: &CustomAction) -> ComputedCustomAction {
+        let modifiers = self.stats().modifiers();
+        let stats_attack_bonus = c.attack_bonus_stats
+            .iter()
+            .map(|v| modifiers.get_stat_type(v))
+            .sum::<isize>();
+        let attack_bonus = (c.static_attack_bonus as isize + stats_attack_bonus).max(0);
+
+        let stats_damage_bonus = c.damage_bonus_stats
+            .iter()
+            .map(|v| modifiers.get_stat_type(v))
+            .sum::<isize>();
+        let damage_roll_bonus = (c.static_damage_bonus as isize + stats_damage_bonus).max(0);
+
+
+        ComputedCustomAction {
+            name: c.name.clone(),
+            attack_bonus,
+            damage_roll: c.damage_roll,
+            damage_roll_bonus
+        }
     }
 
     /// A short rest.
