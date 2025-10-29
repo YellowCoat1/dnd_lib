@@ -1,6 +1,7 @@
 use crate::{
     character::{
         features::{AbilityScoreIncrease, FeatureEffect},
+        spells::{CASTER_SLOTS, SpellSlots},
         stats::{Modifiers, Size, SkillModifiers, SkillType, StatType, Stats}, 
         Character
     }, 
@@ -300,4 +301,45 @@ async fn level_5_halfling_rogue() {
     bingus.long_rest();
     assert_eq!(bingus.hp, 38, "Character did not heal to full health on long rest");
     assert_eq!(bingus.spent_hit_dice, 0, "Character did not regain correct hit dice");
+}
+
+#[tokio::test]
+async fn level_3_druid() {
+    let human_future = get_race("human");
+    let druid_future = get_class("druid");
+    let acolyte_future = get_background("acolyte");
+
+    let human = human_future .await.expect("couldn't get human");
+    let druid = druid_future .await.expect("couldnt't get druid");
+    let acolyte = acolyte_future .await.expect("couldn't get acolyte");
+
+
+    let stats = Stats {
+        strength: 8,
+        constitution: 13,
+        dexterity: 14,
+        intelligence: 12, 
+        wisdom: 15,
+        charisma: 10,
+    };
+
+    let mut boopo = Character::new("Boopo".to_string(), &druid, &acolyte, &human, stats);
+
+    // choose skill proficiencies granted by the class 
+    
+    boopo.class_skill_proficiencies
+        .get_mut(0)
+        .expect("Character should have a 1st choice for skill proficiencies")
+        // this is the 6th choice, which is perception
+        .choose_in_place(5);
+
+    boopo.class_skill_proficiencies
+        .get_mut(1)
+        .expect("Character should have a 2nd choice for skill proficiencies")
+        // this is the 8th choice, which is Survival
+        .choose_in_place(7);
+
+    boopo.level_up_to_level(&druid, 3);
+
+    assert_eq!(boopo.spell_slots(), Some(SpellSlots(CASTER_SLOTS[2])));
 }

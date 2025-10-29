@@ -34,7 +34,7 @@
 //!     // Now it's John's turn. He readies his dagger.
 //!     let dagger_attack = &john.weapon_actions()[0];
 //!     // John tries to attack...
-//!     let attack_roll = rng.random_range(1_i32..=20_i32) as isize + dagger_attack.attack_bonus;
+//!     let attack_roll = rng.random_range(1..=20) as isize + dagger_attack.attack_bonus;
 //!     // And it hits!
 //!     let damage_roll = dagger_attack.damage_roll;
 //!     // It does enough damage to kill the monster immediately!

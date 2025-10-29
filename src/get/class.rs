@@ -390,7 +390,8 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
         for key in class_specific_map.keys() {
             let other_val = class_specific_map.get(key).ok_or_else(|| class_specific_err.clone().append(" unfound key"))?;
             let other_as_string: String = match other_val {
-                Value::Number(n) => n.as_u64().ok_or_else(|| class_specific_err.clone().append(" number???"))?.to_string(),
+                Value::Number(n) => n.as_f64().ok_or_else(|| class_specific_err.clone().append(" number???"))?.to_string(),
+                Value::Bool(b) => b.to_string(),
                 Value::String(s) => s.clone(),
                 Value::Object(o) => {
                     if key == "martial_arts" {
@@ -409,7 +410,7 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
                         return Err(class_specific_err.clone().append(" unrecognized val obj"));
                     }
                 },
-                _ => return Err(class_specific_err.clone().append(" unrecognized val")),
+                v => return Err(class_specific_err.clone().append(&format!(" unrecognized val {:?}", v))),
             };
             map.get_mut(&key.replace("_", " ")).ok_or_else(|| class_specific_err.clone().append(" unrecognized key"))?.push(other_as_string);
         }
