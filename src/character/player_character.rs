@@ -891,7 +891,7 @@ impl Character {
     /// The 1st argument is the amount of hit die to spend.
     ///
     /// The 2nd argument is an optional manual override of the hit die rolls, which otherwise are
-    /// just the averages.
+    /// just the averages. This is before constitution is added, so it's just the base dice rolls.
     ///
     /// Returns a bool of it it succeeded or not. The function fails if the amount of hit die are
     /// more than what's available, or if the hit die override has a different length than the amount of hit die spent.
@@ -922,6 +922,8 @@ impl Character {
         let max_hp = self.max_hp();
         self.hp = (self.hp+hit_die_rolls).min(max_hp);
 
+        self.spent_hit_dice += die_amount;
+
         // if there's warlock spell slots, they're replenished.
         if let Some(_) = self.availible_pact_slots {
             self.availible_pact_slots = self.pact_slots();
@@ -946,7 +948,7 @@ impl Character {
         }
 
         // regain spent hit dice
-        self.spent_hit_dice = self.spent_hit_dice.max(self.level()); // make sure it's valid
+        self.spent_hit_dice = self.spent_hit_dice.min(self.level()); // make sure it's valid
         let regained = (self.level() as f32 / 2.0).ceil() as usize;
         self.spent_hit_dice = self.spent_hit_dice.checked_sub(regained).unwrap_or(0);
     }

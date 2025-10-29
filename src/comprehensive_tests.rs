@@ -286,4 +286,18 @@ async fn level_5_halfling_rogue() {
         .collect();
     other_proficiencies.sort();
     assert_eq!(other_proficiencies, vec!["hand crossbows".to_string(), "longswords".to_string(), "rapiers".to_string(), "shortswords".to_string(), "thieves' tools".to_string()]);
+
+    bingus.damage(30);
+    assert_eq!(bingus.hp, 8, "Character had not taken damage properly");
+
+    bingus.short_rest(0, None);
+    assert_eq!(bingus.hp, 8, "Character healed from short rest when they should not have.");
+    bingus.short_rest(1, None);
+    assert_eq!(bingus.hp, 15, "Character did not heal the correct amount");
+    bingus.short_rest(1, Some(vec![2]));
+    assert_eq!(bingus.hp, 19, "Character did not heal the correct amount on manually inputed rolls");
+    assert_eq!(bingus.spent_hit_dice, 2, "Incorrect amount of spent hit dice");
+    bingus.long_rest();
+    assert_eq!(bingus.hp, 38, "Character did not heal to full health on long rest");
+    assert_eq!(bingus.spent_hit_dice, 0, "Character did not regain correct hit dice");
 }
