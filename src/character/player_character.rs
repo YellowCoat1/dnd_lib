@@ -925,7 +925,7 @@ impl Character {
         self.spent_hit_dice += die_amount;
 
         // if there's warlock spell slots, they're replenished.
-        if let Some(_) = self.availible_pact_slots {
+        if self.availible_pact_slots.is_some() {
             self.availible_pact_slots = self.pact_slots();
         }
 
@@ -939,18 +939,18 @@ impl Character {
         self.hp = self.max_hp();
 
         // if there are spell slots, regain them
-        if let Some(_) = self.available_spell_slots {
+        if self.available_spell_slots.is_some() {
             self.available_spell_slots = self.spell_slots();
         }
         // if there's warlock spell slots, they're replenished.
-        if let Some(_) = self.availible_pact_slots {
+        if self.availible_pact_slots.is_some() {
             self.availible_pact_slots = self.pact_slots();
         }
 
         // regain spent hit dice
         self.spent_hit_dice = self.spent_hit_dice.min(self.level()); // make sure it's valid
         let regained = (self.level() as f32 / 2.0).ceil() as usize;
-        self.spent_hit_dice = self.spent_hit_dice.checked_sub(regained).unwrap_or(0);
+        self.spent_hit_dice = self.spent_hit_dice.saturating_sub(regained);
     }
 
 
