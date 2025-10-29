@@ -2,6 +2,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::character::class::ItemCategory;
 use crate::character::items::{is_proficient_with, ArmorCategory};
+use crate::character::spells::SpellCastingPreperation;
 
 use super::background::Background;
 use super::race::Race;
@@ -997,6 +998,37 @@ impl Character {
         self.spent_hit_dice = self.spent_hit_dice.min(self.level()); // make sure it's valid
         let regained = (self.level() as f32 / 2.0).ceil() as usize;
         self.spent_hit_dice = self.spent_hit_dice.saturating_sub(regained);
+    }
+
+    /// Returns the information necessary to select spells after a long rest.
+    ///
+    /// This happens individually for each spellcasting class taken that prepares spells like this.
+    ///
+    /// The first field is the index of the [SpeccedClass] of the spellcaster.
+    ///
+    /// The second field is the
+    pub fn long_rest_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize)> {
+
+        let mut return_vector = vec![];
+        let modifiers = self.stats().modifiers();
+
+        for (n, class) in self.classes.iter_mut().enumerate() {
+            let casting = match class.spellcasting.as_mut() {
+                Some(c) => c,
+                _ => continue,
+            };
+            
+            // if it isn't a class that prepares it's spells, continue to the next instance
+            if !matches!(casting.0.preperation_type, SpellCastingPreperation::Prepared) {
+                continue;
+            }
+
+            let ability = *modifiers.get_stat_type(&casting.0.spellcasting_ability);
+            let amount_of_spells = (class.level as isize + ability).max(0) as usize;
+            return_vector.push((n, &mut casting.1, amount_of_spells));
+        }
+
+        return_vector
     }
 
 

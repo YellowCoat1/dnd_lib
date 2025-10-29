@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde_json::{Value, Map};
-use crate::{character::spells::SpellCasterType, get::{
+use crate::{character::spells::{SpellCasterType, SpellCastingPreperation}, get::{
     feature::get_feature, 
     get_page::get_raw_json, 
     item::get_item, 
@@ -294,6 +294,21 @@ fn spell_slots_from_map(map: &Map<String, Value>) -> Result<(SpellSlots, usize),
     Ok((spell_slots, slot_vals[0]))
 }
 
+fn preperation_type(name: &str) -> Option<SpellCastingPreperation> {
+    use SpellCastingPreperation::{Prepared, Known};
+    match name {
+        "wizard" => Some(Prepared),
+        "cleric" => Some(Prepared),
+        "druid" => Some(Prepared),
+        "paladin" => Some(Prepared),
+        "bard" => Some(Known),
+        "sorcerer" => Some(Known),
+        "warlock" => Some(Known),
+        "ranger" => Some(Known),
+        _ => None,
+    }
+}
+
 fn spellcasting_type(name: &str) -> Option<SpellCasterType> {
     match name {
         "wizard" => Some(SpellCasterType::Full),
@@ -442,6 +457,8 @@ fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Val
     zip3(casting_ability, slots_per_level, caster_type_option)
         .map(|(spellcasting_ability, (spell_slots_per_level, cantrips_per_level), spellcaster_type)| {
             let spell_list = process_spell_list(spells?)?;
+            let preperation_type = preperation_type(name.as_ref())
+                .ok_or_else(|| ValueError::ValueMismatch("preperation".to_string()))?;
 
             Ok(Spellcasting {
                 spellcasting_ability,
@@ -449,6 +466,7 @@ fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Val
                 cantrips_per_level,
                 spell_list,
                 spellcaster_type,
+                preperation_type,
             })
         })
         .transpose()

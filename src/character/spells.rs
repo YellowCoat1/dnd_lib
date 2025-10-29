@@ -142,6 +142,8 @@ pub struct Spellcasting {
     pub spell_list: [Vec<String>; 10],
     /// Cantrips availible per level
     pub spellcaster_type: SpellCasterType,
+    /// If the caster knows or prepares their spells.
+    pub preperation_type: SpellCastingPreperation,
 }
 
 /// Type of spellcaster (full caster, half caster, quarter-caster)
@@ -152,6 +154,20 @@ pub enum SpellCasterType {
     Quarter,
     /// Warlocks get a special case, since they have a seperate spell slots list.
     Warlock,
+}
+
+/// How the spellcaster prepares their spell list.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum SpellCastingPreperation {
+    /// Spells are prepared after every long rest from the spell list. Wizards are included in
+    /// this, and just prepare spells from their spell book instead of spell list.
+    ///
+    /// The amount of spells that can be prepared is always the spellcasting ability modifier + the
+    /// class level.
+    Prepared,
+    /// Spells are innately known, and cannot be swapped on long rest. Bards and Sorcerers fit into
+    /// this.
+    Known,
 }
 
 /// The spell slots for every level of a full spell caster.
