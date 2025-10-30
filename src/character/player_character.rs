@@ -867,8 +867,20 @@ impl Character {
     /// Spells may also have multiple for each level. Chromatic orb, for example, can attack with
     /// one of many types, so it has many spell actions.
     pub fn spell_actions(&self) -> Vec<SpellAction> {
-        //TODO: Limit spell levels up to the maximum the spellcaster can cast
         let modifiers = self.stats().modifiers();
+
+        let spell_slots = match self.spell_slots() {
+            Some(s) => s,
+            _ => return vec![],
+        };
+
+        let max_slot_level = match spell_slots.0.into_iter().position(|v| v==0) {
+            // the iter is indexed by 0, but (these) spell slots are indexed by 1, so 1 is added
+            Some(slot_level) => slot_level + 1,
+            // if none were 0, then the maximum is the top, or 9.
+            None => 9,
+        };
+
         let mut char_spell_actions = vec![];
         for (index, class) in self.classes.iter().enumerate().filter(|v| v.1.spellcasting.is_some()) {
             let spellcasting_stuff = self.spellcasting_scores_with_modifiers(index, &modifiers).zip(class.spellcasting.as_ref());
@@ -878,7 +890,7 @@ impl Character {
             };
 
             let class_spell_actions =  spells.iter() 
-                .filter_map(|s| spell_actions(s, attack_mod))
+                .filter_map(|s| spell_actions(s, attack_mod, max_slot_level))
                 .flat_map(|v| v.into_iter())
                 .collect::<Vec<_>>();
             char_spell_actions.extend(class_spell_actions);
@@ -1009,28 +1021,33 @@ impl Character {
     /// instead, just do `character.classes[index].spellcasting.unwrap().1` with the index
     /// provided.
     ///
-    /// The third field is the amount of spells the character can prepare.
+    /// The third field is the amount of spells (1st level and onward) the character can prepare.
+    ///
+    /// The fourth field is the amount of cantrips the character can prepare.
     ///
     /// This function has no secondary effects, and is purely for retrieving data easily.
-    pub fn prepare_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize)> {
+    pub fn prepare_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize, usize)> {
 
         let mut return_vector = vec![];
         let modifiers = self.stats().modifiers();
 
         for (n, class) in self.classes.iter_mut().enumerate() {
+            let class_level = class.level;
             let casting = match class.spellcasting.as_mut() {
                 Some(c) => c,
                 _ => continue,
             };
-            
+
             // if it isn't a class that prepares it's spells, continue to the next instance
             if !matches!(casting.0.preperation_type, SpellCastingPreperation::Prepared) {
                 continue;
             }
 
+            let cantrips_num = casting.0.cantrips_per_level[class_level-1];
+
             let ability = *modifiers.get_stat_type(&casting.0.spellcasting_ability);
-            let amount_of_spells = (class.level as isize + ability).max(0) as usize;
-            return_vector.push((n, &mut casting.1, amount_of_spells));
+            let spells_num = (class.level as isize + ability).max(0) as usize;
+            return_vector.push((n, &mut casting.1, spells_num, cantrips_num));
         }
 
         return_vector
@@ -1043,9 +1060,13 @@ fn die_average_max(d: usize) -> usize {
     ((d as f32 + 1.0) / 2.0).ceil() as usize
 }
 
-fn spell_actions(spell: &Spell, spell_attack_mod: isize) -> Option<Vec<SpellAction>>  {
+fn spell_actions(spell: &Spell, spell_attack_mod: isize, max_slot_level: usize) -> Option<Vec<SpellAction>>  {
     Some(spell.damage.as_ref()?.iter()
         .enumerate()
+        // filter out everything over what the spellcaster can cast
+        .filter(|(n, _)|  {
+            n+spell.level < max_slot_level
+        })
         .flat_map(|(n, dv)| {
             dv.iter().map(move |d| (n + spell.level, d))
         })

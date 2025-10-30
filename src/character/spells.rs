@@ -130,10 +130,11 @@ impl From<(usize, usize)> for PactSlots {
 }
 
 /// Spellcasting data for a class, including slots, ability, and spell lists.
+///
+/// Cantrips but not spell slots are included, since cantrips are class-wide and spell slots are
+/// charachter-wide.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Spellcasting {
-    /// The spell slots for each class level
-    pub spell_slots_per_level: [SpellSlots; 20],
     /// How many cantrips for every level
     pub cantrips_per_level: [usize; 20],
     /// The ability type used for spellcasting (e.g. Intelligence, Wisdom, Charisma)
@@ -193,7 +194,7 @@ pub const CASTER_SLOTS: [[usize; 9]; 20] = [
     [4, 3, 3, 3, 3, 2, 1, 1, 1],
     [4, 3, 3, 3, 3, 2, 2, 1, 1],
 ];
-    
+
 /// Warlock pact casting.
 ///
 /// Lists by level. The first in the tuple is the amount of spell slots, and the second is the spell

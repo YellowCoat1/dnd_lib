@@ -31,7 +31,7 @@ pub struct Class {
     pub skill_proficiency_choices: (usize,PresentedOption<SkillType>),
     pub spellcasting: Option<Spellcasting>,
     pub equipment_proficiencies: EquipmentProficiencies,
-    /// The features that appear on a class's table, rather than text features.
+    /// The features that appear on a class's table, rather than text features. =
     /// They're indexed by name, and returns the values for all 20 levels.
     pub class_specific_leveled: HashMap<String, [String; 20]>,
 }
