@@ -1,3 +1,5 @@
+use futures::future::try_join_all;
+
 use crate::{
     character::{
         features::{AbilityScoreIncrease, FeatureEffect},
@@ -5,7 +7,7 @@ use crate::{
         stats::{Modifiers, Size, SkillModifiers, SkillType, StatType, Stats}, 
         Character
     }, 
-    get::{get_background, get_class, get_race}
+    get::{get_background, get_class, get_race, get_spell}
 };
 
 #[tokio::test]
@@ -309,6 +311,16 @@ async fn level_3_druid() {
     let druid_future = get_class("druid");
     let acolyte_future = get_background("acolyte");
 
+    let spells = vec![
+        get_spell("charm person"),
+        get_spell("cure wounds"),
+        get_spell("entangle"),
+        get_spell("healing word"),
+        get_spell("moonbeam"),
+        get_spell("darkvision"),
+    ];
+
+
     let human = human_future .await.expect("couldn't get human");
     let druid = druid_future .await.expect("couldnt't get druid");
     let acolyte = acolyte_future .await.expect("couldn't get acolyte");
@@ -340,6 +352,16 @@ async fn level_3_druid() {
         .choose_in_place(7);
 
     boopo.level_up_to_level(&druid, 3);
+    
+    // choose subclass
+    boopo.classes[0].subclass.choose_in_place(0);
 
     assert_eq!(boopo.spell_slots(), Some(SpellSlots(CASTER_SLOTS[2])));
+
+    let v = boopo.prepare_spells();
+    assert_eq!(v.len(), 1, "There were more classes returned by the spells prepared utility than there should be");
+    let (_, prepped_spell_list, amount) = v.into_iter().next().unwrap();
+    assert_eq!(amount, 6, "incorrect number of spells to prepare");
+    *prepped_spell_list = try_join_all(spells).await
+        .expect("Couldn't get spells");
 }

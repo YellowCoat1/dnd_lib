@@ -1000,14 +1000,19 @@ impl Character {
         self.spent_hit_dice = self.spent_hit_dice.saturating_sub(regained);
     }
 
-    /// Returns the information necessary to select spells after a long rest.
+    /// Returns the information necessary to select spells for each spellcasting class after a long rest. (or after creating
+    /// the character.)
     ///
-    /// This happens individually for each spellcasting class taken that prepares spells like this.
+    /// The first field is the index of the [SpeccedClass] of the spellcasting class.
     ///
-    /// The first field is the index of the [SpeccedClass] of the spellcaster.
+    /// The second field is the prepared spell list of that spellcaster. If you want to access it directly
+    /// instead, just do `character.classes[index].spellcasting.unwrap().1` with the index
+    /// provided.
     ///
-    /// The second field is the
-    pub fn long_rest_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize)> {
+    /// The third field is the amount of spells the character can prepare.
+    ///
+    /// This function has no secondary effects, and is purely for retrieving data easily.
+    pub fn prepare_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize)> {
 
         let mut return_vector = vec![];
         let modifiers = self.stats().modifiers();
