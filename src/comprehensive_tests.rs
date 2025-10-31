@@ -424,25 +424,25 @@ async fn level_10_warlock() {
     let acolyte_future = get_background("acolyte");
 
 
-    let _spells = vec![
+    let spells = vec![
         // cantrips
         get_spell("eldritch blast"),
         get_spell("minor illusion"),
         // 1st level
-        get_spell("armor of agathys"),
-        get_spell("hex"),
+        get_spell("hellish rebuke"),
+        get_spell("charm person"),
         // 2nd level
-        get_spell("mirror image"),
-        get_spell("misty step"),
+        get_spell("darkness"),
+        get_spell("invisibility"),
         // 3rd level
         get_spell("counterspell"),
         get_spell("dispel magic"),
         // 4th level
-        get_spell("greater invisibility"),
-        get_spell("phantasmal killer"),
+        get_spell("blight"),
+        get_spell("banishment"),
         // 5th level
         get_spell("hold monster"),
-        get_spell("wall of force"),
+        get_spell("dream"),
     ];
 
 
@@ -505,4 +505,40 @@ async fn level_10_warlock() {
 
     // There should be no spells to prepare for warlock, as they know their spells.
     assert_eq!(baroopa.prepare_spells().len(), 0);
+
+    // add the spells
+    let warlock_spells = &mut baroopa.classes[0].spellcasting
+        .as_mut()
+        .expect("Warlock should be a spellcaster")
+       .1;
+    *warlock_spells = try_join_all(spells).await
+        .expect("Couldn't get spells");
+
+
+    let warlock_spells = baroopa.classes[0].spellcasting
+        .as_ref()
+        .expect("Warlock should be a spellcaster")
+        .1
+        .iter()
+        .map(|spell| spell.name.to_lowercase())
+        .collect::<Vec<_>>();
+
+    assert_eq!(warlock_spells, vec![
+        "eldritch blast",
+        "minor illusion",
+        "hellish rebuke",
+        "charm person",
+        "darkness",
+        "invisibility",
+        "counterspell",
+        "dispel magic",
+        "blight",
+        "banishment",
+        "hold monster",
+        "dream",
+    ]);
+
+    assert_eq!(baroopa.classes[0].spellcasting.as_ref().unwrap().1.len(), 12, "Warlock should have 12 spells known at level 10");
+
+
 }
