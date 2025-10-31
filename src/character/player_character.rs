@@ -771,9 +771,25 @@ impl Character {
         let spell_slots_before = self.spell_slots();
         let pact_slots_before = self.pact_slots();
 
+        // actually level up
+        let v = self.level_up_inner(class)?;
+
+        self.hp = self.max_hp();
+
+        // if the class has spellcasting, the new spell slots need to be calculated.
+        self.level_up_spellslots(spell_slots_before);
+        self.level_up_warlock_pactslots(pact_slots_before);
+
+        Some(v)
+    }
+
+    /// Inner function for leveling up without recalculating etc info.
+    fn level_up_inner(&mut self, class: &Class) -> Option<usize> {
         let class_name: &String = &class.name;
         // checking if the character is already specced into that class
-        let current_class = self.classes.iter_mut().find(|specced_class| specced_class.class == *class_name );
+        let current_class = self.classes
+            .iter_mut()
+            .find(|specced_class| specced_class.class == *class_name );
         let current_class_ref = match current_class {
             Some(specced_class) => {
                 specced_class.add_level(class);
@@ -785,15 +801,9 @@ impl Character {
             }
         };
 
-        let v = current_class_ref.level;
-        self.hp = self.max_hp();
-
-        // if the class has spellcasting, the new spell slots need to be calculated.
-        self.level_up_spellslots(spell_slots_before);
-        self.level_up_warlock_pactslots(pact_slots_before);
-
-        Some(v)
+        Some(current_class_ref.level)
     }
+
     // when leveling up, spell new spell slots are added, but existing spent spell slots remain spent.
     fn level_up_spellslots(&mut self, slots_before: Option<SpellSlots>) {
         let slots_after = self.spell_slots();
@@ -845,10 +855,18 @@ impl Character {
         if times <= 1 {
             return self.level_up(class)
         }
+
+        let spell_slots_before = self.spell_slots();
+        let pact_slots_before = self.pact_slots();
         for _ in 0..times-1 {
-            self.level_up(class)?;
+            self.level_up_inner(class)?;
         }
-        self.level_up(class)
+        let new_class_level = self.level_up_inner(class)?;
+
+        self.hp = self.max_hp();
+        self.level_up_spellslots(spell_slots_before);
+        self.level_up_warlock_pactslots(pact_slots_before);
+        Some(new_class_level)
     }
 
     /// Level up until the total level (not class level) is equal to the given number.
