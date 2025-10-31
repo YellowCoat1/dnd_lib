@@ -41,6 +41,12 @@ pub struct Spell {
     /// if there is damage, this shows it for each of the levels. There also may be multiple
     /// different types, like chromatic orb's multiple damage types.
     pub damage: Option<Vec<Vec<DamageRoll>>>,
+    /// Cantrips can have damage that scales with class level, rather than spell level. This
+    /// represents that.
+    ///
+    /// The first field of the vec is the class level, and the second field is the damage.
+    ///
+    pub leveled_damage: Option<Vec<(usize, DamageRoll)>>
 }
 
 /// Represents a resolved spell's damage.

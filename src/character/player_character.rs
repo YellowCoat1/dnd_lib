@@ -890,7 +890,7 @@ impl Character {
             };
 
             let class_spell_actions =  spells.iter() 
-                .filter_map(|s| spell_actions(s, attack_mod, max_slot_level))
+                .filter_map(|s| spell_actions(s, attack_mod, max_slot_level, self.level()))
                 .flat_map(|v| v.into_iter())
                 .collect::<Vec<_>>();
             char_spell_actions.extend(class_spell_actions);
@@ -1060,7 +1060,10 @@ fn die_average_max(d: usize) -> usize {
     ((d as f32 + 1.0) / 2.0).ceil() as usize
 }
 
-fn spell_actions(spell: &Spell, spell_attack_mod: isize, max_slot_level: usize) -> Option<Vec<SpellAction>>  {
+fn spell_actions(spell: &Spell, spell_attack_mod: isize, max_slot_level: usize, character_level: usize) -> Option<Vec<SpellAction>>  {
+    if spell.level == 0 {
+        return Some(vec![spell_action_cantrip(spell, spell_attack_mod, character_level)?])
+    }
     Some(spell.damage.as_ref()?.iter()
         .enumerate()
         // filter out everything over what the spellcaster can cast
@@ -1079,6 +1082,22 @@ fn spell_actions(spell: &Spell, spell_attack_mod: isize, max_slot_level: usize) 
             }
         })
         .collect())
+}
+
+fn spell_action_cantrip(spell: &Spell, spell_attack_mod: isize, character_level: usize) -> Option<SpellAction> {
+    let mut damage = spell.leveled_damage.as_ref()?.clone();
+    // make sure damage is sorted by level
+    damage.sort_by(|a, b| a.0.cmp(&b.0));
+    // find the rightmost version we can use
+    let position = damage.iter().rposition(|(level, _)| *level <= character_level)
+        .expect("Couldn't find a cantrip damage for this level.");
+
+    Some(SpellAction {
+        name: spell.name.clone(), 
+        spell_level: 0,
+        spell_attack_mod, 
+        damage_roll: damage[position].1, 
+    })
 }
 
 

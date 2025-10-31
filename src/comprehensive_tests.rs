@@ -305,6 +305,7 @@ async fn level_5_halfling_rogue() {
     assert_eq!(bingus.spent_hit_dice, 0, "Character did not regain correct hit dice");
 }
 
+// testing a level 3 druid with spellcasting
 #[tokio::test]
 async fn level_3_druid() {
     let human_future = get_race("human");
@@ -312,10 +313,15 @@ async fn level_3_druid() {
     let acolyte_future = get_background("acolyte");
 
     let spells = vec![
+        // cantrips
+        //get_spell("poison spray"),
+        //get_spell("shillelagh"),
+        // 1st level
         get_spell("charm person"),
         get_spell("cure wounds"),
-        get_spell("entangle"),
+        get_spell("thunderwave"),
         get_spell("healing word"),
+        // 2nd level
         get_spell("moonbeam"),
         get_spell("darkvision"),
     ];
@@ -360,8 +366,19 @@ async fn level_3_druid() {
 
     let v = boopo.prepare_spells();
     assert_eq!(v.len(), 1, "There were more classes returned by the spells prepared utility than there should be");
-    let (_, prepped_spell_list, amount) = v.into_iter().next().unwrap();
+    let (_, prepped_spell_list, amount, cantrips) = v.into_iter().next().unwrap();
     assert_eq!(amount, 6, "incorrect number of spells to prepare");
+    assert_eq!(cantrips, 2, "incorrect number of cantrips to prepare");
     *prepped_spell_list = try_join_all(spells).await
         .expect("Couldn't get spells");
+
+    let spells = boopo.classes[0].spellcasting
+        .as_ref()
+        .expect("Druid should be a spellcaster")
+        .1
+        .iter()
+        .map(|spell| spell.name.to_lowercase())
+        .collect::<Vec<_>>();
+    let spells_lower = spells.iter().map(|v| v.to_lowercase()).collect::<Vec<_>>();
+    assert_eq!(spells_lower, vec!["charm person", "cure wounds", "thunderwave", "healing word", "moonbeam", "darkvision"]);
 }

@@ -455,14 +455,13 @@ fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Val
 
 
     zip3(casting_ability, slots_per_level, caster_type_option)
-        .map(|(spellcasting_ability, (spell_slots_per_level, cantrips_per_level), spellcaster_type)| {
+        .map(|(spellcasting_ability, (_, cantrips_per_level), spellcaster_type)| {
             let spell_list = process_spell_list(spells?)?;
             let preperation_type = preperation_type(name.as_ref())
                 .ok_or_else(|| ValueError::ValueMismatch("preperation".to_string()))?;
 
             Ok(Spellcasting {
                 spellcasting_ability,
-                spell_slots_per_level,
                 cantrips_per_level,
                 spell_list,
                 spellcaster_type,
