@@ -1,5 +1,7 @@
 use crate::character::{
-    class::{Class, ItemCategory}, features::PresentedOption, spells::SpellSlots, stats::SkillType
+    class::{Class, ItemCategory}, 
+    features::PresentedOption, 
+    stats::SkillType
 };
 
 use super::{
@@ -18,7 +20,6 @@ async fn wizard_retrieval() {
     let features_result = wizard_features(&wizard);
 
     wizard_skill_proficiencies(&wizard);
-    wizard_spells(&wizard);
     wizard_class_specific(&wizard);
     wizard_subclass(&wizard);
 
@@ -62,16 +63,6 @@ async fn wizard_features(class: &Class) {
     assert_eq!(*wizard_feature, PresentedOption::Base(wizard_spellcasting_feature), "Wizard has invalid feature set");
 }
 
-fn wizard_spells(class: &Class) {
-    let level_one_spell_slots = class.spellcasting.as_ref().expect("wizard should have spells").spell_slots_per_level
-        .get(5-1)
-        .expect("Wizard doesn't have spell slots at level 5");
-
-    let expected_spell_slots = SpellSlots([4, 3, 2, 0, 0, 0, 0, 0, 0]);
-
-    assert_eq!(*level_one_spell_slots, expected_spell_slots, "Wizard has wrong spell slots");
-}
-
 fn wizard_class_specific(class: &Class) {
     let arcane_recovery = class.class_specific_leveled.get("arcane recovery levels").expect("wizard should have class specific fields!");
     let arcane_recovery_nums: Vec<usize> = arcane_recovery.iter().map(|v| v.parse().unwrap()).collect();
@@ -82,4 +73,14 @@ fn wizard_class_specific(class: &Class) {
 fn wizard_subclass(class: &Class) {
     let evocation = class.subclasses.get(0).expect("wizard should have subclasses!");
     assert_eq!(evocation.name, "Evocation");
+}
+
+
+#[tokio::test]
+async fn warlock_retrieval() {
+    let warlock = get_class("warlock")
+        .await
+        .expect("failed to get warlock class from api");
+
+    let _ = warlock.spellcasting.expect("Warlock should have spellcasting info");
 }
