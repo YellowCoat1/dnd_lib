@@ -417,7 +417,7 @@ async fn level_3_druid() {
     assert_eq!(boopo.available_spell_slots, Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])), "Spell slots after long rest did not match expected value");
 }
 
-/*#[tokio::test]
+#[tokio::test]
 async fn level_10_warlock() {
     let tiefling_future = get_race("tiefling");
     let warlock_future = get_class("warlock");
@@ -456,7 +456,7 @@ async fn level_10_warlock() {
         dexterity: 13,
         intelligence: 12,
         wisdom: 10,
-        charisma: 16,
+        charisma: 15,
     };
 
     let mut baroopa = Character::new("Baroopa".to_string(), &warlock, &acolyte, &tiefling, stats);
@@ -477,7 +477,25 @@ async fn level_10_warlock() {
 
     baroopa.level_up_to_level(&warlock, 10); 
 
-    // choose subclass    
-}
+    // choose subclass
+    // this is the fiend patron
+    baroopa.classes[0].subclass.choose_in_place(0);
 
-*/
+
+    // find all ability score increases
+    let ability_score_increases = baroopa.classes[0].current_class_features
+        .iter_mut()
+        .flat_map( |level_features|level_features.iter_mut())
+        .filter_map(|v|  v.as_base_mut())
+        .flat_map(|v| v.effects.iter_mut())
+        .filter_map(|v| match v {
+            FeatureEffect::AbilityScoreIncrease(a) => Some(a),
+            _ => None,
+        });
+
+    // Set all of them to charisma increases
+    for asi in ability_score_increases {
+        *asi = AbilityScoreIncrease::StatIncrease(Some(StatType::Charisma), None); 
+    }
+
+}
