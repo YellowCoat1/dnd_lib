@@ -976,16 +976,9 @@ impl Character {
     pub fn spell_actions(&self) -> Vec<SpellAction> {
         let modifiers = self.stats().modifiers();
 
-        let spell_slots = match self.spell_slots() {
-            Some(s) => s,
-            _ => return vec![],
-        };
-
-        let max_slot_level = match spell_slots.0.into_iter().position(|v| v==0) {
-            // the iter is indexed by 0, but (these) spell slots are indexed by 1, so 1 is added
-            Some(slot_level) => slot_level + 1,
-            // if none were 0, then the maximum is the top, or 9.
-            None => 9,
+        let max_slot_level = match self.max_slot_level() {
+            Some(v) => v,
+            None => return vec![],
         };
 
         let mut char_spell_actions = vec![];
@@ -1005,6 +998,21 @@ impl Character {
         }
         char_spell_actions
     }
+
+    pub fn max_slot_level(&self) -> Option<usize> {
+        let spell_slots = self.spell_slots()
+            .map(|v| v.0.into_iter().position(|v| v==0).unwrap_or(8) + 1);
+        let pact_slots = self.pact_slots()
+            .map(|v| v.level+1);
+
+        match (spell_slots, pact_slots) {
+            (Some(s), Some(p)) => Some(s.max(p)),
+            (Some(s), None) => Some(s),
+            (None, Some(p)) => Some(p),
+            (None, None) => None,
+        }
+    }
+
 
 
     /// Gets the extra attacks granted by any feature(s) that do so. 

@@ -540,5 +540,14 @@ async fn level_10_warlock() {
 
     assert_eq!(baroopa.classes[0].spellcasting.as_ref().unwrap().1.len(), 12, "Warlock should have 12 spells known at level 10");
 
+    let spell_actions = baroopa.spell_actions();
+    assert_eq!(spell_actions.len(), 9, "Warlock should have 9 spell actions at level 10");
+    assert_eq!(spell_actions[0].name.to_lowercase(), "eldritch blast", "First spell action should be eldritch blast");
+    assert_eq!(spell_actions[0].damage_roll.to_string(), "1d10 Force", "Eldritch blast damage roll should be 1d10 Force");
+    
+    assert_eq!(spell_actions[1].name.to_lowercase(), "hellish rebuke", "2nd spell action should be hellish rebuke");
+    assert_eq!(spell_actions[1].damage_roll.to_string(), "2d10 Fire", "Hellish rebuke damage roll should be 2d10 Fire");
+    assert_eq!(spell_actions[2].name.to_lowercase(), "hellish rebuke", "3nd spell action should be hellish rebuke");
+    assert_eq!(spell_actions[2].damage_roll.to_string(), "3d10 Fire", "Hellish rebuke damage roll should be 3d10 Fire");
 
 }
