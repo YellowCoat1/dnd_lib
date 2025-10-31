@@ -182,7 +182,7 @@ impl Default for Modifiers {
 }
 
 /// Enumerates all six core ability score types. 
-#[derive(Clone, Copy, Debug, PartialEq, EnumIter, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Serialize, Deserialize)]
 pub enum StatType {
     Strength,
     Dexterity,
@@ -205,6 +205,18 @@ impl <'a>StatType {
             "int" => Some(StatType::Intelligence),
             "wis" => Some(StatType::Wisdom),
             "cha" => Some(StatType::Charisma),
+            _ => None
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<StatType> {
+        match name.to_lowercase().as_str() {
+            "strength" => Some(StatType::Strength),
+            "dexterity" => Some(StatType::Dexterity),
+            "constitution" => Some(StatType::Constitution),
+            "intelligence" => Some(StatType::Intelligence),
+            "wisdom" => Some(StatType::Wisdom),
+            "charisma" => Some(StatType::Charisma),
             _ => None
         }
     }
@@ -564,10 +576,7 @@ impl SkillProficiencies {
 /// Proficiencies in armor and weapons.
 ///
 /// The other field holds other etc proficiencies, like shortswords and land vehicles.
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Default)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct EquipmentProficiencies {
     pub simple_weapons: bool,
     pub martial_weapons: bool,

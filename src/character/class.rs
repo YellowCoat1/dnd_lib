@@ -34,6 +34,12 @@ pub struct Class {
     /// The features that appear on a class's table, rather than text features. =
     /// They're indexed by name, and returns the values for all 20 levels.
     pub class_specific_leveled: HashMap<String, [String; 20]>,
+
+    // The prerequisites for multiclassing into this class. By default, these are "and"ed together.
+    pub multiclassing_prerequisites: HashMap<StatType, usize>,
+    // If true, the prerequisites are "or"ed together rather than "and"ed. 
+    pub multiclassing_prerequisites_or: bool,
+    pub multiclassing_proficiency_gain: EquipmentProficiencies,
 }
 
 impl Class {
@@ -114,6 +120,9 @@ mod tests {
             equipment_proficiencies: EquipmentProficiencies::default(),
             spellcasting: None,
             class_specific_leveled: HashMap::new(),
+            multiclassing_prerequisites: HashMap::new(),
+            multiclassing_prerequisites_or: false,
+            multiclassing_proficiency_gain: EquipmentProficiencies::default(),
         };
 
         let error_msg: &str = "failed to get correct class features";

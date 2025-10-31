@@ -455,7 +455,7 @@ impl Character {
     /// it uses pact magic.
     ///
     /// Note that this only decrements the spell slot at the spell's level.
-    pub fn cast<T: Castable>(&mut self, casted: T, spell_list: Option<bool>) -> bool {
+    pub fn cast<T: Castable>(&mut self, casted: &T, spell_list: Option<bool>) -> bool {
         
         if spell_list.is_none() {
             let v = self.classes
@@ -482,6 +482,7 @@ impl Character {
     }
 
     fn cast_with_slots(&mut self, level: usize) -> bool {
+
         if level == 0 {
             return true
         }
@@ -501,6 +502,9 @@ impl Character {
     }
     
     fn cast_with_pact(&mut self, level: usize) -> bool {
+        if level == 0 {
+            return true
+        }
         let spell_slot = match &mut self.available_pact_slots {
             Some(s) => s,
             _ => return false,
@@ -842,12 +846,14 @@ impl Character {
                         num: new_num,
                     });
                 }
+                self.available_pact_slots.as_mut().unwrap().level = after.level;
             }
             (None, Some(after)) => {
                 self.available_pact_slots = Some(after);
             }
             _ => {}
         }
+
     }
 
     /// Level up multiple times. Same as calling [Character::level_up] repeatedly.

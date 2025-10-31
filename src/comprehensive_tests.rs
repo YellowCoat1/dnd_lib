@@ -2,10 +2,7 @@ use futures::future::try_join_all;
 
 use crate::{
     character::{
-        features::{AbilityScoreIncrease, FeatureEffect},
-        spells::{CASTER_SLOTS, SpellSlots},
-        stats::{Modifiers, Size, SkillModifiers, SkillType, StatType, Stats}, 
-        Character
+        Character, features::{AbilityScoreIncrease, FeatureEffect}, spells::{CASTER_SLOTS, PactSlots, SpellSlots}, stats::{Modifiers, Size, SkillModifiers, SkillType, StatType, Stats}
     }, 
     get::{get_background, get_class, get_race, get_spell}
 };
@@ -408,9 +405,9 @@ async fn level_3_druid() {
     let poison_spray = spell_attacks.first().expect("Couldn't get poison spray spell attack");
     let moonbeam = spell_attacks.get(3).expect("Couldn't get moonbeam spell attack");
 
-    boopo.cast(poison_spray.clone(), None);
+    boopo.cast(poison_spray, None);
     assert_eq!(boopo.available_spell_slots, Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])), "Spell slots after casting poison spray did not match expected value");
-    boopo.cast(moonbeam.clone(), None);
+    boopo.cast(moonbeam, None);
     assert_eq!(boopo.available_spell_slots, Some(SpellSlots([4, 1, 0, 0, 0, 0, 0, 0, 0])), "Spell slots after casting moonbeam did not match expected value");
 
     boopo.long_rest();
@@ -549,5 +546,37 @@ async fn level_10_warlock() {
     assert_eq!(spell_actions[1].damage_roll.to_string(), "2d10 Fire", "Hellish rebuke damage roll should be 2d10 Fire");
     assert_eq!(spell_actions[2].name.to_lowercase(), "hellish rebuke", "3nd spell action should be hellish rebuke");
     assert_eq!(spell_actions[2].damage_roll.to_string(), "3d10 Fire", "Hellish rebuke damage roll should be 3d10 Fire");
+    
 
+    // pact slots should be 2 at level 10, and level 5
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 2, level: 5 }), "Pact slots at level 10 did not match expected value");
+
+    // cast eldritch blast 3 times
+    for _ in 0..3 {
+        let eldritch_blast = spell_actions.first().expect("Couldn't get eldritch blast spell attack");
+        baroopa.cast(eldritch_blast, None);
+    }
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 2, level: 5 }), "Pact slots after casting eldritch blast 3 times did not match expected value");
+
+    // Casting hellish rebuke at 5th level
+    let hellish_rebuke = spell_actions.get(5).expect("Couldn't get hellish rebuke spell attack");
+    assert_eq!(hellish_rebuke.damage_roll.to_string(), "6d10 Fire", "Hellish rebuke damage roll when cast at 5th level did not match expected value");
+    baroopa.cast(hellish_rebuke, None);
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 1, level: 5 }), "Pact slots after casting hellish rebuke did not match expected value");
+
+    // Casting blight at 5th level
+    let blight = spell_actions.get(7).expect("Couldn't get blight spell attack");
+    assert_eq!(blight.damage_roll.to_string(), "9d8 Necrotic", "Blight damage roll when cast at 5th level did not match expected value");
+    baroopa.cast(blight, None);
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 0, level: 5 }), "Pact slots after casting blight did not match expected value");
+
+    // short rest should restore pact slots
+    baroopa.short_rest(0, None);
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 2, level: 5 }), "Pact slots after short rest did not match expected value");
+
+    // long rest should restore pact slots
+    baroopa.cast(hellish_rebuke, None);
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 1, level: 5 }), "Pact slots after casting hellish rebuke did not match expected value");
+    baroopa.long_rest();
+    assert_eq!(baroopa.available_pact_slots, Some(PactSlots {num: 2, level: 5 }), "Pact slots after long rest did not match expected value");
 }

@@ -49,58 +49,57 @@ async fn subclasses(map: &Value) -> Result<Vec<Subclass>, ValueError> {
     Ok(subclasses)
 }
 
-fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, ValueError> {
-    let proficiencies_json = json.get_array("proficiencies")?;
-    let mut proficiency_strings_vec: Vec<String> = vec![];
-    for proficiency_json in proficiencies_json.iter() {
-        let name = proficiency_json.get_str("name")?;
-        if name.get(..12) != Some("Saving throw:") {
-            proficiency_strings_vec.push(name);
-        }
-    }
-
+fn equipment_proficiencies_inner(proficiency_strings: Vec<String>) -> EquipmentProficiencies {
     let mut equipment = EquipmentProficiencies::default();
 
-
-    let other = proficiency_strings_vec.into_iter().filter(|v| {
-        if v.contains("Saving Throw: ") {
-            return false
-        }
-
+    let other = proficiency_strings.into_iter().filter(|v| {
         match v.as_ref() {
-            "Simple Weapons" => {
+            "simple weapons" => {
                 equipment.simple_weapons = true;
                 false
             },
-            "Martial Weapons" => {
+            "martial weapons" => {
                 equipment.martial_weapons = true;
                 false
             },
-            "Light Armor" => {
+            "light armor" => {
                 equipment.light_armor = true;
                 false
             },
-            "Medium Armor" => {
+            "medium armor" => {
                 equipment.medium_armor = true;
                 false
             },
-            "Heavy Armor" => {
+            "heavy armor" => {
                 equipment.heavy_armor = true;
                 false
             },
-            "Shields" => {
+            "shields" => {
                 equipment.shields = true;
                 false
             }
             _ => true,
-
         }
     }).collect();
 
     equipment.other = other;
 
-    Ok(equipment)
+    equipment
+}
 
+fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, ValueError> {
+    let proficiencies_json = json.get_array("proficiencies")?;
+    let mut proficiency_strings_vec: Vec<String> = vec![];
+    for proficiency_json in proficiencies_json.iter() {
+        let name = proficiency_json.get_str("name")?.to_lowercase();
+        if name.get(..=11) != Some("saving throw") {
+            proficiency_strings_vec.push(name);
+        }
+    }
+
+    dbg!("proficiencies", &proficiency_strings_vec);
+
+    Ok(equipment_proficiencies_inner(proficiency_strings_vec))
 }
 
 fn saves(json: &Value) -> Result<Vec<StatType>, ValueError> {
@@ -434,10 +433,10 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
     Ok(mapped)
 }
 
-fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Value, reqwest::Error>) -> Result<Option<Spellcasting>, ValueError> {
+fn process_spellcasting(json: &Value, levels_arr: &Vec<Value>, spells: Result<Value, reqwest::Error>) -> Result<Option<Spellcasting>, ValueError> {
     let name = json.get_str("index")
         .map_err(|_| ValueError::ValueMismatch("Couldn't get name".to_string()))?;
-    let casting_ability = spellcasting_ability(&json)
+    let casting_ability = spellcasting_ability(json)
         .map_err(|_| ValueError::ValueMismatch("spellcasting ability".to_string()))?;
     let caster_type_option: Option<SpellCasterType> = spellcasting_type(name.as_ref());
 
@@ -458,6 +457,43 @@ fn process_spellcasting(json: Value, levels_arr: &Vec<Value>, spells: Result<Val
             })
         })
         .transpose()
+}
+
+fn multiclassing_prerequisites(name: &str) -> (HashMap<StatType, usize>, bool) {
+    let mut prerequisites_map: HashMap<StatType, usize> = HashMap::new();
+    let mut or_flag = false;
+
+
+    // hardcoded, since the api implementation is a bit compex
+    
+    // match the class name, and insert the proper prerequisites into the prerequisites map
+    match name {
+        "barbarian" => { prerequisites_map.insert(StatType::Strength, 13); },
+        "bard" => { prerequisites_map.insert(StatType::Charisma, 13); },
+        "cleric" => { prerequisites_map.insert(StatType::Wisdom, 13); },
+        "druid" => { prerequisites_map.insert(StatType::Wisdom, 13); },
+        "fighter" => { prerequisites_map.insert(StatType::Strength, 13); prerequisites_map.insert(StatType::Dexterity, 13); or_flag = true; },
+        "monk" => { prerequisites_map.insert(StatType::Dexterity, 13); prerequisites_map.insert(StatType::Wisdom, 13); },
+        "paladin" => { prerequisites_map.insert(StatType::Strength, 13); prerequisites_map.insert(StatType::Charisma, 13); },
+        "ranger" => { prerequisites_map.insert(StatType::Dexterity, 13); prerequisites_map.insert(StatType::Wisdom, 13); },
+        "rogue" => { prerequisites_map.insert(StatType::Dexterity, 13); },
+        "sorcerer" => { prerequisites_map.insert(StatType::Charisma, 13); },
+        "warlock" => { prerequisites_map.insert(StatType::Charisma, 13); },
+        "wizard" => { prerequisites_map.insert(StatType::Intelligence, 13); },
+        _ => (),
+    }
+
+    (prerequisites_map, or_flag)
+}
+
+fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, ValueError> {
+    let multiclassing_map = json.get_map("multi_classing")?;
+    let proficiency_strings = multiclassing_map.get_array("proficiencies")?
+        .iter()
+        .map(|v| v.get_str("name"))
+        .collect::<Result<Vec<String>, ValueError>>()?;
+
+    Ok(equipment_proficiencies_inner(proficiency_strings))
 }
 
 async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest::Error>) -> Result<Class, ValueError> {
@@ -488,7 +524,11 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
 
     let class_specific_leveled = class_specific(levels_arr)?;
     
-    let spellcasting = process_spellcasting(json, levels_arr, spells)?;
+    let spellcasting = process_spellcasting(&json, levels_arr, spells)?;
+
+    let (multiclassing_prerequisites, multiclassing_prerequisites_or) = multiclassing_prerequisites(&name);
+    let multiclassing_proficiency_gain = multiclassing_proficiencies(&json)?;
+
 
     let class = Class {
         name,
@@ -501,6 +541,9 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
         skill_proficiency_choices,
         spellcasting,
         class_specific_leveled,
+        multiclassing_prerequisites,
+        multiclassing_prerequisites_or,
+        multiclassing_proficiency_gain,
     };
 
     Ok(class)

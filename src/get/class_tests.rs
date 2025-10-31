@@ -22,9 +22,23 @@ async fn wizard_retrieval() {
     wizard_skill_proficiencies(&wizard);
     wizard_class_specific(&wizard);
     wizard_subclass(&wizard);
+    wizard_multiclassing(&wizard);
 
     items_result.await;
     features_result.await;
+}
+
+fn wizard_multiclassing(class: &Class) {
+    use crate::character::stats::{EquipmentProficiencies, StatType};
+
+    assert_eq!(class.multiclassing_proficiency_gain, EquipmentProficiencies::default());
+    
+    let v = StatType::from_shorthand("int");
+    let multiclassing_prerequisites = vec![
+        (v.as_ref().unwrap(), &13),
+    ];
+
+    assert_eq!(class.multiclassing_prerequisites.iter().collect::<Vec<_>>(), multiclassing_prerequisites, "wizard multiclassing prerequisites are incorrect");
 }
 
 
@@ -56,9 +70,9 @@ async fn wizard_items(class: &Class) {
 async fn wizard_features(class: &Class) {
     let wizard_spellcasting_feature = get_feature("spellcasting-wizard").await.unwrap();
     let wizard_feature = class.features
-    .get(0)
+    .first()
     .expect("Wizard has no features")
-    .get(0)
+    .first()
     .expect("Wizard has no features on level 1");
     assert_eq!(*wizard_feature, PresentedOption::Base(wizard_spellcasting_feature), "Wizard has invalid feature set");
 }
@@ -71,7 +85,7 @@ fn wizard_class_specific(class: &Class) {
 }
 
 fn wizard_subclass(class: &Class) {
-    let evocation = class.subclasses.get(0).expect("wizard should have subclasses!");
+    let evocation = class.subclasses.first().expect("wizard should have subclasses!");
     assert_eq!(evocation.name, "Evocation");
 }
 
