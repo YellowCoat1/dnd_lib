@@ -58,7 +58,7 @@ pub struct Character {
     /// Lists active spell slots. These can be spent.
     pub available_spell_slots: Option<SpellSlots>,
     /// Lists active pact magic slots. These can be spent. Seperate from regular spell slots.
-    pub availible_pact_slots: Option<PactSlots>,
+    pub available_pact_slots: Option<PactSlots>,
     base_stats: Stats,
     /// Extra features from etc sources that aren't listed otherwise. Feel free to append on any
     /// extra feature you want your character to have.
@@ -100,7 +100,7 @@ impl Character {
             base_stats,
             bonus_features: vec![],
             available_spell_slots: None,
-            availible_pact_slots: None,
+            available_pact_slots: None,
             class_skill_proficiencies: vec![class.skill_proficiency_choices.1.clone(); class.skill_proficiency_choices.0],
             class_saving_throw_proficiencies: class.saving_throw_proficiencies.clone(),
             hp: 1,
@@ -119,10 +119,13 @@ impl Character {
 
         // add class items
         new_character.add_class_items();
-        
 
         // set the correct size
         new_character.descriptors.size = new_character.race.size;
+
+
+        new_character.available_spell_slots = new_character.spell_slots();
+        new_character.available_pact_slots = new_character.pact_slots();
 
         new_character
     }
@@ -451,6 +454,9 @@ impl Character {
     }
 
     fn cast_with_slots(&mut self, level: usize) -> bool {
+        if level == 0 {
+            return true
+        }
         let spell_slots = match &mut self.available_spell_slots {
             Some(s) => s,
             _ => return false,
@@ -467,7 +473,7 @@ impl Character {
     }
     
     fn cast_with_pact(&mut self, level: usize) -> bool {
-        let spell_slot = match &mut self.availible_pact_slots {
+        let spell_slot = match &mut self.available_pact_slots {
             Some(s) => s,
             _ => return false,
         };
@@ -732,6 +738,11 @@ impl Character {
     /// Returns the character's current level in that class, or [None] if the level would exceed
     /// 20.
     pub fn level_up(&mut self, class: &Class) -> Option<usize> {
+
+        // get the spell slots before leveling up. This is usefule for recalculating spell slots.
+        let spell_slots_before = self.spell_slots();
+        let pact_slots_before = self.pact_slots();
+
         let class_name: &String = &class.name;
         // checking if the character is already specced into that class
         let current_class = self.classes.iter_mut().find(|specced_class| specced_class.class == *class_name );
@@ -747,7 +758,58 @@ impl Character {
         };
         let v = current_class_ref.level;
         self.hp = self.max_hp();
+
+        // if the class has spellcasting, the new spell slots need to be calculated.
+        self.level_up_spellslots(spell_slots_before);
+        self.level_up_warlock_pactslots(pact_slots_before);
+
         Some(v)
+    }
+
+    // when leveling up, spell new spell slots are added, but existing spent spell slots remain spent.
+    fn level_up_spellslots(&mut self, slots_before: Option<SpellSlots>) {
+        let slots_after = self.spell_slots();
+        match (slots_before, slots_after) {
+            (Some(before), Some(after)) => {
+                let new_slots = after.0.iter().zip(before.0.iter())
+                    .map(|(a, b)| a.saturating_sub(*b))
+                    .collect::<Vec<usize>>();
+
+                if let Some(current_slots) = &mut self.available_spell_slots {
+                    for (i, v) in new_slots.iter().enumerate() {
+                        current_slots.0[i] += *v;
+                    }
+                } else {
+                    self.available_spell_slots = Some(SpellSlots(new_slots.try_into().unwrap()));
+                }
+            }
+            (None, Some(after)) => {
+                self.available_spell_slots = Some(after);
+            }
+            _ => {}
+        }
+    }
+
+    /// same as level_up_spellslots but for warlock pact slots.
+    fn level_up_warlock_pactslots(&mut self, slots_before: Option<PactSlots>) {
+        let slots_after = self.pact_slots();
+        match (slots_before, slots_after) {
+            (Some(before), Some(after)) => {
+                let new_num = after.num.saturating_sub(before.num);
+                if let Some(current_slots) = &mut self.available_pact_slots {
+                    current_slots.num += new_num;
+                } else {
+                    self.available_pact_slots = Some(PactSlots {
+                        level: after.level,
+                        num: new_num,
+                    });
+                }
+            }
+            (None, Some(after)) => {
+                self.available_pact_slots = Some(after);
+            }
+            _ => {}
+        }
     }
 
     /// Level up multiple times. Same as calling [Character::level_up] repeatedly.
@@ -984,8 +1046,8 @@ impl Character {
         self.spent_hit_dice += die_amount;
 
         // if there's warlock spell slots, they're replenished.
-        if self.availible_pact_slots.is_some() {
-            self.availible_pact_slots = self.pact_slots();
+        if self.available_pact_slots.is_some() {
+            self.available_pact_slots = self.pact_slots();
         }
 
         true
@@ -1001,9 +1063,10 @@ impl Character {
         if self.available_spell_slots.is_some() {
             self.available_spell_slots = self.spell_slots();
         }
+
         // if there's warlock spell slots, they're replenished.
-        if self.availible_pact_slots.is_some() {
-            self.availible_pact_slots = self.pact_slots();
+        if self.available_pact_slots.is_some() {
+            self.available_pact_slots = self.pact_slots();
         }
 
         // regain spent hit dice

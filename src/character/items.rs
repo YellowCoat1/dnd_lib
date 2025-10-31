@@ -22,6 +22,27 @@ pub enum DamageType {
     Thunder,
 }
 
+impl std::fmt::Display for DamageType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            DamageType::Acid => "Acid",
+            DamageType::Bludgeoning => "Bludgeoning",
+            DamageType::Cold => "Cold",
+            DamageType::Fire => "Fire",
+            DamageType::Force => "Force",
+            DamageType::Lightning => "Lightning",
+            DamageType::Necrotic => "Necrotic",
+            DamageType::Piercing => "Piercing",
+            DamageType::Poison => "Poison",
+            DamageType::Psychic => "Psychic",
+            DamageType::Radiant => "Radiant",
+            DamageType::Slashing => "Slashing",
+            DamageType::Thunder => "Thunder",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 impl FromStr for DamageType {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -161,6 +182,12 @@ pub struct DamageRoll {
     pub dice: usize, 
     /// The type of damage the roll causes.
     pub damage_type: DamageType
+}
+
+impl std::fmt::Display for DamageRoll {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}d{} {}", self.number, self.dice, self.damage_type)
+    }
 }
 
 /// An action that a character could take.
