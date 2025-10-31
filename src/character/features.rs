@@ -45,6 +45,12 @@ pub enum AbilityScoreIncrease {
     Unchosen,
 }
 
+impl AbilityScoreIncrease {
+    pub fn set_stat_increase(&mut self, first: StatType, second: Option<StatType>) {
+        *self = AbilityScoreIncrease::StatIncrease(Some(first), second);
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomAction {
     pub name: String,
@@ -96,10 +102,12 @@ impl Action for ComputedCustomAction {
 pub enum FeatureEffect {
     /// Grants proficiency in a saving throw
     AddSaveProficiency(StatType),
-    /// Adds a bonus to a saving throw
+    /// Adds a bonus to a saving throw.
     AddSaveModifier(StatType, isize),
-    /// Adds a flat modifier to an ability score
+    /// Adds a flat modifier to an ability score. This is capped at 20.
     AddModifier(StatType, isize),
+    /// Adds a flat modifier to an ability score. This is uncapped.
+    AddModifierUncapped(StatType, isize),
     /// Gives proficiency in a weapon type
     WeaponProficiency(WeaponType),
     /// Gives proficiency in an armor type

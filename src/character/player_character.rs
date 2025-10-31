@@ -210,20 +210,48 @@ impl Character {
             .chain(self.bonus_features.iter())
             .flat_map(|v| &v.effects);
 
+        // ability score increase macro
+        macro_rules! apply_ability_score_increase {
+            ($s1: expr) => {
+                if let Some(s) = $s1 {
+                    // if the ability score is under 20, we add 1.
+                    // we don't want to go over 20 through this.
+                    if *new_stats.get_stat_type(s) < 20 {
+                        *new_stats.get_stat_type_mut(s) += 1;
+                    }
+                }
+            };
+        }
+
         for feature in feature_effects {
             match feature {
-                FeatureEffect::AddModifier(stat, amount) => *new_stats.get_stat_type_mut(stat) += amount,
+                FeatureEffect::AddModifier(stat, amount) => {
+                    let stat = new_stats.get_stat_type_mut(stat);
+                    // add it, while making sure it's bounded by 20
+                    *stat = (*stat + amount).min(20);
+                }
                 FeatureEffect::AbilityScoreIncrease(AbilityScoreIncrease::StatIncrease(s1, s2)) => {
-                    if let Some(s) = s1 {
-                        *new_stats.get_stat_type_mut(s) += 1;
-                    }
-                    if let Some(s) = s2 {
-                        *new_stats.get_stat_type_mut(s) += 1;
-                    }
+                    apply_ability_score_increase!(s1);
+                    apply_ability_score_increase!(s2);
                 }
                 _ => (),
             }
 
+        }
+
+
+        // used for features that can increase the total over 20
+        let extra_modifiers = self.bonus_features.iter()
+            .chain(self.item_features())
+            .flat_map(|v| &v.effects)
+            .filter_map(|v| match v {
+                FeatureEffect::AddModifierUncapped(stat, amount) => Some((stat, amount)),
+                _ => None,
+            });
+
+        for (stat, amount) in extra_modifiers {
+            let stat = new_stats.get_stat_type_mut(stat);
+            *stat += amount;
         }
 
 
@@ -756,6 +784,7 @@ impl Character {
                 &self.classes[self.classes.len()-1] 
             }
         };
+
         let v = current_class_ref.level;
         self.hp = self.max_hp();
 
@@ -765,7 +794,6 @@ impl Character {
 
         Some(v)
     }
-
     // when leveling up, spell new spell slots are added, but existing spent spell slots remain spent.
     fn level_up_spellslots(&mut self, slots_before: Option<SpellSlots>) {
         let slots_after = self.spell_slots();
@@ -820,7 +848,6 @@ impl Character {
         for _ in 0..times-1 {
             self.level_up(class)?;
         }
-
         self.level_up(class)
     }
 

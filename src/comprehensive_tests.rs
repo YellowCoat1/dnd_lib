@@ -405,7 +405,7 @@ async fn level_3_druid() {
     assert_spell_damage!(boopo, 3, "2d10 Radiant"); // Moonbeam
 
 
-    let poison_spray = spell_attacks.get(0).expect("Couldn't get poison spray spell attack");
+    let poison_spray = spell_attacks.first().expect("Couldn't get poison spray spell attack");
     let moonbeam = spell_attacks.get(3).expect("Couldn't get moonbeam spell attack");
 
     boopo.cast(poison_spray.clone(), None);
@@ -424,7 +424,7 @@ async fn level_10_warlock() {
     let acolyte_future = get_background("acolyte");
 
 
-    let spells = vec![
+    let _spells = vec![
         // cantrips
         get_spell("eldritch blast"),
         get_spell("minor illusion"),
@@ -493,9 +493,16 @@ async fn level_10_warlock() {
             _ => None,
         });
 
-    // Set all of them to charisma increases
-    for asi in ability_score_increases {
-        *asi = AbilityScoreIncrease::StatIncrease(Some(StatType::Charisma), None); 
-    }
 
+    let mut ability_score_increases_vec = ability_score_increases.collect::<Vec<_>>();
+    assert_eq!(ability_score_increases_vec.len(), 2, "Warlock should have 2 ability score increases by level 10");
+    ability_score_increases_vec[0]
+        .set_stat_increase(StatType::Charisma, Some(StatType::Charisma));
+    ability_score_increases_vec[1]
+        .set_stat_increase(StatType::Charisma, Some(StatType::Dexterity));
+
+    assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 20]));
+
+    // There should be no spells to prepare for warlock, as they know their spells.
+    assert_eq!(baroopa.prepare_spells().len(), 0);
 }
