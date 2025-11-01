@@ -2,7 +2,7 @@
 
 use std::{
         collections::HashSet, 
-        ops::{Add, Deref, DerefMut, Sub}
+        ops::{Add, AddAssign, Deref, DerefMut, Sub}
 };
 use strum::{EnumIter, IntoEnumIterator};
 
@@ -585,6 +585,36 @@ pub struct EquipmentProficiencies {
     pub heavy_armor: bool,
     pub shields: bool,
     pub other: HashSet<String>,
+}
+
+
+impl Add for EquipmentProficiencies {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut other = self.other.clone();
+        other.extend(rhs.other);
+        Self {
+            simple_weapons: self.simple_weapons || rhs.simple_weapons,
+            martial_weapons: self.martial_weapons || rhs.martial_weapons,
+            light_armor: self.light_armor || rhs.light_armor,
+            medium_armor: self.medium_armor || rhs.medium_armor,
+            heavy_armor: self.heavy_armor || rhs.heavy_armor,
+            shields: self.shields || rhs.shields,
+            other,
+        }
+    }
+}
+
+impl AddAssign for EquipmentProficiencies {
+    fn add_assign(&mut self, rhs: Self) {
+        self.simple_weapons = self.simple_weapons || rhs.simple_weapons;
+        self.martial_weapons = self.martial_weapons || rhs.martial_weapons;
+        self.light_armor = self.light_armor || rhs.light_armor;
+        self.medium_armor = self.medium_armor || rhs.medium_armor;
+        self.heavy_armor = self.heavy_armor || rhs.heavy_armor;
+        self.shields = self.shields || rhs.shields;
+        self.other.extend(rhs.other);
+    }
 }
 
 /// Represents the different types of speed any creature can have. E.g. hovering, climbing,

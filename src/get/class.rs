@@ -97,8 +97,6 @@ fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Value
         }
     }
 
-    dbg!("proficiencies", &proficiency_strings_vec);
-
     Ok(equipment_proficiencies_inner(proficiency_strings_vec))
 }
 

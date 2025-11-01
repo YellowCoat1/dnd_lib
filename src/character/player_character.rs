@@ -774,9 +774,10 @@ impl Character {
         // get the spell slots before leveling up. This is usefule for recalculating spell slots.
         let spell_slots_before = self.spell_slots();
         let pact_slots_before = self.pact_slots();
+        let stats = self.stats();
 
         // actually level up
-        let v = self.level_up_inner(class)?;
+        let v = self.level_up_inner(class, &stats)?;
 
         self.hp = self.max_hp();
 
@@ -788,24 +789,47 @@ impl Character {
     }
 
     /// Inner function for leveling up without recalculating etc info.
-    fn level_up_inner(&mut self, class: &Class) -> Option<usize> {
+    fn level_up_inner(&mut self, class: &Class, stats: &Stats) -> Option<usize> {
         let class_name: &String = &class.name;
         // checking if the character is already specced into that class
         let current_class = self.classes
             .iter_mut()
             .find(|specced_class| specced_class.class == *class_name );
-        let current_class_ref = match current_class {
+
+        match current_class {
             Some(specced_class) => {
                 specced_class.add_level(class);
-                specced_class
+                Some(specced_class.level)
             }
             None => {
-                self.classes.push(SpeccedClass::from_class(class, 1));
-                &self.classes[self.classes.len()-1] 
+                self.level_multiclass(class, stats)
             }
-        };
+        }
+    }
 
-        Some(current_class_ref.level)
+    // When a character tries to multiclass into a new class.
+    // Returns Some(1) if succeeds, or None if the character doesn't have the correct requirements.
+    fn level_multiclass(&mut self, class: &Class, stats: &Stats) -> Option<usize> {
+        let or = class.multiclassing_prerequisites_or;
+
+        let mut able_to_multiclass = !or;
+
+        for (stat, min_value) in class.multiclassing_prerequisites.iter() {
+            let condition = *stats.get_stat_type(stat) >= *min_value as isize;
+            dbg!((&stat, &min_value, &able_to_multiclass, stats.get_stat_type(stat)));
+            match or {
+                false => able_to_multiclass = able_to_multiclass && condition,
+                true => able_to_multiclass = able_to_multiclass || condition,
+            }
+        }
+
+        if able_to_multiclass {
+            self.classes.push(SpeccedClass::from_class(class, 1));
+            self.equipment_proficiencies += class.multiclassing_proficiency_gain.clone();
+            Some(1)
+        } else {
+            None
+        }
     }
 
     // when leveling up, spell new spell slots are added, but existing spent spell slots remain spent.
@@ -862,12 +886,13 @@ impl Character {
             return self.level_up(class)
         }
 
+        let stats = self.stats();
         let spell_slots_before = self.spell_slots();
         let pact_slots_before = self.pact_slots();
         for _ in 0..times-1 {
-            self.level_up_inner(class)?;
+            self.level_up_inner(class, &stats)?;
         }
-        let new_class_level = self.level_up_inner(class)?;
+        let new_class_level = self.level_up_inner(class, &stats)?;
 
         self.hp = self.max_hp();
         self.level_up_spellslots(spell_slots_before);
