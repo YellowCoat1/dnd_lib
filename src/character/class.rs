@@ -13,7 +13,7 @@ pub(crate) const UNARMORED_MOVEMENT: [usize; 20]  =
 /// A D&D Class.
 ///
 /// This is a static class that contains all the information needed for a character to take it. For
-/// a class in application, see [SpeccedClass](super::character::SpeccedClass) instead.
+/// a class in application, see [SpeccedClass](crate::character::SpeccedClass) instead.
 ///
 #[derive(Serialize, Deserialize)]
 #[derive(Clone)]

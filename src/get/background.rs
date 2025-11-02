@@ -1,6 +1,7 @@
 use serde_json::Value;
 use super::get_page::get_raw_json;
-use super::json_tools::{ValueError, ValueExt};
+use crate::getter::CharacterDataError;
+use super::json_tools::ValueExt;
 use super::item::get_item;
 use crate::character::features::Feature;
 use crate::character::{
@@ -10,7 +11,10 @@ use crate::character::{
 };
 use crate::get::json_tools::parse_string;
 
-pub async fn get_background(name: &str) -> Result<Background, ValueError> {
+/// Gets a background from the api.
+///
+/// There's only one background available through dnd5eapi: acolyte.
+pub async fn get_background(name: &str) -> Result<Background, CharacterDataError> {
     let index = parse_string(name);
     let json = get_raw_json(format!("backgrounds/{index}")).await?;
 
@@ -18,8 +22,8 @@ pub async fn get_background(name: &str) -> Result<Background, ValueError> {
         .iter().map(|v| {
             SkillType::from_name(&v.get_str("name")?[7..])
                 .map(PresentedOption::Base)
-                .ok_or_else(|| ValueError::ValueMismatch(String::from("starting proficiency")))
-        }).collect::<Result<Vec<PresentedOption<SkillType>>, ValueError>>()?;
+                .ok_or_else(|| CharacterDataError::new("starting proficiency"))
+        }).collect::<Result<Vec<PresentedOption<SkillType>>, CharacterDataError>>()?;
 
     let equipment_array = json.get_array("starting_equipment")?;
     let mut equipment = Vec::with_capacity(equipment_array.len());
@@ -29,7 +33,7 @@ pub async fn get_background(name: &str) -> Result<Background, ValueError> {
             .get_map("equipment")?
             .get_str("index")?;
         let item_val = get_item(&equipment_index).await
-            .map_err(|_| ValueError::ValueMismatch(String::from("item")))?;
+            .map_err(|_| CharacterDataError::new("item"))?;
         let equipment_num = equipment_val.get_usize("quantity")?;
         equipment.push((item_val, equipment_num));
     }
@@ -38,7 +42,7 @@ pub async fn get_background(name: &str) -> Result<Background, ValueError> {
     let feature_desc = feature_map.get_array("desc")?
         .iter()
         .map(|v| v.as_string("feature description"))
-        .collect::<Result<Vec<String>, ValueError>>()?;
+        .collect::<Result<Vec<String>, CharacterDataError>>()?;
     let feature = Feature {
         name: feature_map.get_str("name")?,
         description: feature_desc,
@@ -54,7 +58,7 @@ pub async fn get_background(name: &str) -> Result<Background, ValueError> {
         .iter()
         .map(|v| {
             Ok(PresentedOption::Base(v.get_str("desc")?))
-        }).collect::<Result<Vec<PresentedOption<String>>, ValueError>>()?;
+        }).collect::<Result<Vec<PresentedOption<String>>, CharacterDataError>>()?;
 
     let ideals = PresentedOption::Choice(ideals_vec);
     
@@ -69,12 +73,12 @@ pub async fn get_background(name: &str) -> Result<Background, ValueError> {
     })
 }
 
-fn process_personality(json: &Value) -> Result<PresentedOption<String>, ValueError> {
+fn process_personality(json: &Value) -> Result<PresentedOption<String>, CharacterDataError> {
     let array = json.get_map("from")?.get_array("options")?
         .iter()
         .map(|v| {
             Ok(PresentedOption::Base(v.get_str("string")?))
-        }).collect::<Result<Vec<PresentedOption<String>>, ValueError>>()?;
+        }).collect::<Result<Vec<PresentedOption<String>>, CharacterDataError>>()?;
 
     Ok(PresentedOption::Choice(array))
 }

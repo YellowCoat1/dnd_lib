@@ -1,15 +1,14 @@
-use memoizee::memoize;
 use serde_json::Value;
-use super::{get_page::get_raw_json, json_tools::{parse_string, ValueExt}, ValueError};
+use super::{get_page::get_raw_json, json_tools::{parse_string, ValueExt}};
+use crate::getter::CharacterDataError;
 use crate::character::items::{Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties, WeaponType};
 
-pub async fn get_item(name: &str) -> Result<Item, ValueError> {
+pub async fn get_item(name: &str) -> Result<Item, CharacterDataError> {
     let index = parse_string(name);
     get_item_raw(index).await
 }
 
-#[memoize]
-async fn get_item_raw(index_name: String) -> Result<Item, ValueError> {
+async fn get_item_raw(index_name: String) -> Result<Item, CharacterDataError> {
     let item_json = get_raw_json(format!("equipment/{index_name}")).await?;
 
     let name = item_json.get_str("name")?;
@@ -42,17 +41,17 @@ async fn get_item_raw(index_name: String) -> Result<Item, ValueError> {
 
 }
 
-fn weapon(map: &Value) -> Result<Weapon, ValueError> {
+fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
 
     let damage_map = map.get_map("damage")?;
 
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
     let damage_type = damage_type.parse()
-        .map_err(|_| ValueError::ValueMismatch("damage type".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("damage type".to_string()))?;
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
-        .ok_or_else(|| ValueError::ValueMismatch("damage roll".to_string()))?;
+        .ok_or_else(|| CharacterDataError::ValueMismatch("damage roll".to_string()))?;
 
     let category_string = map.get_str("category_range")?;
 
@@ -61,7 +60,7 @@ fn weapon(map: &Value) -> Result<Weapon, ValueError> {
         "Simple Ranged" => WeaponType::SimpleRanged,
         "Martial Melee" => WeaponType::Martial,
         "Martial Ranged" => WeaponType::MartialRanged,
-        _ => return Err(ValueError::ValueMismatch("Weapon Type".to_string())),
+        _ => return Err(CharacterDataError::ValueMismatch("Weapon Type".to_string())),
     };
 
     let properties = properties(map, damage.damage_type)?;
@@ -76,7 +75,7 @@ fn weapon(map: &Value) -> Result<Weapon, ValueError> {
     Ok(weapon)
 }
 
-fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, ValueError> {
+fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, CharacterDataError> {
     let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
     let mut properties = WeaponProperties::default();
@@ -95,9 +94,9 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
             "two_handed" => {properties.two_handed = true},
             "versitile" => {
                 let damage_val = two_handed_damage
-                    .ok_or_else(|| ValueError::ValueMismatch("Two handed damage".to_string()))?;
+                    .ok_or_else(|| CharacterDataError::ValueMismatch("Two handed damage".to_string()))?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
-                    .ok_or_else(|| ValueError::ValueMismatch("Two handed damage roll".to_string()))?;
+                    .ok_or_else(|| CharacterDataError::ValueMismatch("Two handed damage roll".to_string()))?;
                 properties.versatile = Some(damage);
             }
             _ => (),
@@ -105,7 +104,7 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
     }
     Ok(properties)
 }
-fn armor(map: &Value) -> Result<Armor, ValueError> {
+fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
 
     let armor_class_map = map.get_map("armor_class")?;
     let ac = armor_class_map.get_usize("base")? as isize;
@@ -114,7 +113,7 @@ fn armor(map: &Value) -> Result<Armor, ValueError> {
         "Light" => ArmorCategory::Light,
         "Medium" => ArmorCategory::Medium,
         "Heavy" => ArmorCategory::Heavy,
-        _ => return Err(ValueError::ValueMismatch("Armor category".to_string())),
+        _ => return Err(CharacterDataError::ValueMismatch("Armor category".to_string())),
     };
 
     let strength_minimum = match map.get_usize("str_minimum")? {

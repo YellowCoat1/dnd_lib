@@ -1,24 +1,24 @@
 use crate::character::{class::Subclass, features::PresentedOption};
 use crate::character::features::Feature;
 use super::{
-    get_feature,
     get_page::get_raw_json, 
-    json_tools::{parse_string, ValueError, ValueExt, string_array}
+    json_tools::{parse_string, ValueExt, string_array}
 };
+use crate::getter::CharacterDataError;
 
-
-
-pub async fn get_subclass(name: &str) -> Result<Subclass, ValueError> {
+pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
     let index =  parse_string(name);
     let json = get_raw_json(format!("subclasses/{index}")).await?;
     let levels = get_raw_json(format!("subclasses/{index}/levels")).await?;
+
+    let api_getter = super::Dnd5eapigetter::new();
 
 
     let name = json.get_str("name")?;
     let description = string_array(json.get_array("desc")?)?;
 
     let levels_arr = levels.as_array()
-        .ok_or_else(|| ValueError::ValueMismatch("levels array".to_string()))?;
+        .ok_or_else(|| CharacterDataError::ValueMismatch("levels array".to_string()))?;
 
     let mut features: [Vec<PresentedOption<Feature>>; 20] = Default::default();
 
@@ -29,7 +29,7 @@ pub async fn get_subclass(name: &str) -> Result<Subclass, ValueError> {
         let mut features_vec = Vec::with_capacity(features_arr.len());
         for feature_obj in features_arr {
             let index = feature_obj.get_str("index")?;
-            let feature = get_feature(&index).await?;
+            let feature = api_getter.get_feature(&index).await?;
             features_vec.push(PresentedOption::Base(feature));
         }
 

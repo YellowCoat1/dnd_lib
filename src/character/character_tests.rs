@@ -1,16 +1,20 @@
 use crate::character::features::{Feature, FeatureEffect};
 use crate::character::stats::StatType;
-use crate::get::{get_class, get_background, get_race};
+use crate::getter::DataProvider;
 use super::stats::Stats;
 use super::player_character::Character;
+
+use crate::provider;
+
 
 //#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn char_stats() {
-    let wizard_future = get_class("wizard");
-    let acolyte_future = get_background("acolyte");
-    let human_future = get_race("human");
-    let dwarf_future = get_race("dwarf");
+    let provider = provider();
+    let wizard_future = provider.get_class("wizard");
+    let acolyte_future = provider.get_background("acolyte");
+    let human_future = provider.get_race("human");
+    let dwarf_future = provider.get_race("dwarf");
 
     let (wizard, acolyte) = (wizard_future.await.unwrap(), acolyte_future.await.unwrap());
     let (human, dwarf) = (human_future.await.unwrap(), dwarf_future.await.unwrap());
@@ -34,9 +38,10 @@ async fn char_stats() {
 //#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn char_spells() {
-    let wizard_future = get_class("wizard");
-    let acolyte_future = get_background("acolyte");
-    let elf_future = get_race("elf");
+    let provider = provider();
+    let wizard_future = provider.get_class("wizard");
+    let acolyte_future = provider.get_background("acolyte");
+    let elf_future = provider.get_race("elf");
 
     let (wizard, acolyte, elf) = (wizard_future.await.unwrap(), acolyte_future.await.unwrap(), elf_future.await.unwrap());
 
@@ -57,10 +62,11 @@ async fn char_spells() {
 
 #[tokio::test]
 async fn char_multiclassing() {
-    let monk_future = get_class("monk");
-    let fighter_future = get_class("fighter");
-    let acolyte_future = get_background("acolyte");
-    let human_future = get_race("human");
+    let provider = provider();
+    let monk_future = provider.get_class("monk");
+    let fighter_future = provider.get_class("fighter");
+    let acolyte_future = provider.get_background("acolyte");
+    let human_future = provider.get_race("human");
 
     let monk = monk_future.await.unwrap();
     let fighter = fighter_future.await.unwrap();

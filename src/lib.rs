@@ -12,14 +12,17 @@
 //! async fn main() {
 //!     extern crate rand;
 //!     use rand::Rng;
-//!     use dnd_lib::get::{get_class, get_race, get_background};
+//!     use dnd_lib::{getter::DataProvider, get::Dnd5eapigetter};
 //!     use dnd_lib::character::{stats::Stats, Character};
 //!     let mut rng = rand::thread_rng();
+//!
+//!     // first, we construct the api getter.
+//!     let provider = Dnd5eapigetter::new();
 //! 
-//!     // first, we get all the things we need to create a character.
-//!     let rogue = get_class("rogue").await.unwrap();
-//!     let human = get_race("human").await.unwrap();
-//!     let acolyte = get_background("acolyte").await.unwrap();
+//!     // then, we get all the things we need to create a character.
+//!     let rogue = provider.get_class("rogue").await.unwrap();
+//!     let human = provider.get_race("human").await.unwrap();
+//!     let acolyte = provider.get_background("acolyte").await.unwrap();
 //!
 //!     // this is john. John is a human rogue.
 //!     let mut john = Character::new(String::from("john"), &rogue, &acolyte, &human, Stats::default());
@@ -47,9 +50,24 @@
 //! }
 //! ```
 //!
+
+
 pub mod character;
+pub mod getter;
 pub mod get;
 pub mod save;
 
 #[cfg(test)]
 mod comprehensive_tests;
+
+#[cfg_attr(not(test), allow(dead_code))]
+use std::sync::{Arc, OnceLock};
+#[cfg_attr(not(test), allow(dead_code))]
+static PROVIDER: OnceLock<Arc<get::Dnd5eapigetter>> = OnceLock::new();
+
+#[cfg(test)]
+pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
+    PROVIDER.get_or_init(|| Arc::new(get::Dnd5eapigetter::new())).clone()
+}
+
+

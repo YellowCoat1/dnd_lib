@@ -12,15 +12,16 @@ use crate::get::{
     get_page::get_raw_json, 
     item::get_item, 
     json_tools::{
-        array_index_values, choice, parse_string, unwrap_number, ValueError, ValueExt
+        array_index_values, choice, parse_string, unwrap_number, ValueExt
     }, 
     subclass::get_subclass,
 };
+use crate::getter::CharacterDataError;
 /// Get a class from the api
 ///
 /// Note that this function takes a large amount of time, anywhere from 2 to 15 seconds. Try to run
 /// it in the background when you can.
-pub async fn get_class(class_name: &str) -> Result<Class, ValueError> {
+pub async fn get_class(class_name: &str) -> Result<Class, CharacterDataError> {
     let c = parse_string(class_name);
     let class_json= get_raw_json(format!("classes/{}", c))
         .await?;
@@ -36,7 +37,7 @@ pub async fn get_class(class_name: &str) -> Result<Class, ValueError> {
 }
 
 
-async fn subclasses(map: &Value) -> Result<Vec<Subclass>, ValueError> {
+async fn subclasses(map: &Value) -> Result<Vec<Subclass>, CharacterDataError> {
     let subclass_val_array = map.get_array("subclasses")?;
     
     let mut subclasses: Vec<Subclass> = Vec::with_capacity(subclass_val_array.len());
@@ -87,7 +88,7 @@ fn equipment_proficiencies_inner(proficiency_strings: Vec<String>) -> EquipmentP
     equipment
 }
 
-fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, ValueError> {
+fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, CharacterDataError> {
     let proficiencies_json = json.get_array("proficiencies")?;
     let mut proficiency_strings_vec: Vec<String> = vec![];
     for proficiency_json in proficiencies_json.iter() {
@@ -100,52 +101,52 @@ fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Value
     Ok(equipment_proficiencies_inner(proficiency_strings_vec))
 }
 
-fn saves(json: &Value) -> Result<Vec<StatType>, ValueError> {
+fn saves(json: &Value) -> Result<Vec<StatType>, CharacterDataError> {
     let saving_throws = json.get("saving_throws")
-        .ok_or_else(|| ValueError::ValueMismatch("saving throws top index".to_string()))?;
+        .ok_or_else(|| CharacterDataError::ValueMismatch("saving throws top index".to_string()))?;
 
     array_index_values(saving_throws, "name")
         .unwrap_or_default()
         .into_iter()
         .map(|s| StatType::from_shorthand(s.as_str()))
-        .map(|s| s.ok_or_else(|| ValueError::ValueMismatch("stat types".to_string())))
+        .map(|s| s.ok_or_else(|| CharacterDataError::ValueMismatch("stat types".to_string())))
         .collect::<Result<Vec<_>, _>>()
 }
 
-fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>), ValueError> {
+fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>), CharacterDataError> {
     let proficiency_choice_array = map.get_array("proficiency_choices")?;
 
     let first_choice = proficiency_choice_array.first()
-        .ok_or_else(|| ValueError::ValueMismatch("First proficiency choice".to_string()))?;
+        .ok_or_else(|| CharacterDataError::ValueMismatch("First proficiency choice".to_string()))?;
 
-    let proficiency_choices_err = ValueError::ValueMismatch("Proficiency choices".to_string());
+    let proficiency_choices_err = || CharacterDataError::new("Proficiency choices");
 
 
     // gets the choices in json values
     let (_, count, options) = choice(first_choice)
-        .map_err(|_| proficiency_choices_err.clone())?;
+        .map_err(|_| proficiency_choices_err())?;
 
     // converts from json to skill types
     let proficiency_options  =  options.map(|val| {
         let val = val.get("item")
             .and_then(|v| v.as_object())
-            .ok_or_else(|| proficiency_choices_err.clone().prepend("item for"))?;
+            .ok_or_else(|| proficiency_choices_err().prepend("item for"))?;
 
         let name = val.get("name")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| proficiency_choices_err.clone().prepend("name for "))?;
+            .ok_or_else(|| proficiency_choices_err().prepend("name for "))?;
 
         let proficiency_name = name.get(7..)
-            .ok_or_else(|| proficiency_choices_err.clone().prepend("name for "))?;
+            .ok_or_else(|| proficiency_choices_err().prepend("name for "))?;
 
         SkillType::from_name(proficiency_name)
-            .ok_or_else(|| proficiency_choices_err.clone().prepend("skill type for "))
+            .ok_or_else(|| proficiency_choices_err().prepend("skill type for "))
     }).collect_result()?;
 
     Ok((count, proficiency_options))
 }
 
-async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, ValueError>  {
+async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, CharacterDataError>  {
     let given_equipment = map.get_array("starting_equipment")?;
 
     // essentially a map without the async bs
@@ -153,7 +154,7 @@ async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usi
 
     for equipment_value in given_equipment.iter() {
         if !equipment_value.is_object() {
-            return Err(ValueError::ValueMismatch("equipment object".to_string()));
+            return Err(CharacterDataError::ValueMismatch("equipment object".to_string()));
         }
 
         let num = equipment_value.get_usize("quantity")?;
@@ -174,10 +175,10 @@ async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usi
     Ok(equipment)
 }
 
-async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, ValueError> {
+async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
     let (_, _, map_option) = choice(equipment_option)
-        .map_err(|_| ValueError::ValueMismatch("choice".to_string()))?;
-    let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, ValueError>> = map_option.map_async(|m| async move {
+        .map_err(|_| CharacterDataError::ValueMismatch("choice".to_string()))?;
+    let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, CharacterDataError>> = map_option.map_async(|m| async move {
 
         let count = m.get("count")
             .and_then(|v| v.as_number())
@@ -188,7 +189,7 @@ async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<V
         if let Some(Value::String(s)) = m.get("option_set_type") {
             if s == "equipment_category" {
                 let v = m.get("equipment_category")
-                    .ok_or_else(|| ValueError::ValueMismatch("equipment get".to_string()))?;
+                    .ok_or_else(|| CharacterDataError::ValueMismatch("equipment get".to_string()))?;
                 let category = equipment_category(v)
                     .map_err(|v| v.prepend("equipment category "))?;
                 // return the proper function
@@ -197,7 +198,7 @@ async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<V
         }
 
         let equipment = m.get("of")
-            .ok_or_else(|| ValueError::ValueMismatch("equipment".to_string()))?;
+            .ok_or_else(|| CharacterDataError::ValueMismatch("equipment".to_string()))?;
 
         let item = process_equipment(equipment).await?;
 
@@ -208,7 +209,7 @@ async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<V
 }
 
 
-fn equipment_category(map: &Value) -> Result<ItemCategory, ValueError> {
+fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
     let equipment_name = map.get_str("name")?;
 
     match equipment_name.as_str() {
@@ -227,7 +228,7 @@ fn equipment_category(map: &Value) -> Result<ItemCategory, ValueError> {
     Ok(ItemCategory::Item(item))
 }
 
-async fn process_equipment(val: &Value) -> Result<Item, ValueError> {
+async fn process_equipment(val: &Value) -> Result<Item, CharacterDataError> {
     let index = val.get_str("index")?;
     get_item(&index).await
 }
@@ -273,18 +274,18 @@ async fn get_features_from_class_level(level: &Value) -> Result<Vec<PresentedOpt
     Ok(features_vec)
 }
 
-fn spell_slots_from_map(json: &Value) -> Result<usize, ValueError>{
+fn spell_slots_from_map(json: &Value) -> Result<usize, CharacterDataError>{
 
     let slot_vals = json.as_object()
-        .ok_or_else(|| ValueError::ValueMismatch("spell slots object".to_string()))?
+        .ok_or_else(|| CharacterDataError::ValueMismatch("spell slots object".to_string()))?
         .values().map(|v| match v {
         Value::Number(n) => Ok(unwrap_number(n)),
         _ => Err(())
     }).collect::<Result<Vec<usize>, ()>>()
-    .map_err(|_| ValueError::ValueMismatch("spell slots values".to_string()))?;
+    .map_err(|_| CharacterDataError::ValueMismatch("spell slots values".to_string()))?;
 
     if slot_vals.is_empty() {
-        return Err(ValueError::ValueMismatch("spell slots length".to_string()));
+        return Err(CharacterDataError::ValueMismatch("spell slots length".to_string()));
     }
 
     Ok(slot_vals[0])
@@ -320,7 +321,7 @@ fn spellcasting_type(name: &str) -> Option<SpellCasterType> {
     }
 }
 
-fn spell_slots(levels_arr: &Vec<Value>) -> Result<[usize; 20], ValueError> {
+fn spell_slots(levels_arr: &Vec<Value>) -> Result<[usize; 20], CharacterDataError> {
     let mut spell_slots_vec = Vec::with_capacity(20);
 
     for level in levels_arr {
@@ -332,7 +333,7 @@ fn spell_slots(levels_arr: &Vec<Value>) -> Result<[usize; 20], ValueError> {
     }
 
     let cantrip_slots = spell_slots_vec.try_into()
-        .map_err(|_| ValueError::ValueMismatch("Cantrip slots array".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("Cantrip slots array".to_string()))?;
     
 
     Ok(cantrip_slots)
@@ -353,7 +354,7 @@ fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, ()> {
     Ok(Some(ability_score))
 }
 
-fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], ValueError> {
+fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], CharacterDataError> {
     let spells_input_array = spells.get_array("results")?;
     let mut spells_stored_array: [Vec<String>; 10] =  Default::default();
     for spell_input in spells_input_array.iter() {
@@ -364,18 +365,18 @@ fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], ValueError> {
     Ok(spells_stored_array)
 }
 
-fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, ValueError> {
+fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, CharacterDataError> {
     // for now we'll use vecs, we'll convert it to an array once we're done
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
-    let class_specific_err = ValueError::ValueMismatch("class specific level features".to_string());
+    let class_specific_err = || CharacterDataError::new("class specific level features");
 
     let level_1 = levels.first()
-        .ok_or_else(||ValueError::ValueMismatch("levels".to_string()))?;
+        .ok_or_else(||CharacterDataError::ValueMismatch("levels".to_string()))?;
     let level_1_class_specific = level_1.get_map("class_specific")?;
     let level_1_class_specific_map = match level_1_class_specific {
         Value::Object(o) => o,
-        _ => return Err(class_specific_err.clone().append(" map"))
+        _ => return Err(class_specific_err().append(" map"))
     };
     
     for key in level_1_class_specific_map.keys() {
@@ -386,33 +387,33 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
 
     for level in levels {
         let class_specific_map = level.get_map("class_specific")?.as_object()
-            .ok_or_else(|| class_specific_err.clone().append(" object"))?;
+            .ok_or_else(|| class_specific_err().append(" object"))?;
         for key in class_specific_map.keys() {
-            let other_val = class_specific_map.get(key).ok_or_else(|| class_specific_err.clone().append(" unfound key"))?;
+            let other_val = class_specific_map.get(key).ok_or_else(|| class_specific_err().append(" unfound key"))?;
             let other_as_string: String = match other_val {
-                Value::Number(n) => n.as_f64().ok_or_else(|| class_specific_err.clone().append(" number???"))?.to_string(),
+                Value::Number(n) => n.as_f64().ok_or_else(|| class_specific_err().append(" number???"))?.to_string(),
                 Value::Bool(b) => b.to_string(),
                 Value::String(s) => s.clone(),
                 Value::Object(o) => {
                     if key == "martial_arts" {
                         let count = o.get("dice_count")
-                            .ok_or_else(|| class_specific_err.clone().append(" martial arts dice count"))?;
+                            .ok_or_else(|| class_specific_err().append(" martial arts dice count"))?;
                         let value = o.get("dice_value")
-                            .ok_or_else(|| class_specific_err.clone().append(" martial arts dice value"))?;
+                            .ok_or_else(|| class_specific_err().append(" martial arts dice value"))?;
                         format!("{}d{}", count, value)
                     } else if key == "sneak_attack" {
                         let count = o.get("dice_count")
-                            .ok_or_else(|| class_specific_err.clone().append(" sneak attack dice count"))?;
+                            .ok_or_else(|| class_specific_err().append(" sneak attack dice count"))?;
                         let value = o.get("dice_value") 
-                            .ok_or_else(|| class_specific_err.clone().append(" sneak attack dice value"))?;
+                            .ok_or_else(|| class_specific_err().append(" sneak attack dice value"))?;
                         format!("{}d{}", count, value)
                     } else {
-                        return Err(class_specific_err.clone().append(" unrecognized val obj"));
+                        return Err(class_specific_err().append(" unrecognized val obj"));
                     }
                 },
-                v => return Err(class_specific_err.clone().append(&format!(" unrecognized val {:?}", v))),
+                v => return Err(class_specific_err().append(&format!(" unrecognized val {:?}", v))),
             };
-            map.get_mut(&key.replace("_", " ")).ok_or_else(|| class_specific_err.clone().append(" unrecognized key"))?.push(other_as_string);
+            map.get_mut(&key.replace("_", " ")).ok_or_else(|| class_specific_err().append(" unrecognized key"))?.push(other_as_string);
         }
     }
             
@@ -431,11 +432,11 @@ fn class_specific(levels: &Vec<Value>) -> Result<HashMap<String, [String; 20]>, 
     Ok(mapped)
 }
 
-fn process_spellcasting(json: &Value, levels_arr: &Vec<Value>, spells: Result<Value, reqwest::Error>) -> Result<Option<Spellcasting>, ValueError> {
+fn process_spellcasting(json: &Value, levels_arr: &Vec<Value>, spells: Result<Value, reqwest::Error>) -> Result<Option<Spellcasting>, CharacterDataError> {
     let name = json.get_str("index")
-        .map_err(|_| ValueError::ValueMismatch("Couldn't get name".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("Couldn't get name".to_string()))?;
     let casting_ability = spellcasting_ability(json)
-        .map_err(|_| ValueError::ValueMismatch("spellcasting ability".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("spellcasting ability".to_string()))?;
     let caster_type_option: Option<SpellCasterType> = spellcasting_type(name.as_ref());
 
     casting_ability.zip(caster_type_option)
@@ -444,7 +445,7 @@ fn process_spellcasting(json: &Value, levels_arr: &Vec<Value>, spells: Result<Va
             // This just returns the cantrips, since spell slots are handled elsewhere
             let cantrips_per_level = spell_slots(levels_arr)?;
             let preperation_type = preperation_type(name.as_ref())
-                .ok_or_else(|| ValueError::ValueMismatch("preperation".to_string()))?;
+                .ok_or_else(|| CharacterDataError::ValueMismatch("preperation".to_string()))?;
 
             Ok(Spellcasting {
                 spellcasting_ability,
@@ -484,20 +485,20 @@ fn multiclassing_prerequisites(name: &str) -> (HashMap<StatType, usize>, bool) {
     (prerequisites_map, or_flag)
 }
 
-fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, ValueError> {
+fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, CharacterDataError> {
     let multiclassing_map = json.get_map("multi_classing")?;
     let proficiency_strings = multiclassing_map.get_array("proficiencies")?
         .iter()
         .map(|v| v.get_str("name"))
-        .collect::<Result<Vec<String>, ValueError>>()?;
+        .collect::<Result<Vec<String>, CharacterDataError>>()?;
 
     Ok(equipment_proficiencies_inner(proficiency_strings))
 }
 
-async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest::Error>) -> Result<Class, ValueError> {
+async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest::Error>) -> Result<Class, CharacterDataError> {
 
     let name: String = json.get_str("index")
-        .map_err(|_| ValueError::ValueMismatch("Couldn't get name".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("Couldn't get name".to_string()))?;
 
     let hit_die: usize = json.get_usize("hit_die")?;
     
@@ -511,13 +512,13 @@ async fn json_to_class(json: Value, levels: Value, spells: Result<Value, reqwest
         .map_err(|v| v.prepend("items "))?;
 
     let levels_arr = levels.as_array()
-        .ok_or_else(|| ValueError::ValueMismatch("levels array".to_string()))?;
+        .ok_or_else(|| CharacterDataError::ValueMismatch("levels array".to_string()))?;
     
     let features_vec = class_features(levels_arr).await
         .unwrap_or_else(|_| vec![]);
 
     let features: [_; 20] = features_vec.try_into()
-        .map_err(|_| ValueError::ValueMismatch("Features was not for every level".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("Features was not for every level".to_string()))?;
     
 
     let class_specific_leveled = class_specific(levels_arr)?;

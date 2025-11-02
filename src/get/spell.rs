@@ -3,13 +3,14 @@ use crate::character::spells::Spell;
 use crate::character::items::{DamageRoll, DamageType};
 use crate::get::json_tools::parse_string;
 use super::get_page::get_raw_json;
-use super::json_tools::{ValueExt, ValueError, string_array};
+use super::json_tools::{ValueExt, string_array};
+use crate::getter::CharacterDataError;
 
 
 type StandardDamage = Vec<Vec<DamageRoll>>;
 type LeveledDamage = Vec<(usize, DamageRoll)>;
 
-pub async fn get_spell(name: &str) -> Result<Spell, ValueError> {
+pub async fn get_spell(name: &str) -> Result<Spell, CharacterDataError> {
     let index = parse_string(name);
     
     let json = get_raw_json(format!("spells/{index}")).await?;
@@ -22,7 +23,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, ValueError> {
     let level = json.get_usize("level")?;
     let range = json.get_str("range")?;
     let school = json.get_map("school")?.get_str("name")?.as_str().parse()
-        .map_err(|_| ValueError::ValueMismatch("spell school".to_string()))?;
+        .map_err(|_| CharacterDataError::ValueMismatch("spell school".to_string()))?;
     let components: Vec<char> = string_array(json.get_array("components")?)?
         .iter()
         .map(|v| v.chars().next().unwrap())
@@ -51,11 +52,11 @@ pub async fn get_spell(name: &str) -> Result<Spell, ValueError> {
 
 
 
-fn spell_damage(v: Option<&Value>) -> Result<(Option<StandardDamage>, Option<LeveledDamage>), ValueError> {
+fn spell_damage(v: Option<&Value>) -> Result<(Option<StandardDamage>, Option<LeveledDamage>), CharacterDataError> {
     v.map(|v| {
         let damage_type_name =  v.get_map("damage_type")?.get_str("name")?;
         let damage_type: DamageType = damage_type_name.parse()
-            .map_err(|_| ValueError::ValueMismatch("damage type".to_string()))?;
+            .map_err(|_| CharacterDataError::ValueMismatch("damage type".to_string()))?;
 
         let damage_vec: Option<StandardDamage> = v.get_map("damage_at_slot_level").ok()
             .map(|v| standard_spell_damage(damage_type, v))
@@ -74,35 +75,35 @@ fn spell_damage(v: Option<&Value>) -> Result<(Option<StandardDamage>, Option<Lev
     .map(|v| v.unwrap_or((None, None)))
 }
 
-fn standard_spell_damage(damage_type: DamageType, json: &Value) -> Result<StandardDamage, ValueError> {
+fn standard_spell_damage(damage_type: DamageType, json: &Value) -> Result<StandardDamage, CharacterDataError> {
     json.as_object()
-        .ok_or(ValueError::ValueMismatch("damage value".to_string()))?
+        .ok_or(CharacterDataError::ValueMismatch("damage value".to_string()))?
         .values()
         .map(|v| {
             v.as_str()
-                .ok_or_else(|| ValueError::ValueMismatch("damage value".to_string()))
+                .ok_or_else(|| CharacterDataError::ValueMismatch("damage value".to_string()))
         })
-        .collect::<Result<Vec<_>, ValueError>>()?
+        .collect::<Result<Vec<_>, CharacterDataError>>()?
         .into_iter()
         .map(|v| {
             DamageRoll::from_str(v, damage_type)
-                .ok_or_else(|| ValueError::ValueMismatch("damage value".to_string()))
+                .ok_or_else(|| CharacterDataError::ValueMismatch("damage value".to_string()))
                 .map(|v| vec![v])
         })
         .collect::<Result<Vec<_>,_>>()
 }
 
-fn leveled_spell_damage(damage_type: DamageType, json: &Value) -> Result<LeveledDamage, ValueError> {
+fn leveled_spell_damage(damage_type: DamageType, json: &Value) -> Result<LeveledDamage, CharacterDataError> {
     json.as_object()
-        .ok_or_else(|| ValueError::ValueMismatch("damage value".to_string()))?
+        .ok_or_else(|| CharacterDataError::ValueMismatch("damage value".to_string()))?
         .iter()
         .map(|(level, damage)| {
             let level_num: usize = level.parse()
-                .map_err(|_| ValueError::ValueMismatch("cantrip damage level".to_string()))?;
+                .map_err(|_| CharacterDataError::ValueMismatch("cantrip damage level".to_string()))?;
             let damage_string = damage.as_str()
-                .ok_or_else(|| ValueError::ValueMismatch("cantrip damage string".to_string()))?;
+                .ok_or_else(|| CharacterDataError::ValueMismatch("cantrip damage string".to_string()))?;
             let damage_roll = DamageRoll::from_str(damage_string, damage_type)
-                .ok_or_else(|| ValueError::ValueMismatch("cantrip damage string".to_string()))?;
+                .ok_or_else(|| CharacterDataError::ValueMismatch("cantrip damage string".to_string()))?;
             Ok((level_num, damage_roll))
         })
         .collect::<Result<Vec<_>, _>>()

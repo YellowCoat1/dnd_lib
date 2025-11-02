@@ -24,12 +24,15 @@ use super::{CharacterDescriptors, CharacterStory};
 /// ```
 /// #[tokio::main]
 /// async fn main() {
-///     use dnd_lib::get::{get_class, get_race, get_background};
+///     use dnd_lib::get::Dnd5eapigetter;
+///     use dnd_lib::getter::DataProvider;
 ///     use dnd_lib::character::{stats::Stats, Character};
+///
+///     let provider = Dnd5eapigetter::new();
 /// 
-///     let fighter = get_class("fighter").await.unwrap();
-///     let human = get_race("human").await.unwrap();
-///     let acolyte = get_background("acolyte").await.unwrap();
+///     let fighter = provider.get_class("fighter").await.unwrap();
+///     let human = provider.get_race("human").await.unwrap();
+///     let acolyte = provider.get_background("acolyte").await.unwrap();
 ///
 ///     let john = Character::new(String::from("john"), &fighter, &acolyte, &human, Stats::default());
 /// }

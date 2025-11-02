@@ -1,98 +1,56 @@
 //! shared tools for handling incoming json from the api.
 use serde_json::{Value, Map, Number};
+use crate::getter::CharacterDataError;
 
 use crate::character::features::PresentedOption;
-
-/// A regular error from getting something from the api.
-///
-/// In the case of a CouldntGet, either you're offline, put in the wrong name, or really just any
-/// regular error that would stop you from retrieving from the api.
-/// If it's a ValueMismatch, it's reccomended that you contact the developer. They mean that there
-/// was an error parsing from the api, which shouldn't happen regularly.
-#[derive(Clone, Debug)]
-pub enum ValueError {
-    CouldntGet,
-    ValueMismatch(String),
-}
-
-impl ValueError {
-    /// Prepends a value to the error message.
-    /// used for something a bit like a backtrace.
-    pub fn prepend(self, s: &str) -> ValueError {
-        match self {
-            ValueError::CouldntGet => ValueError::CouldntGet,
-            ValueError::ValueMismatch(t) => {
-                let mut new_string = s.to_string();
-                new_string.push_str(&t);
-                ValueError::ValueMismatch(new_string)
-            }
-            
-        }
-    }
-
-    pub fn append(mut self, s: &str) -> ValueError {
-        match &mut self {
-            ValueError::CouldntGet => (),
-            ValueError::ValueMismatch(v) => v.push_str(s),
-        }
-        self
-    }
-}
-
-impl From<reqwest::Error> for ValueError {
-    fn from(_: reqwest::Error) -> Self {
-        ValueError::CouldntGet
-    }
-}
-
 pub trait ValueExt {
-    fn as_string(&self, name: &str) -> Result<String, ValueError>;
-    fn get_str(&self, key: &str) -> Result<String, ValueError>;
-    fn get_usize(&self, key: &str) -> Result<usize, ValueError>;
-    fn get_bool(&self, key: &str) -> Result<bool, ValueError>;
-    fn get_map(&self, key: &str) -> Result<&Value, ValueError>;
-    fn get_array(&self, key: &str) -> Result<&[Value], ValueError>;
+    fn as_string(&self, name: &str) -> Result<String, CharacterDataError>;
+    fn get_str(&self, key: &str) -> Result<String, CharacterDataError>;
+    fn get_usize(&self, key: &str) -> Result<usize, CharacterDataError>;
+    fn get_bool(&self, key: &str) -> Result<bool, CharacterDataError>;
+    fn get_map(&self, key: &str) -> Result<&Value, CharacterDataError>;
+    fn get_array(&self, key: &str) -> Result<&[Value], CharacterDataError>;
 }
 
 impl ValueExt for Value {
-    fn as_string(&self, name: &str) -> Result<String, ValueError> {
+    fn as_string(&self, name: &str) -> Result<String, CharacterDataError> {
         self.as_str()
-            .ok_or(ValueError::ValueMismatch(String::from(name)))
+            .ok_or(CharacterDataError::ValueMismatch(String::from(name)))
             .map(|v| v.to_string())
     }
 
-    fn get_str(&self, key: &str) -> Result<String, ValueError> {
+    fn get_str(&self, key: &str) -> Result<String, CharacterDataError> {
         self.get(key)
             .and_then(|v| v.as_str())
             .map(|v| v.to_string())
-            .ok_or_else(|| ValueError::ValueMismatch(key.to_string()))
+            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
     }
 
-    fn get_usize(&self, key: &str) -> Result<usize, ValueError> {
+    fn get_usize(&self, key: &str) -> Result<usize, CharacterDataError> {
         self.get(key)
             .and_then(|v| v.as_u64())
             .map(|v| v.try_into().unwrap())
-            .ok_or_else(|| ValueError::ValueMismatch(key.to_string()))
+            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
     }
 
-    fn get_bool(&self, key: &str) -> Result<bool, ValueError> {
+    fn get_bool(&self, key: &str) -> Result<bool, CharacterDataError> {
         self.get(key)
             .and_then(|v| v.as_bool())
-            .ok_or_else(|| ValueError::ValueMismatch(key.to_string()))
+            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
     }
 
 
-    fn get_map(&self, key: &str) -> Result<&Value, ValueError> {
+    fn get_map(&self, key: &str) -> Result<&Value, CharacterDataError> {
         self.get(key)
             .and_then(|v| if v.is_object() { Some(v) } else {None})
-            .ok_or_else(|| ValueError::ValueMismatch(key.to_string()))
+            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
 
     }
 
-    fn get_array(&self, key: &str) -> Result<&[Value], ValueError> {
+    fn get_array(&self, key: &str) -> Result<&[Value], CharacterDataError> {
         self.get(key)
             .and_then(|v| v.as_array())
-            .ok_or_else(|| ValueError::ValueMismatch(key.to_string()))
+            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
             .map(|v| v.as_slice())
     }
 }
@@ -103,12 +61,12 @@ pub fn parse_string(s: &str) -> String {
     s.to_lowercase().replace(" ", "-")
 }
 
-pub fn string_array(arr: &[Value]) -> Result<Vec<String>, ValueError> {
+pub fn string_array(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {
     arr.iter()
         .map(|v| match v {
             Value::String(s) => Ok(s.to_string()),
-            _ => Err(ValueError::ValueMismatch(String::from("description field"))),
-        }).collect::<Result<Vec<String>, ValueError>>()
+            _ => Err(CharacterDataError::ValueMismatch(String::from("description field"))),
+        }).collect::<Result<Vec<String>, CharacterDataError>>()
 }
 
 pub fn object_index_value<'a>(object: &'a Value, index_name: &str) -> Result<&'a String, ()> {

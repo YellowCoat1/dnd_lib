@@ -1,4 +1,5 @@
-use super::json_tools::{ValueError, ValueExt};
+use super::json_tools::ValueExt;
+use crate::getter::CharacterDataError;
 use super::get_page::get_raw_json;
 use serde_json::Value;
 use crate::character::Subrace;
@@ -6,7 +7,7 @@ use crate::character::stats::StatType;
 use crate::get::json_tools::parse_string;
 use super::feature::get_feature_from_trait;
 
-pub async fn get_subrace(name: &str) -> Result<Subrace, ValueError> {
+pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
     let index = parse_string(name);
 
     let json = get_raw_json(format!("subraces/{index}")).await?;
@@ -23,7 +24,7 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, ValueError> {
     for traits_val in traits_arr.iter() {
         let trait_index = traits_val.get_str("index")?;
         let feature = get_feature_from_trait(&trait_index).await
-            .map_err(|_| ValueError::ValueMismatch("subrace trait".to_string()))?;
+            .map_err(|_| CharacterDataError::ValueMismatch("subrace trait".to_string()))?;
         traits.push(feature);
     }
 
@@ -35,7 +36,7 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, ValueError> {
     })
 }
 
-pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(StatType, isize)>, ValueError> {
+pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(StatType, isize)>, CharacterDataError> {
     let mut ability_bonuses: Vec<(StatType, isize)> = vec![];
 
     for ability_bonus in arr.iter() {
@@ -45,7 +46,7 @@ pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(StatType, isize)>, 
         let ability_score_bonus: isize = ability_bonus.get_usize("bonus")?.try_into().unwrap();
 
         let stat_type = StatType::from_shorthand(ability_score_name.as_str())
-            .ok_or_else(|| ValueError::ValueMismatch("ability score name".to_string()));
+            .ok_or_else(|| CharacterDataError::ValueMismatch("ability score name".to_string()));
 
         ability_bonuses.push((stat_type?, ability_score_bonus));
     }

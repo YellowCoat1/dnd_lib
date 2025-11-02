@@ -1,43 +1,29 @@
-//! Gets a D&D Race from the api.
-//!
-//! ```
-//! use dnd_lib::get::get_race;
-//! use dnd_lib::character::stats::StatType;
-//!
-//! #[tokio::main]
-//! async fn main() {
-//!     let elf = get_race("elf").await.unwrap();
-//!     assert_eq!(elf.ability_bonuses[0], (StatType::Dexterity, 2));
-//!
-//! }
-//! ```
-use memoizee::memoize;
 use serde_json::Value;
 use crate::character::stats::Size;
 use crate::character::{Race, Subrace};
 use crate::character::features::PresentedOption;
 use super::get_page::get_raw_json;
-use super::json_tools::{parse_string, ValueError, ValueExt};
+use super::json_tools::{parse_string, ValueExt};
+use crate::getter::CharacterDataError;
 use super::feature::get_feature_from_trait;
 use super::subrace::get_subrace;
 
 // the func to run through ability bonuses is in subrace, since that module isn't publicly exported
 use super::subrace::process_ability_bonuses;
 
-pub async fn get_race(name: &str) -> Result<Race, ValueError> {
+pub async fn get_race(name: &str) -> Result<Race, CharacterDataError> {
     let index = parse_string(name);
     get_race_raw(index).await
 }
 
-#[memoize]
-pub async fn get_race_raw(index_name: String) -> Result<Race, ValueError> {
+async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
 
     let race_json = get_raw_json(format!("races/{index_name}")).await?;
 
     let name = race_json.get_str("name")?;
     let speed: usize = race_json.get_usize("speed")?;
     let size = process_size(&race_json.get_str("size")?)
-        .ok_or_else(||ValueError::ValueMismatch("size parsing".to_string()))?;
+        .ok_or_else(||CharacterDataError::ValueMismatch("size parsing".to_string()))?;
 
     let ability_bonuses_array= race_json.get_array("ability_bonuses")?;
     let ability_bonuses = process_ability_bonuses(ability_bonuses_array)?;
@@ -51,7 +37,7 @@ pub async fn get_race_raw(index_name: String) -> Result<Race, ValueError> {
     for traits_val in traits_arr.iter() {
         let index = traits_val.get_str("index")?;
         let feature = get_feature_from_trait(&index).await
-            .map_err(|_| ValueError::ValueMismatch("race trait".to_string()))?;
+            .map_err(|_| CharacterDataError::ValueMismatch("race trait".to_string()))?;
         traits.push(feature);
     }
 
@@ -70,7 +56,7 @@ pub async fn get_race_raw(index_name: String) -> Result<Race, ValueError> {
     })
 }
 
-fn process_languages(arr: &[Value]) -> Result<Vec<String>, ValueError> {
+fn process_languages(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {
     let mut languages = vec![];
 
     for language  in arr.iter() {
@@ -81,7 +67,7 @@ fn process_languages(arr: &[Value]) -> Result<Vec<String>, ValueError> {
     Ok(languages)
 }
 
-async fn process_subraces(arr: &[Value]) -> Result<Vec<Subrace>, ValueError> {
+async fn process_subraces(arr: &[Value]) -> Result<Vec<Subrace>, CharacterDataError> {
     let mut subraces = Vec::with_capacity(arr.len());
     for val in arr {
         let name = val.get_str("index")?;

@@ -2,14 +2,16 @@
 //!
 //! ```
 //! use dnd_lib::character::items::Item;
-//! use dnd_lib::get::get_item;
+//! use dnd_lib::get::Dnd5eapigetter;
+//! use dnd_lib::getter::DataProvider;
 //! use dnd_lib::save::{save_serialized, get_serialized};
 //! use std::path::Path;
 //!
 //! #[tokio::main]
 //! async fn main() {
 //!     // get an item from the api. For simplicity, we're just going with the shortsword.
-//!     let item = get_item("shortsword").await.unwrap();
+//!     let provider = Dnd5eapigetter::new();
+//!     let item = provider.get_item("shortsword").await.unwrap();
 //!     assert_eq!(&item.name, "Shortsword");
 //!
 //!     // We'll be saving it to item.json

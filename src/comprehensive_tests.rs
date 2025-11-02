@@ -4,14 +4,17 @@ use crate::{
     character::{
         Character, features::{AbilityScoreIncrease, FeatureEffect}, spells::{CASTER_SLOTS, PactSlots, SpellSlots}, stats::{Modifiers, Size, SkillModifiers, SkillType, StatType, Stats}
     }, 
-    get::{get_background, get_class, get_race, get_spell}
+    getter::DataProvider,
 };
+
+use crate::provider;
 
 #[tokio::test]
 async fn level_3_elf_monk() {
-    let elf_future = get_race("elf");
-    let monk_future = get_class("monk");
-    let acolyte_future = get_background("acolyte");
+    let provider = provider();
+    let elf_future = provider.get_race("elf");
+    let monk_future = provider.get_class("monk");
+    let acolyte_future = provider.get_background("acolyte");
 
     let elf = elf_future.await.expect("couldn't get human");
     let monk = monk_future.await.expect("couldnt't get monk");
@@ -108,9 +111,10 @@ async fn level_3_elf_monk() {
 
 #[tokio::test]
 async fn level_5_halfling_rogue() {
-    let halfling_future = get_race("halfling");
-    let rogue_future = get_class("rogue");
-    let acolyte_future = get_background("acolyte");
+    let provider = provider();
+    let halfling_future = provider.get_race("halfling");
+    let rogue_future = provider.get_class("rogue");
+    let acolyte_future = provider.get_background("acolyte");
 
     let halfling = halfling_future.await.expect("couldn't get halfling");
     let rogue = rogue_future.await.expect("couldnt't get rogue");
@@ -305,22 +309,23 @@ async fn level_5_halfling_rogue() {
 // testing a level 3 druid with spellcasting
 #[tokio::test]
 async fn level_3_druid() {
-    let human_future = get_race("human");
-    let druid_future = get_class("druid");
-    let acolyte_future = get_background("acolyte");
+    let provider = provider();
+    let human_future = provider.get_race("human");
+    let druid_future = provider.get_class("druid");
+    let acolyte_future = provider.get_background("acolyte");
 
     let spells = vec![
         // cantrips
-        get_spell("poison spray"),
-        get_spell("shillelagh"),
+        provider.get_spell("poison spray"),
+        provider.get_spell("shillelagh"),
         // 1st level
-        get_spell("charm person"),
-        get_spell("cure wounds"),
-        get_spell("thunderwave"),
-        get_spell("healing word"),
+        provider.get_spell("charm person"),
+        provider.get_spell("cure wounds"),
+        provider.get_spell("thunderwave"),
+        provider.get_spell("healing word"),
         // 2nd level
-        get_spell("moonbeam"),
-        get_spell("darkvision"),
+        provider.get_spell("moonbeam"),
+        provider.get_spell("darkvision"),
     ];
 
 
@@ -416,30 +421,31 @@ async fn level_3_druid() {
 
 #[tokio::test]
 async fn level_10_warlock() {
-    let tiefling_future = get_race("tiefling");
-    let warlock_future = get_class("warlock");
-    let acolyte_future = get_background("acolyte");
+    let provider = provider();
+    let tiefling_future = provider.get_race("tiefling");
+    let warlock_future = provider.get_class("warlock");
+    let acolyte_future = provider.get_background("acolyte");
 
 
     let spells = vec![
         // cantrips
-        get_spell("eldritch blast"),
-        get_spell("minor illusion"),
+        provider.get_spell("eldritch blast"),
+        provider.get_spell("minor illusion"),
         // 1st level
-        get_spell("hellish rebuke"),
-        get_spell("charm person"),
+        provider.get_spell("hellish rebuke"),
+        provider.get_spell("charm person"),
         // 2nd level
-        get_spell("darkness"),
-        get_spell("invisibility"),
+        provider.get_spell("darkness"),
+        provider.get_spell("invisibility"),
         // 3rd level
-        get_spell("counterspell"),
-        get_spell("dispel magic"),
+        provider.get_spell("counterspell"),
+        provider.get_spell("dispel magic"),
         // 4th level
-        get_spell("blight"),
-        get_spell("banishment"),
+        provider.get_spell("blight"),
+        provider.get_spell("banishment"),
         // 5th level
-        get_spell("hold monster"),
-        get_spell("dream"),
+        provider.get_spell("hold monster"),
+        provider.get_spell("dream"),
     ];
 
 
