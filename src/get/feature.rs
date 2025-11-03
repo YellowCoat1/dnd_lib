@@ -3,7 +3,7 @@ use serde_json::Value;
 use crate::character::features::{PresentedOption, Feature, FeatureEffect, AbilityScoreIncrease};
 use crate::character::stats::StatType;
 use super::get_page::get_raw_json;
-use super::json_tools::{choice, parse_string, ValueExt};
+use super::json_tools::{choice, parse_string, ValueExt, value_name};
 use crate::getter::CharacterDataError;
 
 
@@ -21,7 +21,7 @@ pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDat
 
     let description: Vec<String> = description_arr.iter().map(|v| match v {
         Value::String(s) => Ok(s.clone()),
-        _ => Err(CharacterDataError::ValueMismatch(String::from("description line"))),
+        o => Err(CharacterDataError::mismatch("description", "string", value_name(o)))
     }).collect::<Result<Vec<String>, CharacterDataError>>()?;
 
     let effects = feature_effects(&index_name);
@@ -37,11 +37,7 @@ pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDat
     Ok(feature)
 }
 
-pub async fn get_feature_from_trait(index_name: &str) -> Result<PresentedOption<Feature>, ()> {
-    get_feature_from_trait_other(index_name).await.map_err(|_| ())
-}
-
-async fn get_feature_from_trait_other(index_name: &str) -> Result<PresentedOption<Feature>, CharacterDataError> {
+pub async fn get_feature_from_trait(index_name: &str) -> Result<PresentedOption<Feature>, CharacterDataError> {
 
     let trait_json = get_raw_json(format!("traits/{index_name}")).await?;
     
@@ -71,19 +67,15 @@ async fn get_feature_from_trait_other(index_name: &str) -> Result<PresentedOptio
 async fn get_draconic_ancestry(json: Value) -> Result<PresentedOption<Feature>, CharacterDataError> {
     let trait_specific = json.get_map("trait_specific")?;
 
-    let subtrait_options = match trait_specific.get("subtrait_options") {
-        Some(v) => v,
-        _ => return Err(CharacterDataError::ValueMismatch(String::from("subtrait_options"))),
-    };
+    let subtrait_options = trait_specific.get("subtrait_options")
+        .ok_or_else(|| CharacterDataError::not_found("Object", "subtrait_options"))?;
 
     let (_, _, trait_option) = choice(subtrait_options)
-        .map_err(|_| CharacterDataError::ValueMismatch(String::from("draconic choice")))?;
+        .map_err(|v| v.prepend("subtrait_options "))?;
 
-    let v = trait_option.map_async(|m| async {
-        let item_map = match m.get("item") {
-            Some(v) => v,
-            _ => return Err(CharacterDataError::ValueMismatch(String::from("item"))),
-        };
+    trait_option.map_async(|m| async {
+        let item_map = m.get("item")
+            .ok_or_else(|| CharacterDataError::not_found("Object", "item"))?;
 
         let index = item_map.get_str("index")?;
 
@@ -113,8 +105,7 @@ async fn get_draconic_ancestry(json: Value) -> Result<PresentedOption<Feature>, 
             description: desc,
             effects: vec![],
         })
-    }).await.map(|v| v.unwrap());
-    Ok(v)
+    }).await.collect_result()
 }
 
 fn feature_effects(index_name: &str) -> Vec<FeatureEffect> {

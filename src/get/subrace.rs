@@ -23,8 +23,7 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
     let mut traits = Vec::with_capacity(traits_arr.len());
     for traits_val in traits_arr.iter() {
         let trait_index = traits_val.get_str("index")?;
-        let feature = get_feature_from_trait(&trait_index).await
-            .map_err(|_| CharacterDataError::ValueMismatch("subrace trait".to_string()))?;
+        let feature = get_feature_from_trait(&trait_index).await?;
         traits.push(feature);
     }
 
@@ -46,9 +45,9 @@ pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(StatType, isize)>, 
         let ability_score_bonus: isize = ability_bonus.get_usize("bonus")?.try_into().unwrap();
 
         let stat_type = StatType::from_shorthand(ability_score_name.as_str())
-            .ok_or_else(|| CharacterDataError::ValueMismatch("ability score name".to_string()));
+            .ok_or_else(|| CharacterDataError::mismatch("ability score name", "StatType string", "improper StatType string"))?;
 
-        ability_bonuses.push((stat_type?, ability_score_bonus));
+        ability_bonuses.push((stat_type, ability_score_bonus));
     }
 
     Ok(ability_bonuses)

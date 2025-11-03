@@ -1,5 +1,7 @@
 use serde_json::Value;
 
+use crate::getter::CharacterDataError;
+
 pub async fn get_page(path: String) -> Result<reqwest::Response, reqwest::Error>{
     let total_path = format!("https://www.dnd5eapi.co/api/2014/{path}");
     let response = reqwest::get(total_path)
@@ -7,7 +9,7 @@ pub async fn get_page(path: String) -> Result<reqwest::Response, reqwest::Error>
     Ok(response)
 }
 
-pub async fn get_raw_json(path: String) -> Result<serde_json::Value, reqwest::Error> {
+pub async fn get_raw_json(path: String) -> Result<serde_json::Value, CharacterDataError> {
     let json = get_page(path)
         .await?
         .json::<Value>()

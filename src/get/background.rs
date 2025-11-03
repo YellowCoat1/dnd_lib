@@ -21,8 +21,8 @@ pub async fn get_background(name: &str) -> Result<Background, CharacterDataError
     let proficiencies = json.get_array("starting_proficiencies")?
         .iter().map(|v| {
             SkillType::from_name(&v.get_str("name")?[7..])
+                .ok_or_else(|| CharacterDataError::mismatch("starting proficiencies", "Valid SkillType string", "Invalid SkillType string"))
                 .map(PresentedOption::Base)
-                .ok_or_else(|| CharacterDataError::new("starting proficiency"))
         }).collect::<Result<Vec<PresentedOption<SkillType>>, CharacterDataError>>()?;
 
     let equipment_array = json.get_array("starting_equipment")?;
@@ -32,8 +32,7 @@ pub async fn get_background(name: &str) -> Result<Background, CharacterDataError
         let equipment_index = equipment_val
             .get_map("equipment")?
             .get_str("index")?;
-        let item_val = get_item(&equipment_index).await
-            .map_err(|_| CharacterDataError::new("item"))?;
+        let item_val = get_item(&equipment_index).await?;
         let equipment_num = equipment_val.get_usize("quantity")?;
         equipment.push((item_val, equipment_num));
     }

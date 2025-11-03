@@ -1,5 +1,6 @@
 use crate::character::{class::Subclass, features::PresentedOption};
 use crate::character::features::Feature;
+use crate::get::json_tools::value_name;
 use super::{
     get_page::get_raw_json, 
     json_tools::{parse_string, ValueExt, string_array}
@@ -18,7 +19,7 @@ pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
     let description = string_array(json.get_array("desc")?)?;
 
     let levels_arr = levels.as_array()
-        .ok_or_else(|| CharacterDataError::ValueMismatch("levels array".to_string()))?;
+        .ok_or_else(|| CharacterDataError::mismatch("levels json", "array", value_name(&levels)))?;
 
     let mut features: [Vec<PresentedOption<Feature>>; 20] = Default::default();
 

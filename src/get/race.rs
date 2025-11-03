@@ -22,8 +22,9 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
 
     let name = race_json.get_str("name")?;
     let speed: usize = race_json.get_usize("speed")?;
-    let size = process_size(&race_json.get_str("size")?)
-        .ok_or_else(||CharacterDataError::ValueMismatch("size parsing".to_string()))?;
+    let size_string = race_json.get_str("size")?;
+    let size = process_size(&size_string)
+        .ok_or_else(||CharacterDataError::mismatch("size", "Valid size string", "Invalid size string"))?;
 
     let ability_bonuses_array= race_json.get_array("ability_bonuses")?;
     let ability_bonuses = process_ability_bonuses(ability_bonuses_array)?;
@@ -36,8 +37,7 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
 
     for traits_val in traits_arr.iter() {
         let index = traits_val.get_str("index")?;
-        let feature = get_feature_from_trait(&index).await
-            .map_err(|_| CharacterDataError::ValueMismatch("race trait".to_string()))?;
+        let feature = get_feature_from_trait(&index).await?;
         traits.push(feature);
     }
 

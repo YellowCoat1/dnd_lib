@@ -1,8 +1,8 @@
-//! General things for getting dnd data from an api
+//! Traits and errors for retrieving D&D Character data.
 use thiserror::Error;
 use async_trait::async_trait;
 
-// A trait for structs that get d&d data from an api
+// A trait representing a source capable of retrieving D&D data, e.g. from an api.
 #[async_trait]
 pub trait DataProvider: Send + Sync {
     async fn get_race(&self, name: &str) -> Result<crate::character::Race, CharacterDataError>;
@@ -12,45 +12,72 @@ pub trait DataProvider: Send + Sync {
     async fn get_spell(&self, name: &str) -> Result<crate::character::spells::Spell, CharacterDataError>;
 }
 
-/// A regular error from getting something from the api.
-///
-/// In the case of a CouldntGet, either you're offline, put in the wrong name, or really just any
-/// regular error that would stop you from retrieving from the api.
-/// 
-/// If it's a ValueMismatch, it's reccomended that you contact the developer. They mean that there
-/// was an error parsing from the api, which shouldn't happen regularly.
+/// Errors that can occur when retrieving or parsing character data
 #[derive(Debug, Error)]
 pub enum CharacterDataError {
+    // Could not successfully connect to the api
     #[error("network request failed: {0}")]
     Network(#[from] reqwest::Error),
+    // Could not properly deserialize the returned data
     #[error("failed to parse: {0}")]
     Parse(#[from] serde_json::Error),
-    #[error("unexpected value: {0}")]
-    ValueMismatch(String),
+    
+
+    /// The api didn't have a required field
+    #[error("Value not found: expected {val_type} named {name}")]
+    NotFound {
+        val_type: &'static str,
+        name: String,
+    },
+
+    /// The api returned a field of an unexpected type
+    #[error("type mismatch for field {field}: expected {expected}, got {found}")]
+    TypeMismatch {
+        field: String,
+        expected: &'static str,
+        found: String,
+    },
 }
 
 impl CharacterDataError {
-    /// Prepends a value to the error message.
-    /// used for something a bit like a backtrace.
+    /// Adds context by prefixing the `ValueMismatch` message.
     pub fn prepend(self, s: &str) -> CharacterDataError {
         match self {
-            CharacterDataError::ValueMismatch(t) => {
-                let mut new_string = s.to_string();
-                new_string.push_str(&t);
-                CharacterDataError::ValueMismatch(new_string)
+            CharacterDataError::NotFound {val_type, name} => {
+                let mut s = s.to_string();
+                s.push_str(&name);
+                CharacterDataError::NotFound {val_type, name: s}
+            },
+            CharacterDataError::TypeMismatch { field , expected, found } => {
+                let mut s = s.to_string();
+                s.push_str(&field);
+                CharacterDataError::TypeMismatch { field: s, expected, found }
             }
-            o => o
+            o => o,
         }
     }
 
+    /// Adds trailing context to a `ValueMismatch` message.
     pub fn append(mut self, s: &str) -> CharacterDataError {
-        if let CharacterDataError::ValueMismatch(v) = &mut self {
-            v.push_str(s);
+        match &mut self {
+            CharacterDataError::NotFound {name, ..} => {
+                name.push_str(s);
+            }
+            CharacterDataError::TypeMismatch {field, ..} => {
+                field.push_str(s);
+            }
+            _ => (),
         }
+
         self
     }
 
-    pub fn new(s: &str) -> CharacterDataError {
-        CharacterDataError::ValueMismatch(s.to_string())
+    /// Constructs a `ValueMismatch` with the given string.
+    pub fn mismatch(field: &str, expected: &'static str, found: &str) -> CharacterDataError {
+        CharacterDataError::TypeMismatch { field: field.to_string(), expected, found: found.to_string() }
+    }
+    
+    pub fn not_found(val_type: &'static str, name: &str) -> CharacterDataError {
+        CharacterDataError::NotFound { val_type, name: name.to_string() }
     }
 }

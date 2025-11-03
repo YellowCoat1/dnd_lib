@@ -3,8 +3,6 @@
 //! The main feature of this module is the [Dnd5eapigetter], which implements [DataProvider](crate::getter::DataProvider)
 //! trait.
 
-
-
 mod get_page;
 mod json_tools;
 mod item;

@@ -12,46 +12,67 @@ pub trait ValueExt {
     fn get_array(&self, key: &str) -> Result<&[Value], CharacterDataError>;
 }
 
+pub fn value_name(v: &Value) -> &str {
+    match v {
+        Value::Object(_) => "Map",
+        Value::Array(_) => "Array",
+        Value::String(_) => "String",
+        Value::Number(_) => "Number",
+        Value::Bool(_) => "Bool",
+        Value::Null => "Null"
+    }
+}
+
 impl ValueExt for Value {
     fn as_string(&self, name: &str) -> Result<String, CharacterDataError> {
         self.as_str()
-            .ok_or(CharacterDataError::ValueMismatch(String::from(name)))
+            .ok_or(CharacterDataError::mismatch(name, "String", value_name(self)))
             .map(|v| v.to_string())
     }
 
     fn get_str(&self, key: &str) -> Result<String, CharacterDataError> {
-        self.get(key)
-            .and_then(|v| v.as_str())
-            .map(|v| v.to_string())
-            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
+        Ok(self.get(key)
+            .ok_or_else(|| CharacterDataError::not_found("String", key))?
+            .as_str()
+            .ok_or_else(|| CharacterDataError::mismatch(key, "String", value_name(self)))?
+            .to_string())
     }
 
     fn get_usize(&self, key: &str) -> Result<usize, CharacterDataError> {
-        self.get(key)
-            .and_then(|v| v.as_u64())
-            .map(|v| v.try_into().unwrap())
-            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
+       Ok(self.get(key)
+            .ok_or_else(|| CharacterDataError::not_found("Number", key))?
+            .as_number()
+            .ok_or_else(|| CharacterDataError::mismatch(key, "Number", value_name(self)))?
+            .as_u64()
+            .ok_or_else(|| CharacterDataError::mismatch(key, "unsigned integer", "signed int or float"))?
+            .try_into()
+            .expect("number too large"))
     }
 
     fn get_bool(&self, key: &str) -> Result<bool, CharacterDataError> {
         self.get(key)
-            .and_then(|v| v.as_bool())
-            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
+            .ok_or_else(|| CharacterDataError::not_found("Bool", key))?
+            .as_bool()
+            .ok_or_else(|| CharacterDataError::mismatch(key, "Bool", value_name(self)))
     }
 
 
     fn get_map(&self, key: &str) -> Result<&Value, CharacterDataError> {
-        self.get(key)
-            .and_then(|v| if v.is_object() { Some(v) } else {None})
-            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
-
+        let v = self.get(key)
+            .ok_or_else(|| CharacterDataError::not_found("Map", key))?;
+        if !v.is_object() {
+            return Err(CharacterDataError::mismatch(key, "Map", value_name(self)))
+        }
+        Ok(v)
     }
 
+
     fn get_array(&self, key: &str) -> Result<&[Value], CharacterDataError> {
-        self.get(key)
-            .and_then(|v| v.as_array())
-            .ok_or_else(|| CharacterDataError::ValueMismatch(key.to_string()))
-            .map(|v| v.as_slice())
+        Ok(self.get(key)
+            .ok_or_else(|| CharacterDataError::not_found("Array", key))?
+            .as_array()
+            .ok_or_else(|| CharacterDataError::mismatch(key, "unsigned integer", "signed int or float"))?
+            .as_ref())
     }
 }
 
@@ -65,7 +86,7 @@ pub fn string_array(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {
     arr.iter()
         .map(|v| match v {
             Value::String(s) => Ok(s.to_string()),
-            _ => Err(CharacterDataError::ValueMismatch(String::from("description field"))),
+            o => Err(CharacterDataError::mismatch("Description field", "String", value_name(o)))
         }).collect::<Result<Vec<String>, CharacterDataError>>()
 }
 
@@ -95,47 +116,35 @@ pub fn unwrap_number(num: &Number) -> usize {
 
 // description, count, value_choices
 type NameCountMap<'a> = (String, usize, PresentedOption<&'a Map<String, Value>>);
-pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, ()> {
-    let map = match map_value {
-        Value::Object(o) => o,
-        _ => return Err(()),
-    };
+pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, CharacterDataError> {
+    let map = map_value.as_object()
+        .ok_or_else(|| CharacterDataError::mismatch("choice", "Object", value_name(map_value)))?;
 
-    let count = match map.get("choose") {
-        Some(Value::Number(n)) => n.as_f64().unwrap() as usize,
-        _ => return Err(()),
-    };
+    let count = map_value.get_usize("choose")?;
 
-    let description = match map.get("desc") {
-        Some(Value::String(s)) => s.clone(),
-        _ => String::from(""),
-    };
+    let description = map.get("desc")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
 
-    let choice_arr = match map.get("from") {
-        Some(a) => a,
-        _ => return Err(()),
-    };
+    let choice_arr = map.get("from")
+        .ok_or_else(|| CharacterDataError::not_found("Object", "from"))?;
 
     let value_choices = process_bare_choice(choice_arr)?;
 
     Ok((description, count, value_choices))
 }
 
-fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<String, Value>>, ()> {
-    let choice_array = match choice_array {
-        Value::Object(o) => o,
-        _ => panic!("A"),
-        //_ => return Err(()),
-    };
-    
+fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<String, Value>>, CharacterDataError> {
+    let choice_array = choice_array.as_object()
+        .ok_or_else(|| CharacterDataError::mismatch("choice", "Object", value_name(choice_array)))?;
+
     // if we're at a base choice, return
     if let Some(Value::String(s)) = choice_array.get("option_type") {
         if s == "choice" {
             // getting the choice array and unwrapping the value
-            let choice_val = match choice_array.get("choice") {
-                Some(v) => v, 
-                _ => return Err(())
-            };
+            let choice_val = choice_array.get("choice")
+                .ok_or_else(|| CharacterDataError::not_found("Object", "choice object"))?;
             return Ok(choice(choice_val)?.2);
         } else if s == "multiple" {
             // TODO
@@ -143,9 +152,12 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
             // so for now it's just the first item. Later ill implement it as Base: Vec<T>
             let items_arr = match choice_array.get("items") {
                 Some(Value::Array(a)) => a,
-                _ => return Err(())
+                Some(o) => return Err(CharacterDataError::mismatch("choice items", "Array", value_name(o))),
+                None => return Err(CharacterDataError::not_found("Array", "choice items"))
             };
-            if items_arr.is_empty() {return Err(())};
+            if items_arr.is_empty() {
+                return Err(CharacterDataError::not_found("Object items first entry", "object items"));
+            };
             return process_bare_choice(&items_arr[0]);
         }
         return Ok(PresentedOption::Base(choice_array));
@@ -164,9 +176,9 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
         let assembled_choice: Vec<PresentedOption<&Map<String, Value>>> = a
             .iter()
             .map(process_bare_choice)
-            .collect::<Result< Vec<PresentedOption<&Map<String, Value>>>, ()>>()?;
+            .collect::<Result< Vec<PresentedOption<&Map<String, Value>>>, CharacterDataError>>()?;
         return Ok(PresentedOption::Choice(assembled_choice));
     };
 
-    Err(())
+    Err(CharacterDataError::not_found("Choice identifier", "option_type"))
 }

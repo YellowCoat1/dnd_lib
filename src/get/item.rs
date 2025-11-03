@@ -48,10 +48,10 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
     let damage_type = damage_type.parse()
-        .map_err(|_| CharacterDataError::ValueMismatch("damage type".to_string()))?;
+        .map_err(|_| CharacterDataError::mismatch("damage_type", "DamageType", "irregular string for damage type"))?;
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
-        .ok_or_else(|| CharacterDataError::ValueMismatch("damage roll".to_string()))?;
+        .ok_or_else(|| CharacterDataError::mismatch("damage roll", "Damage roll string", "irregular string for damage roll"))?;
 
     let category_string = map.get_str("category_range")?;
 
@@ -60,7 +60,7 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
         "Simple Ranged" => WeaponType::SimpleRanged,
         "Martial Melee" => WeaponType::Martial,
         "Martial Ranged" => WeaponType::MartialRanged,
-        _ => return Err(CharacterDataError::ValueMismatch("Weapon Type".to_string())),
+        _ => return Err(CharacterDataError::mismatch("weapon type", "weapon string", "irregular string")),
     };
 
     let properties = properties(map, damage.damage_type)?;
@@ -94,9 +94,9 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
             "two_handed" => {properties.two_handed = true},
             "versitile" => {
                 let damage_val = two_handed_damage
-                    .ok_or_else(|| CharacterDataError::ValueMismatch("Two handed damage".to_string()))?;
+                    .ok_or_else(|| CharacterDataError::mismatch("versitile damage", "two_handed_damage", "no two handed damage"))?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
-                    .ok_or_else(|| CharacterDataError::ValueMismatch("Two handed damage roll".to_string()))?;
+                    .ok_or_else(|| CharacterDataError::mismatch("versitile damage roll", "two handed damage string", "irregular damage string"))?;
                 properties.versatile = Some(damage);
             }
             _ => (),
@@ -113,7 +113,7 @@ fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
         "Light" => ArmorCategory::Light,
         "Medium" => ArmorCategory::Medium,
         "Heavy" => ArmorCategory::Heavy,
-        _ => return Err(CharacterDataError::ValueMismatch("Armor category".to_string())),
+        _ => return Err(CharacterDataError::mismatch("armor category", "armor category string", "irregular string"))
     };
 
     let strength_minimum = match map.get_usize("str_minimum")? {
