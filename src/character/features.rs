@@ -1,4 +1,12 @@
-/// Features, or etc listed effects. 
+//! Features, or etc listed effects. 
+//!
+//! Most character effects that are descriptive rather than numerical are listed under here.
+//! As of right now, that only includes the [Feature] struct, and the many surrounding
+//! datastructures around it.
+//!
+//! Another major part of this module is the [PresentedOption] enum, which is used throughout the
+//! crate to describe a choice between options that the character can pick.
+
 use serde::{Serialize, Deserialize};
 use super::{
     items::{Action, ArmorCategory, DamageRoll, WeaponType}, 
