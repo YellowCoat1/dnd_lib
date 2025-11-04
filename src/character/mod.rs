@@ -16,6 +16,8 @@ mod character_etc;
 pub use character_etc::{CharacterStory, CharacterDescriptors};
 mod player_character;
 pub use player_character::{Character, SpeccedClass, Castable};
+mod character_builder;
+pub use character_builder::CharacterBuilder;
 
 #[cfg(test)]
 mod character_tests;

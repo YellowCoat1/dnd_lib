@@ -21,7 +21,12 @@
 //!     let acolyte = provider.get_background("acolyte").await.unwrap();
 //!
 //!     // this is john. John is a human rogue.
-//!     let mut john = Character::new(String::from("john"), &rogue, &acolyte, &human, Stats::default());
+//!     let mut john = CharacterBuilder::new("John")
+//!         .race(&human)
+//!         .background(&acolyte)
+//!         .class(&rogue)
+//!         .stats(Stats::default())
+//!         .build().unwrap();
 //!     
 //!     // john sees an upcoming fight, and equips his dagger.
 //!     john.items[3].2 = true;
@@ -81,7 +86,7 @@ pub mod prelude {
     pub use crate::{
         getter::DataProvider,
         get::Dnd5eapigetter,
-        character::{Character, Race, Background},
+        character::{Character, CharacterBuilder, Race, Background},
         character::stats::Stats,
         character::class::Class,
     };

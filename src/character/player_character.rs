@@ -32,7 +32,12 @@ use super::{CharacterDescriptors, CharacterStory};
 ///     let human = provider.get_race("human").await.unwrap();
 ///     let acolyte = provider.get_background("acolyte").await.unwrap();
 ///
-///     let john = Character::new(String::from("john"), &fighter, &acolyte, &human, Stats::default());
+///     let john = CharacterBuilder::new("john")
+///         .class(&fighter)
+///         .background(&acolyte)
+///         .race(&human)
+///         .stats(Stats::default())
+///         .build().unwrap();
 /// }
 /// ```
 ///
@@ -89,6 +94,8 @@ impl Character {
 
 
     /// Builds a level 1 character with base equipment from the class and background.
+    ///
+    /// Typically using [CharacterBuilder] is preferred over this.
     pub fn new(name: String, class: &Class, background: &Background, race: &Race, base_stats: Stats) -> Character {
         
         let mut new_character = Character {
@@ -356,7 +363,12 @@ impl Character {
     /// ```ignore
     ///     // this is john. john has a base int score of 13, and john is a high elf. His int should be 14.
     ///     let stats = Stats::from(&[10, 10, 10, 13, 10, 10]);
-    ///     let mut john = Character::new(String::from("john"), &wizard, &acolyte, &elf, stats);
+    ///     let mut john = CharacterBuilder::new("john")
+    ///         .class(&wizard)
+    ///         .background(&acolyte)
+    ///         .race(&elf)
+    ///         .stats(stats)
+    ///         .build().unwrap();
     ///     john.race.subraces.choose_in_place(0);
     ///
     ///     // An int of 14 is a modifier of 2.
