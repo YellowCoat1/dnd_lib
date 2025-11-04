@@ -12,8 +12,7 @@
 //! async fn main() {
 //!     extern crate rand;
 //!     use rand::Rng;
-//!     use dnd_lib::{getter::DataProvider, get::Dnd5eapigetter};
-//!     use dnd_lib::character::{stats::Stats, Character};
+//!     use dnd_lib::prelude::*;
 //!     let mut rng = rand::thread_rng();
 //!
 //!     // first, we construct the api getter.
@@ -71,4 +70,12 @@ pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
     PROVIDER.get_or_init(|| Arc::new(get::Dnd5eapigetter::new())).clone()
 }
 
-
+pub mod prelude {
+    pub use crate::{
+        getter::DataProvider,
+        get::Dnd5eapigetter,
+        character::{Character, Race, Background},
+        character::stats::Stats,
+        character::class::Class,
+    };
+}

@@ -1,9 +1,8 @@
 //! A simple helper to save other data to a file.
 //!
 //! ```
+//! use dnd_lib::prelude::*;
 //! use dnd_lib::character::items::Item;
-//! use dnd_lib::get::Dnd5eapigetter;
-//! use dnd_lib::getter::DataProvider;
 //! use dnd_lib::save::{save_serialized, get_serialized};
 //! use std::path::Path;
 //!

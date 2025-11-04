@@ -24,9 +24,7 @@ use super::{CharacterDescriptors, CharacterStory};
 /// ```
 /// #[tokio::main]
 /// async fn main() {
-///     use dnd_lib::get::Dnd5eapigetter;
-///     use dnd_lib::getter::DataProvider;
-///     use dnd_lib::character::{stats::Stats, Character};
+///     use dnd_lib::prelude::*;
 ///
 ///     let provider = Dnd5eapigetter::new();
 /// 
@@ -356,9 +354,6 @@ impl Character {
     /// Returns a [None] if the character is not a spellcaster.
     ///
     /// ```ignore
-    ///     use dnd_lib::get::{get_class, get_race, get_background};
-    ///     use dnd_lib::character::{stats::Stats, Character};
-    ///
     ///     // this is john. john has a base int score of 13, and john is a high elf. His int should be 14.
     ///     let stats = Stats::from(&[10, 10, 10, 13, 10, 10]);
     ///     let mut john = Character::new(String::from("john"), &wizard, &acolyte, &elf, stats);
