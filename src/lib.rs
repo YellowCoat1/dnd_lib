@@ -4,9 +4,6 @@
 //! other datastructures in this crate (found in the [character] module) are centered around it,
 //! building the foundations for a complete D&D character.
 //!
-//! You'll most likely want to start by getting the basic structures ([class](character::class::Class), [background](character::Background), [race](character::Race), etc) from the [get] module, and using
-//! that to build a character.
-//!
 //! ```
 //! #[tokio::main]
 //! async fn main() {
@@ -49,6 +46,16 @@
 //! }
 //! ```
 //!
+//! This crate stores different choices for a character as different structs. For example, a
+//! [character::class::Class] would be a Wizard, or a Figter, or a Monk. If you wanted to store every D&D class a
+//! character could take, you'd need a `Vec<Class>`. These rules must be parsed from an api and constructed.
+//!
+//! This is what [get::Dnd5eapigetter] is for. You first get the required rules (class, background,
+//! race) from the api, then you build a character with that.
+//!
+//! ## Feature flags
+//!
+//! - `integration` specifically for testing. Enables all tests.
 
 
 pub mod character;

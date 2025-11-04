@@ -1310,7 +1310,14 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
 /// A class as it's used for a character. This contains all the relevant information from a class
 /// for a character at their level.
 ///
-/// A lot of the details about a SpeccedClass's fields are the same as a [Class].
+/// Classes are bulky, and are the largest datastructure in the crate, aside from characters. A
+/// SpeccedClass is like a fragment of that class, which has only the relevant information for a
+/// character.
+///
+/// For example, if the character is a level 3 fighter, a [Class] would have every feature you
+/// can take up until level 20, but the [SpeccedClass] only contains features from levels 1 to 3.
+///
+/// SpeccedClasses are internally built from a `Class`. Many of the fields are the same.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SpeccedClass {
     /// The name of the class the [SpeccedClass] is from.
