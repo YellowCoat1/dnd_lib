@@ -95,7 +95,7 @@ impl Character {
 
     /// Builds a level 1 character with base equipment from the class and background.
     ///
-    /// Typically using [CharacterBuilder] is preferred over this.
+    /// Typically using [CharacterBuilder](crate::character::CharacterBuilder) is preferred over this.
     pub fn new(name: String, class: &Class, background: &Background, race: &Race, base_stats: Stats) -> Character {
         
         let mut new_character = Character {
