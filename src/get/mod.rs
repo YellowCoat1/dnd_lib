@@ -69,7 +69,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.background_cache.lock().unwrap().get(name) {
             return Ok(cached.clone())
         }
-        let background = get_background_inner(name).await?;
+        let background = get_background_inner(self, name).await?;
         self.background_cache.lock().unwrap().insert(name.to_string(), background.clone());
         Ok(background)
     }
@@ -77,7 +77,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.class_cache.lock().unwrap().get(name) {
             return Ok(cached.clone())
         }
-        let class = get_class_inner(name).await?;
+        let class = get_class_inner(self, name).await?;
         self.class_cache.lock().unwrap().insert(name.to_string(), class.clone());
         Ok(class)
     }
@@ -124,3 +124,23 @@ impl Default for Dnd5eapigetter {
 mod class_tests;
 #[cfg(test)]
 mod race_tests;
+
+#[cfg(test)]
+mod test {
+    use crate::provider;
+    use crate::getter::DataProvider;
+    use crate::character::features::PresentedOption;
+    use crate::character::stats::SkillType;
+
+    #[tokio::test]
+    async fn get_acolyte() {
+        let provider = provider();
+        let acolyte = provider.get_background("acolyte").await.expect("failed to get acolyte!");
+        let insight = acolyte.proficiencies.first().expect("acolyte should have proficiencies!");
+        assert_eq!(*insight, PresentedOption::Base(SkillType::Insight));
+        let hero = acolyte.personality_traits.choices().unwrap().first().expect("acolyte should have personality traits!");
+        assert_eq!(*hero, PresentedOption::Base(String::from("I idolize a particular hero of my faith, and constantly refer to that person's deeds and example.")));
+        let tradition = acolyte.ideals.choices().unwrap().first().expect("acolyte should have ideals!");
+        assert_eq!(*tradition, PresentedOption::Base(String::from("Tradition. The ancient traditions of worship and sacrifice must be preserved and upheld.")));
+    }
+}

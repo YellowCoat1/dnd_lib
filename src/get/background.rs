@@ -1,8 +1,8 @@
 use serde_json::Value;
 use super::get_page::get_raw_json;
 use crate::getter::CharacterDataError;
+use crate::getter::DataProvider;
 use super::json_tools::ValueExt;
-use super::item::get_item;
 use crate::character::features::Feature;
 use crate::character::{
     Background,
@@ -14,7 +14,7 @@ use crate::get::json_tools::parse_string;
 /// Gets a background from the api.
 ///
 /// There's only one background available through dnd5eapi: acolyte.
-pub async fn get_background(name: &str) -> Result<Background, CharacterDataError> {
+pub async fn get_background(getter: &impl DataProvider, name: &str) -> Result<Background, CharacterDataError> {
     let index = parse_string(name);
     let json = get_raw_json(format!("backgrounds/{index}")).await?;
 
@@ -32,7 +32,7 @@ pub async fn get_background(name: &str) -> Result<Background, CharacterDataError
         let equipment_index = equipment_val
             .get_map("equipment")?
             .get_str("index")?;
-        let item_val = get_item(&equipment_index).await?;
+        let item_val = getter.get_item(&equipment_index).await?;
         let equipment_num = equipment_val.get_usize("quantity")?;
         equipment.push((item_val, equipment_num));
     }
@@ -83,19 +83,4 @@ fn process_personality(json: &Value) -> Result<PresentedOption<String>, Characte
 }
 
 
-#[cfg(test)]
-mod test {
-    use super::*;
 
-    // literally the only background in the api, but whatever
-    #[tokio::test]
-    async fn get_acolyte() {
-        let acolyte = get_background("acolyte").await.expect("failed to get acolyte!");
-        let insight = acolyte.proficiencies.first().expect("acolyte should have proficiencies!");
-        assert_eq!(*insight, PresentedOption::Base(SkillType::Insight));
-        let hero = acolyte.personality_traits.choices().unwrap().first().expect("acolyte should have personality traits!");
-        assert_eq!(*hero, PresentedOption::Base(String::from("I idolize a particular hero of my faith, and constantly refer to that person's deeds and example.")));
-        let tradition = acolyte.ideals.choices().unwrap().first().expect("acolyte should have ideals!");
-        assert_eq!(*tradition, PresentedOption::Base(String::from("Tradition. The ancient traditions of worship and sacrifice must be preserved and upheld.")));
-    }
-}

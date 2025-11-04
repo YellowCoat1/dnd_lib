@@ -4,15 +4,19 @@ use crate::character::{
     stats::SkillType
 };
 
+use crate::provider;
+
+use crate::getter::DataProvider;
+
 use super::{
-  class::get_class,
   item::get_item,
   feature::get_feature,
 };
    
 #[tokio::test]
 async fn wizard_retrieval() {
-    let wizard = get_class("wizard")
+    let provider = provider();
+    let wizard = provider.get_class("wizard")
         .await
         .expect("failed to get wizard class from api");
 
@@ -92,7 +96,8 @@ fn wizard_subclass(class: &Class) {
 
 #[tokio::test]
 async fn warlock_retrieval() {
-    let warlock = get_class("warlock")
+    let provider = provider();
+    let warlock = provider.get_class("warlock")
         .await
         .expect("failed to get warlock class from api");
 

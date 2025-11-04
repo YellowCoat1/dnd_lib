@@ -1,16 +1,20 @@
 use std::collections::HashMap;
 use serde_json::Value;
 use crate::{character::{
-    class::{Class, ItemCategory, Subclass}, features::{Feature, PresentedOption}, items::{Item, ItemType, WeaponType}, spells::{SpellCasterType, SpellCastingPreperation, Spellcasting}, stats::{EquipmentProficiencies, SkillType, StatType}
-}, get::json_tools::value_name};
+    class::{Class, ItemCategory, Subclass}, 
+    features::{Feature, PresentedOption}, 
+    items::{Item, ItemType, WeaponType}, 
+    spells::{SpellCasterType, SpellCastingPreperation, Spellcasting}, 
+    stats::{EquipmentProficiencies, SkillType, StatType}
+}, getter::DataProvider};
+
 use crate::get::{
     feature::get_feature, 
     get_page::get_raw_json, 
-    item::get_item, 
-    json_tools::{
-        array_index_values, choice, parse_string, unwrap_number, ValueExt
-    }, 
     subclass::get_subclass,
+    json_tools::{
+        value_name, array_index_values, choice, parse_string, unwrap_number, ValueExt
+    }, 
 };
 use crate::getter::CharacterDataError;
 
@@ -19,7 +23,7 @@ use crate::getter::CharacterDataError;
 ///
 /// Note that this function takes a large amount of time, anywhere from 2 to 15 seconds. Try to run
 /// it in the background when you can.
-pub async fn get_class(class_name: &str) -> Result<Class, CharacterDataError> {
+pub async fn get_class(getter: &impl DataProvider, class_name: &str) -> Result<Class, CharacterDataError> {
     let c = parse_string(class_name);
     let class_json= get_raw_json(format!("classes/{}", c))
         .await?;
@@ -27,7 +31,7 @@ pub async fn get_class(class_name: &str) -> Result<Class, CharacterDataError> {
     let levels_json = get_raw_json(format!("classes/{}/levels", c))
         .await?;
 
-    json_to_class(class_json, levels_json).await
+    json_to_class(getter, class_json, levels_json).await
 }
 
 
@@ -131,7 +135,7 @@ fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>
     Ok((count, proficiency_options))
 }
 
-async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, CharacterDataError>  {
+async fn items(getter: &impl DataProvider, map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, CharacterDataError>  {
     let given_equipment = map.get_array("starting_equipment")?;
 
     // essentially a map without the async bs
@@ -144,7 +148,7 @@ async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usi
 
         let num = equipment_value.get_usize("quantity")?;
 
-        let item = process_equipment(&equipment_value["equipment"])
+        let item = process_equipment(getter, &equipment_value["equipment"])
             .await?;
 
         equipment.push(PresentedOption::Base(vec![(ItemCategory::Item(item), num)]));
@@ -153,14 +157,14 @@ async fn items(map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usi
     let equipment_options_arr = map.get_array("starting_equipment_options")?;
 
     for equipment_option in equipment_options_arr.iter() {
-        let new_equipment = class_item_choice(equipment_option).await?;
+        let new_equipment = class_item_choice(getter, equipment_option).await?;
         equipment.push(new_equipment);
     }
 
     Ok(equipment)
 }
 
-async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
+async fn class_item_choice(getter: &impl DataProvider, equipment_option: &Value) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
     let (_, _, map_option) = choice(equipment_option)?;
     let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, CharacterDataError>> = map_option.map_async(|m| async move {
 
@@ -184,7 +188,7 @@ async fn class_item_choice(equipment_option: &Value) -> Result<PresentedOption<V
         let equipment = m.get("of")
             .ok_or_else(|| CharacterDataError::not_found("Object", "equipment of"))?;
 
-        let item = process_equipment(equipment).await?;
+        let item = process_equipment(getter, equipment).await?;
 
         Ok(vec![(ItemCategory::Item(item), count)])
     }).await;
@@ -212,9 +216,9 @@ fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
     Ok(ItemCategory::Item(item))
 }
 
-async fn process_equipment(val: &Value) -> Result<Item, CharacterDataError> {
+async fn process_equipment(getter: &impl DataProvider, val: &Value) -> Result<Item, CharacterDataError> {
     let index = val.get_str("index")?;
-    get_item(&index).await
+    getter.get_item(&index).await
 }
 
 async fn class_features(levels_arr: [&Value; 20])  -> Result<[Vec<PresentedOption<Feature>>; 20], CharacterDataError> {
@@ -465,7 +469,7 @@ fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, C
     Ok(equipment_proficiencies_inner(proficiency_strings))
 }
 
-async fn json_to_class(json: Value, levels: Value) -> Result<Class, CharacterDataError> {
+async fn json_to_class(getter: &impl DataProvider, json: Value, levels: Value) -> Result<Class, CharacterDataError> {
 
     let name: String = json.get_str("index")
         .map_err(|v| v.prepend("class name "))?;
@@ -479,7 +483,7 @@ async fn json_to_class(json: Value, levels: Value) -> Result<Class, CharacterDat
     let equipment_proficiencies = equipment_proficiencies(&json)?;
     let skill_proficiency_choices: (usize, PresentedOption<SkillType>) = proficiency_choices(&json)
         .map_err(|v| v.prepend("Skill choices "))?;
-    let beginning_items = items(&json).await
+    let beginning_items = items(getter, &json).await
         .map_err(|v| v.prepend("items "))?;
 
     let levels_arr: [&Value; 20]  = levels.as_array()
