@@ -65,6 +65,7 @@ use std::sync::{Arc, OnceLock};
 #[cfg_attr(not(test), allow(dead_code))]
 static PROVIDER: OnceLock<Arc<get::Dnd5eapigetter>> = OnceLock::new();
 
+// Global api getter for all tests, in order for a shared cache
 #[cfg(test)]
 pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
     PROVIDER.get_or_init(|| Arc::new(get::Dnd5eapigetter::new())).clone()

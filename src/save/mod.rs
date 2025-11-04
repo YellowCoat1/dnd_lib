@@ -36,12 +36,14 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 
 
+/// Save the serializable datastructure to the given path.
 pub fn save_serialized<T: Serialize>(path: &Path, t: &T) -> Result<(), Box<dyn Error>> {
     let class_string = serde_json::to_string(t)?;
     fs::write(path, class_string)?;
     Ok(())
 }
 
+/// Gets some serializable data from the given path, parsing it back into the datastructure.
 pub fn get_serialized<T: DeserializeOwned>(path: &Path)  -> Result<T, Box<dyn Error>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
