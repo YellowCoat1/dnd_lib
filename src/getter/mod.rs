@@ -2,14 +2,53 @@
 use thiserror::Error;
 use async_trait::async_trait;
 
-// A trait representing a source capable of retrieving D&D data, e.g. from an api.
+use crate::character::{
+    Race,
+    Background,
+    items::Item,
+    class::Class,
+    spells::Spell,
+};
+
+
+/// A trait representing a source capable of retrieving D&D data, e.g. from an api.
+///
+/// The methods in this trait are asyncronous.
+///
+/// If you're planning on implementing this trait, use the `async_trait` crate.
+///
+/// ```rust,ignore
+/// use async_trait::async_trait;
+/// use dnd_lib::getter::DataProvider;
+/// use dnd_lib::character::items::{Item, ItemType} 
+/// use dnd_lib::character::Background;
+///
+/// struct Retrievier;
+///
+/// #[async_trait] 
+/// impl DataProvider for Retrievier {
+///     async fn get_item(&self, name: &str) -> Result<Item, CharacterDataError> {
+///         Ok(Item {
+///             name: name.to_string(),
+///             description: None,
+///             item_type: ItemType::Misc,
+///         })
+///     }
+///
+///     async fn get_background(&self, name: &str) -> Result<Background, CharacterDataError> {
+///         // gets background from api
+///     }
+///     
+///     // ...
+///
+/// }
 #[async_trait]
 pub trait DataProvider: Send + Sync {
-    async fn get_race(&self, name: &str) -> Result<crate::character::Race, CharacterDataError>;
-    async fn get_background(&self, name: &str) -> Result<crate::character::Background, CharacterDataError>;
-    async fn get_item(&self, name: &str) -> Result<crate::character::items::Item, CharacterDataError>;
-    async fn get_class(&self, name: &str) -> Result<crate::character::class::Class, CharacterDataError>;
-    async fn get_spell(&self, name: &str) -> Result<crate::character::spells::Spell, CharacterDataError>;
+    async fn get_race(&self, name: &str) -> Result<Race, CharacterDataError>;
+    async fn get_background(&self, name: &str) -> Result<Background, CharacterDataError>;
+    async fn get_item(&self, name: &str) -> Result<Item, CharacterDataError>;
+    async fn get_class(&self, name: &str) -> Result<Class, CharacterDataError>;
+    async fn get_spell(&self, name: &str) -> Result<Spell, CharacterDataError>;
 }
 
 /// Errors that can occur when retrieving or parsing character data

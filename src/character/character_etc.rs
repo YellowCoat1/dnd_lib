@@ -2,7 +2,8 @@ use serde::{Serialize, Deserialize};
 
 use super::stats::{Alignment, Size};
 
-/// A struct that contains all the etc strings you may want for describing the character.
+/// Contains all the etc strings for describing the story of a
+/// character.
 ///
 /// All of the fields are split by paragraphs.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -14,6 +15,9 @@ pub struct CharacterStory {
     pub other: Vec<String>,
 }
 
+/// Contains all the etc strings for describing how a character looks and acts.
+///
+/// All of the fields are split by paragraphs.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CharacterDescriptors {
     pub gender: String,

@@ -51,6 +51,10 @@ impl AbilityScoreIncrease {
     }
 }
 
+/// An action granted by a feature.
+///
+/// This is meant to be a wildcard action, describing anything that isn't already in the domain of
+/// this crate. Its fields reflect this, covering every possibility.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomAction {
     pub name: String,
@@ -71,6 +75,9 @@ pub struct CustomAction {
 }
 
 
+/// A CustomAction after its fields have been computed within a character.
+///
+/// This struct has everything needed to make an attack.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComputedCustomAction {
     pub name: String,
@@ -152,6 +159,6 @@ pub enum FeatureEffect {
     SwimmingSpeed(usize),
 
     /// An extra damage roll added by a feature. It doesn't need to be a damage roll, it can just
-    /// be an extra damage (e.g. another 1d6 poison on every melee)
+    /// be an extra damage (e.g. bonus 1d6 poison damage on melee attack)
     CustomAction(CustomAction),
 }

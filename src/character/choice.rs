@@ -5,10 +5,10 @@ use serde::{Serialize, Deserialize};
 /// select.
 ///
 /// Each node is either:
-/// - [Base(T)]: a single, concrete choice
-/// - [Choice(Vec<PresentedOption\<T\>>)]: a list of sub-options to choose from
+/// - Base(T): a single, concrete choice
+/// - Choice(Vec<PresentedOption\<T\>>): a list of sub-options to choose from
 ///
-/// This is used widely throughout the crate — for example, to model class equipment options
+/// This is used widely throughout the crate. For example, to model class equipment options
 /// or selectable ability score increases.
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -68,7 +68,7 @@ impl<T> PresentedOption<T> {
         }
     }
 
-    /// Returns the list of choices if it's a [PresentedOption::Choice],
+    /// Returns a refrence the stored type if it's a [PresentedOption::Base],
     /// otherwise it returns [None].
     pub fn as_base(&self) -> Option<&T> {
         match self {
@@ -77,6 +77,8 @@ impl<T> PresentedOption<T> {
         }
     }
 
+    /// Returns a mutable refrence to the stored type if it's a [PresentedOption::Base],
+    /// otherwise it returns [None].
     pub fn as_base_mut(&mut self) -> Option<&mut T> {
         match self {
             PresentedOption::Choice(_) => None,
@@ -87,6 +89,8 @@ impl<T> PresentedOption<T> {
     /// Gets an array of the choices.
     ///
     /// Returns an error if it's a [PresentedOption::Base].
+    ///
+    /// This is the [PresentedOption::Choice] equivalent to [PresentedOption::as_base].
     pub fn choices(&self) -> Option<&[PresentedOption<T>]> {
         match self {
             PresentedOption::Base(_) => None,
@@ -118,9 +122,6 @@ impl<T> PresentedOption<T> {
     }
 
     /// Maps a [PresentedOption] to a different type in an async closure.
-    ///
-    /// Primarily used for parsing api results. This will rarely (if ever) be used by a regular
-    /// user.
     pub async fn map_async<'b, U, F, Fut>(self, f: F) -> PresentedOption<U>
     where
         T: 'b,
@@ -169,8 +170,8 @@ impl<T> PresentedOption<T> {
 impl<T> PresentedOption<Option<T>> {
     /// Collects an [Option] out of a [PresentedOption].
     /// 
-    /// Primarily used for parsing api results. This will rarely (if ever) be used by a regular
-    /// user.
+    /// Primarily used for parsing api results. This meant mainly for api getters, and
+    /// will not be used by the regular user otherwise.
     pub fn collect_option(self) -> Option<PresentedOption<T>> {
         match self {
             PresentedOption::Base(Some(v)) => Some(PresentedOption::Base(v)),
@@ -189,8 +190,8 @@ impl<T> PresentedOption<Option<T>> {
 impl<T, U> PresentedOption<Result<T, U>> {
     /// Collects a [Result] out of a [PresentedOption].
     ///
-    /// Primarily used for parsing api results. This will rarely (if ever) be used by a regular
-    /// user.
+    /// Primarily used for parsing api results. This meant mainly for api getters, and
+    /// will not be used by the regular user otherwise.
     pub fn collect_result(self) -> Result<PresentedOption<T>, U> {
         match self {
             PresentedOption::Base(Ok(v)) => Ok(PresentedOption::Base(v)),

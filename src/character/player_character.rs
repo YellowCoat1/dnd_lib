@@ -1006,7 +1006,10 @@ impl Character {
     /// another for 5th, and so on.
     ///
     /// Spells may also have multiple for each level. Chromatic orb, for example, can attack with
-    /// one of many types, so it has many spell actions.
+    /// one of many types, so it would have many spell actions.
+    /// 
+    /// If the character is a warlock, it still returns everthing up until their maximum spell
+    /// level, since they're still able to downcast below their spell slot's level.
     pub fn spell_actions(&self) -> Vec<SpellAction> {
         let modifiers = self.stats().modifiers();
 
@@ -1033,7 +1036,7 @@ impl Character {
         char_spell_actions
     }
 
-    pub fn max_slot_level(&self) -> Option<usize> {
+    fn max_slot_level(&self) -> Option<usize> {
         let spell_slots = self.spell_slots()
             .map(|v| v.0.into_iter().position(|v| v==0).unwrap_or(8) + 1);
         let pact_slots = self.pact_slots()

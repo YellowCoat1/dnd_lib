@@ -16,6 +16,7 @@ async fn level_3_elf_monk() {
     let monk_future = provider.get_class("monk");
     let acolyte_future = provider.get_background("acolyte");
 
+
     let elf = elf_future.await.expect("couldn't get human");
     let monk = monk_future.await.expect("couldnt't get monk");
     let acolyte = acolyte_future.await.expect("couldn't get acolyte");

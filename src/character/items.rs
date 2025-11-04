@@ -66,6 +66,9 @@ impl FromStr for DamageType {
 }
 
 /// A general type an item could be.
+///
+/// Shields are distinct from Armor, since they're calculated differently, and you may only receive
+/// the bonus of one armor piece at a time.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ItemType {
     Weapon(Weapon),
@@ -90,7 +93,7 @@ pub struct Item {
 
 /// A character's armor.
 ///
-/// Note that this doesn't include shields, they have their own kind.
+/// Note that this doesn't include shields.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Armor {
     pub ac: isize,
@@ -100,7 +103,7 @@ pub struct Armor {
 }
 
 impl Armor {
-    /// Get the ac of the armor if you used it.
+    /// Get the ac of the armor in the context of a character using it.
     pub fn total_ac(&self, dex: isize) -> isize {
         self.ac + match self.category {
             ArmorCategory::Light => dex,
@@ -133,6 +136,7 @@ pub struct Weapon {
     pub properties: WeaponProperties,
 }
 
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct WeaponProperties {
     pub ammunition: bool,
@@ -145,6 +149,7 @@ pub struct WeaponProperties {
     pub special: bool,
     pub thrown: bool,
     pub two_handed: bool,
+    /// If the weapon is versatile, this contains the damage roll of the 2 handed attack.
     pub versatile: Option<DamageRoll>,
 }
 
@@ -204,7 +209,7 @@ pub trait Action {
 /// An attack you can take with a weapon.
 ///
 /// This is after calculations, so a WeaponAction has a static attack roll bonus and damage roll
-/// type.
+/// type that each include the extra bonuses from ability scores.
 #[derive(Debug, Clone)]
 pub struct WeaponAction {
     pub name: String,

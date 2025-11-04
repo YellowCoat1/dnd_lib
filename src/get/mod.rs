@@ -30,10 +30,30 @@ use crate::{character::{Background, class::Class, features::Feature, items::Item
 /// Gets D&D data from dnd5eapi.co
 ///
 /// The following are availible from this api:
-/// classes: All except artificier
-/// items: Every basic item, no magic items
-/// backgrounds: only Acolyte
-/// races: Dragonborn, Dwarf, Elf, Gnome, Half-elf, Half-orc, Halfing, Human, Tiefling
+/// - classes: All except artificier
+/// - items: Every basic item, no magic items
+/// - backgrounds: only Acolyte
+/// - races: Dragonborn, Dwarf, Elf, Gnome, Half-elf, Half-orc, Halfing, Human, Tiefling
+///
+/// ```rust 
+/// use dnd_lib::get::Dnd5eapigetter;
+/// use dnd_lib::getter::DataProvider;
+/// use dnd_lib::character::{items::Item, spells::Spell};
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let provider = Dnd5eapigetter::new();
+/// 
+///     let item: Item = provider.get_item("shortsword")
+///         .await.expect("failed to get shortsword");
+///     assert_eq!(item.name, "Shortsword");
+///
+///     let spell: Spell = provider.get_spell("fireball")
+///         .await.expect("failed to get fireball");
+///     assert_eq!(spell.name, "Fireball");
+///     assert_eq!(spell.range, "150 feet");
+/// }
+/// ```
 pub struct Dnd5eapigetter {
     item_cache: Mutex<HashMap<String, Item>>,
     class_cache: Mutex<HashMap<String, Class>>,

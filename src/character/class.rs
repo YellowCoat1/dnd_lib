@@ -27,18 +27,20 @@ pub struct Class {
     pub saving_throw_proficiencies: Vec<StatType>,
     /// The dice size of a hit die, e.g. 12 is 1d12.
     pub hit_die: usize,
-    /// The first field of the tuple is how many to choose, so 3 is choose 3 skills.
+    /// The first field of the tuple is how many to choose.
     pub skill_proficiency_choices: (usize,PresentedOption<SkillType>),
+    /// If the class is a spellcaster. Contains all the relevant information for spellcasting.
     pub spellcasting: Option<Spellcasting>,
     pub equipment_proficiencies: EquipmentProficiencies,
     /// The features that appear on a class's table, rather than text features. =
     /// They're indexed by name, and returns the values for all 20 levels.
     pub class_specific_leveled: HashMap<String, [String; 20]>,
 
-    // The prerequisites for multiclassing into this class. By default, these are "and"ed together.
+    /// The prerequisites for multiclassing into this class. By default, these are "and"ed together.
     pub multiclassing_prerequisites: HashMap<StatType, usize>,
-    // If true, the prerequisites are "or"ed together rather than "and"ed. 
+    /// If true, the prerequisites are "or"ed together rather than "and"ed. 
     pub multiclassing_prerequisites_or: bool,
+    /// The proficiencies a character would gain if they multiclassed into this class.
     pub multiclassing_proficiency_gain: EquipmentProficiencies,
 }
 
@@ -61,13 +63,14 @@ impl Class {
 
 /// A D&D Subclass.
 ///
-/// Subclasses are contained within classes.
+/// Subclasses are contained within [Classes](Class).
 /// To add a subclass, push it to the [Class]'s subclasses field.
 #[derive(Serialize, Deserialize)]
 #[derive(Clone)]
 #[derive(Debug)]
 pub struct Subclass {
     pub name: String,
+    /// The subclass's description, split by paragraph.
     pub description: Vec<String>,
     /// Features are per-level, for each of the 20 levels.
     /// Most of these will be empty vectors, since subclasses don't give features every level.

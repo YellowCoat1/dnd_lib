@@ -1,4 +1,4 @@
-//! A library to assist in dnd 5e's systems.
+//! A library to assist in creating and managing D&D 5e characters.
 //!
 //! The main feature of this crate is the [Character](character::Character) struct. Most of the
 //! other datastructures in this crate (found in the [character] module) are centered around it,
