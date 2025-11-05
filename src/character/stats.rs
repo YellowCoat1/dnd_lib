@@ -1,7 +1,9 @@
 //! Defines stats, saving throws, skills, and proficieny.
 
 use std::{
-        collections::HashSet, fmt::Display, ops::{Add, AddAssign, Deref, DerefMut, Sub}, path::Display
+        collections::HashSet, 
+        fmt::Display, 
+        ops::{Add, AddAssign, Deref, DerefMut, Sub}
 };
 use strum::{EnumIter, IntoEnumIterator};
 
