@@ -5,7 +5,7 @@ use crate::character::{features::PresentedOption, stats::{StatType, Size}};
 async fn get_elf() {
     let elf = get_race("elf").await.expect("failed to get elf!");
     assert_eq!((elf.name, elf.speed, elf.size), ("Elf".to_string(), 30, Size::Medium));
-    assert_eq!(elf.ability_bonuses.first().cloned(), Some((StatType::Dexterity, 2)));
+    assert_eq!(elf.ability_bonuses.first().cloned(), Some((Some(StatType::Dexterity), 2)));
     assert_eq!(elf.languages.first().cloned(), Some(String::from("Common")));
 
     let subraces = match elf.subraces {
@@ -19,7 +19,7 @@ async fn get_elf() {
     };
 
     assert_eq!(high_elf.name.as_str(), "High Elf");
-    assert_eq!(high_elf.ability_bonuses.first().cloned(), Some((StatType::Intelligence, 1)));
+    assert_eq!(high_elf.ability_bonuses.first().cloned(), Some((Some(StatType::Intelligence), 1)));
 }
 
 

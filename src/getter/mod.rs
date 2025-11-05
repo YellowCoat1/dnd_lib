@@ -38,10 +38,15 @@ use crate::character::{
 ///     async fn get_background(&self, name: &str) -> Result<Background, CharacterDataError> {
 ///         // gets background from api
 ///     }
+///}
 ///     
-///     // ...
+///```
 ///
-/// }
+/// There's no guarentee that different implementations return exactly the same values. It is
+/// requested that the name field is always the same, being capitalized like a title. e.g. "Wizard"
+/// or "Flag Bearer"
+
+
 #[async_trait]
 pub trait DataProvider: Send + Sync {
     async fn get_race(&self, name: &str) -> Result<Race, CharacterDataError>;

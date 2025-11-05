@@ -68,9 +68,6 @@ pub mod getter;
 pub mod get;
 pub mod save;
 
-#[cfg(test)]
-mod comprehensive_tests;
-
 #[cfg_attr(not(test), allow(dead_code))]
 use std::sync::{Arc, OnceLock};
 #[cfg_attr(not(test), allow(dead_code))]

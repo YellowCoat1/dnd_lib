@@ -14,7 +14,7 @@ mod race;
 mod subclass;
 mod class;
 
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 use std::sync::Mutex;
 use async_trait::async_trait;
 
