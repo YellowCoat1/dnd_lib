@@ -1,8 +1,7 @@
 //! Defines stats, saving throws, skills, and proficieny.
 
 use std::{
-        collections::HashSet, 
-        ops::{Add, AddAssign, Deref, DerefMut, Sub}
+        collections::HashSet, fmt::Display, ops::{Add, AddAssign, Deref, DerefMut, Sub}, path::Display
 };
 use strum::{EnumIter, IntoEnumIterator};
 
@@ -242,6 +241,11 @@ impl <'a>StatType {
     }
 }
 
+impl Display for StatType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.get_name())
+    }
+}
 
 /// Boolean flags indicating proficiency in each saving throw.
 ///
@@ -388,6 +392,31 @@ impl SkillType {
             "survival" => Some(SkillType::Survival),
             _ => None,
         }
+    }
+}
+
+impl Display for SkillType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            SkillType::Acrobatics => "Acrobatics",
+            SkillType::AnimalHandling => "Animal Handling",
+            SkillType::Arcana => "Arcana",
+            SkillType::Athletics => "Athletics",
+            SkillType::Deception => "Deception",
+            SkillType::History => "History",
+            SkillType::Insight => "Insight",
+            SkillType::Intimidation => "Intimidation",
+            SkillType::Investigation => "Investigation",
+            SkillType::Medicine => "Medicine",
+            SkillType::Nature => "Nature",
+            SkillType::Perception => "Perception",
+            SkillType::Performance => "Performance",
+            SkillType::Persuasion => "Persuasion",
+            SkillType::Religion => "Religion",
+            SkillType::SleightOfHand => "Sleight of Hand",
+            SkillType::Stealth => "Stealth",
+            SkillType::Survival => "Survival",
+        })
     }
 }
 
@@ -641,6 +670,19 @@ pub enum Size {
     Gargantuan,
 }
 
+impl Display for Size {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Size::Tiny => "Tiny",
+            Size::Small => "Small",
+            Size::Medium => "Medium",
+            Size::Large => "Large",
+            Size::Huge => "Huge",
+            Size::Gargantuan => "Gargantuan",
+        })
+    }
+}
+
 #[derive(Clone, Copy, Debug,  Serialize, Deserialize)]
 pub enum Alignment {
     LawfulGood,
@@ -652,4 +694,20 @@ pub enum Alignment {
     LawfulEvil,
     NeutralEvil,
     ChaoticEvil,
+}
+
+impl Display for Alignment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Alignment::LawfulGood => "Lawful Good",
+            Alignment::NeutralGood => "Neutral Good",
+            Alignment::ChaoticGood => "Chaotic Good",
+            Alignment::LawfulNeutral => "Lawful Neutral",
+            Alignment::TrueNeutral => "True Neutral",
+            Alignment::ChaoticNeutral => "Chaotic Neutral",
+            Alignment::LawfulEvil => "Lawful Evil",
+            Alignment::NeutralEvil => "Neutral Evil",
+            Alignment::ChaoticEvil => "Chaotic Evil",
+        })
+    }
 }
