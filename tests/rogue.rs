@@ -1,7 +1,11 @@
+#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
+#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::features::{FeatureEffect, AbilityScoreIncrease};
+#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::stats::{Modifiers, Size, SkillModifiers, StatType, SkillType};
 
+#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn level_5_halfling_rogue() {
     let provider = Dnd5eapigetter::new();

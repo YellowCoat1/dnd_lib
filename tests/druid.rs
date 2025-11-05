@@ -1,9 +1,14 @@
+#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
+#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::spells::SpellSlots;
+#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::spells::CASTER_SLOTS;
 
+#[cfg(feature = "network-intensive-tests")]
 use futures::future::try_join_all;
 
+#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn level_3_druid() {
     let provider = Dnd5eapigetter::new();
