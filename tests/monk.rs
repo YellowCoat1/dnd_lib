@@ -1,9 +1,7 @@
-#[cfg(feature = "network-intensive-tests")]
+#![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
-#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::stats::{SkillType, SkillModifiers};
 
-#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn level_3_elf_monk() {
     let provider = Dnd5eapigetter::new();

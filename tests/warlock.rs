@@ -1,16 +1,12 @@
-#[cfg(feature = "network-intensive-tests")]
+#![cfg(feature = "network-intensive-tests")]
+
 use dnd_lib::prelude::*;
-#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::spells::PactSlots;
-#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::stats::StatType;
-#[cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::features::FeatureEffect;
 
-#[cfg(feature = "network-intensive-tests")]
 use futures::future::try_join_all;
 
-#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn level_10_warlock() {
     let provider = Dnd5eapigetter::new();

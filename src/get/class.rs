@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use serde_json::Value;
+use serde_json::{Map, Value};
 use crate::{character::{
     class::{Class, ItemCategory, Subclass}, 
     features::{Feature, PresentedOption}, 
@@ -337,6 +337,26 @@ fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], CharacterDataE
     Ok(spells_stored_array)
 }
 
+fn class_specific_map_parse(key: &str, map: &Map<String, Value>) -> Result<String, CharacterDataError> {
+    match key {
+        "martial_arts" => {
+            let count = map.get("dice_count")
+                .ok_or_else(|| CharacterDataError::not_found("string", "martial arts dice count"))?;
+            let value = map.get("dice_value")
+                .ok_or_else(|| CharacterDataError::not_found("string", "martial arts dice value"))?;
+            Ok(format!("{}d{}", count, value))
+        }
+        "sneak_attack" => {
+            let count = map.get("dice_count")
+                .ok_or_else(|| CharacterDataError::not_found("string", "sneak attack dice count"))?;
+            let value = map.get("dice_value") 
+                .ok_or_else(|| CharacterDataError::not_found("string", "sneak attack dice count"))?;
+            Ok(format!("{}d{}", count, value))
+        }
+        _ => Err(CharacterDataError::mismatch(" Map value", "Valid map", &format!("Invalid map of the key name {}", key)))
+    }
+}
+
 fn class_specific(levels: [&Value; 20]) -> Result<HashMap<String, [String; 20]>, CharacterDataError> {
     // for now we'll use vecs, we'll convert it to an array once we're done
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
@@ -348,6 +368,7 @@ fn class_specific(levels: [&Value; 20]) -> Result<HashMap<String, [String; 20]>,
         .ok_or_else(|| CharacterDataError::mismatch("level 1", "Object", value_name(level_1)))?;
 
     for key in level_1_obj.keys() {
+        if key == "creating_spell_slots" {continue} // sorcerer useless field
         map.insert(key.replace("_", " "), vec![]);
     }
 
@@ -358,29 +379,14 @@ fn class_specific(levels: [&Value; 20]) -> Result<HashMap<String, [String; 20]>,
         let class_specific_map = class_specific.as_object()
             .ok_or_else(|| CharacterDataError::mismatch("class specific field", "Object", value_name(class_specific)))?;
         for key in class_specific_map.keys() {
+            if key == "creating_spell_slots" {continue};
             let other_val = class_specific_map.get(key)
                 .ok_or_else(|| CharacterDataError::not_found("Any", "Class specific field key"))?;
             let other_as_string: String = match other_val {
                 Value::Number(n) => n.as_f64().unwrap().to_string(),
                 Value::Bool(b) => b.to_string(),
                 Value::String(s) => s.clone(),
-                Value::Object(o) => {
-                    if key == "martial_arts" {
-                        let count = o.get("dice_count")
-                            .ok_or_else(|| CharacterDataError::not_found("string", "martial arts dice count"))?;
-                        let value = o.get("dice_value")
-                            .ok_or_else(|| CharacterDataError::not_found("string", "martial arts dice value"))?;
-                        format!("{}d{}", count, value)
-                    } else if key == "sneak_attack" {
-                        let count = o.get("dice_count")
-                            .ok_or_else(|| CharacterDataError::not_found("string", "sneak attack dice count"))?;
-                        let value = o.get("dice_value") 
-                            .ok_or_else(|| CharacterDataError::not_found("string", "sneak attack dice count"))?;
-                        format!("{}d{}", count, value)
-                    } else {
-                        return Err(CharacterDataError::mismatch("Class specific value", "Value that can be parsed to a string", "Value that cannot be parsed into a string"))
-                    }
-                },
+                Value::Object(o) => class_specific_map_parse(key, o)?,
                 v => return Err(CharacterDataError::mismatch("Class specific value", "Value that can be parsed into a string", value_name(v))),
             };
 
