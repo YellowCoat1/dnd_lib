@@ -5,11 +5,11 @@ use serde::{Serialize, Deserialize};
 /// select.
 ///
 /// Each node is either:
-/// - Base(T): a single, concrete choice
-/// - Choice(Vec<PresentedOption\<T\>>): a list of sub-options to choose from
+/// - `Base(T)`: a single, concrete choice
+/// - `Choice(Vec<PresentedOption<T>>)`: a list of sub-options to choose from
 ///
-/// This is used widely throughout the crate. For example, to model class equipment options
-/// or selectable ability score increases.
+/// This is used widely throughout the crate. For example, for a class's equipment options
+/// or an ability score increase.
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PresentedOption<T> {
@@ -19,11 +19,9 @@ pub enum PresentedOption<T> {
 
 impl<T> PresentedOption<T> {
 
-    /// Returns a reference to the sub-choice at the index, if it exists.
-    /// - If this is a [PresentedOption::Base], returns a reference to itself.
-    /// - If this is a [PresentedOption::Choice], returns the child at the provided index, or `None` if out of bounds.
-    ///
-    /// If it's a [PresentedOption::Base], it returns a reference to itself.
+    /// Returns the value at `index`.
+    /// - If this is a `Base`, returns `Some(self)`
+    /// - If this is a `Choice`, returns the child at `index`, or `None` if out of bounds.
     ///
     /// ```
     /// use dnd_lib::character::features::PresentedOption;
@@ -40,15 +38,18 @@ impl<T> PresentedOption<T> {
         }
     }
 
-    /// Replaces this [PresentedOption::Choice] with the selected child at the given index, modifying it in place.
+    /// Replaces this `Choice` with the selected child at the given index.
     ///
-    /// Returns `true` if a valid choice was made, or `false` if the index was out of bounds
-    /// or the value was already a [PresentedOption::Base].
+    /// Returns `true` if the replacement could be made, or `false` otherwise.
     ///
     /// ```
     /// use dnd_lib::character::features::PresentedOption;
     ///
-    /// let mut choice = PresentedOption::Choice(vec![PresentedOption::Base("Apples"), PresentedOption::Base("Bananas"), PresentedOption::Base("Oranges")]);
+    /// let mut choice = PresentedOption::Choice(vec![
+    ///     PresentedOption::Base("Apples"), 
+    ///     PresentedOption::Base("Bananas"), 
+    ///     PresentedOption::Base("Oranges")
+    /// ]);
     /// choice.choose_in_place(1);
     /// assert_eq!(choice, PresentedOption::Base("Bananas"));
     ///
@@ -68,8 +69,7 @@ impl<T> PresentedOption<T> {
         }
     }
 
-    /// Returns a refrence the stored type if it's a [PresentedOption::Base],
-    /// otherwise it returns [None].
+    /// Returns the contained value if self is a `Base`, otherwise returns [None].
     pub fn as_base(&self) -> Option<&T> {
         match self {
             PresentedOption::Choice(_) => None,
@@ -77,8 +77,7 @@ impl<T> PresentedOption<T> {
         }
     }
 
-    /// Returns a mutable refrence to the stored type if it's a [PresentedOption::Base],
-    /// otherwise it returns [None].
+    /// Returns the contained value mutably if self is a `Base`, otherwise returns [None].
     pub fn as_base_mut(&mut self) -> Option<&mut T> {
         match self {
             PresentedOption::Choice(_) => None,
@@ -86,11 +85,7 @@ impl<T> PresentedOption<T> {
         }
     }
     
-    /// Gets an array of the choices.
-    ///
-    /// Returns an error if it's a [PresentedOption::Base].
-    ///
-    /// This is the [PresentedOption::Choice] equivalent to [PresentedOption::as_base].
+    /// Returns the list of sub-options if this is a `Choice`, otherwise returns [None].
     pub fn choices(&self) -> Option<&[PresentedOption<T>]> {
         match self {
             PresentedOption::Base(_) => None,
@@ -98,7 +93,7 @@ impl<T> PresentedOption<T> {
         }
     }
 
-    /// Maps a [PresentedOption] to a different type.
+    /// Maps a `PresentedOption<T>` to a `PresentedOption<U>`.
     pub fn map<U, F>(self, mut map_closure: F) -> PresentedOption<U> 
     where
         F: FnMut(T) -> U,
@@ -121,7 +116,7 @@ impl<T> PresentedOption<T> {
         }
     }
 
-    /// Maps a [PresentedOption] to a different type in an async closure.
+    /// Maps a `PresentedOption<T>` to a `PresentedOption<U>` within an asynchronous closure.
     pub async fn map_async<'b, U, F, Fut>(self, f: F) -> PresentedOption<U>
     where
         T: 'b,
@@ -168,10 +163,8 @@ impl<T> PresentedOption<T> {
 }
 
 impl<T> PresentedOption<Option<T>> {
-    /// Collects an [Option] out of a [PresentedOption].
-    /// 
-    /// Primarily used for parsing api results. This meant mainly for api getters, and
-    /// will not be used by the regular user otherwise.
+    /// Converts a `PresentedOption<Option<T>>` to a `Option<PresentedOption<T>>`, discarding
+    /// missing values. Useful for API parsing.
     pub fn collect_option(self) -> Option<PresentedOption<T>> {
         match self {
             PresentedOption::Base(Some(v)) => Some(PresentedOption::Base(v)),
@@ -188,10 +181,8 @@ impl<T> PresentedOption<Option<T>> {
 }
 
 impl<T, U> PresentedOption<Result<T, U>> {
-    /// Collects a [Result] out of a [PresentedOption].
-    ///
-    /// Primarily used for parsing api results. This meant mainly for api getters, and
-    /// will not be used by the regular user otherwise.
+    /// Converts a `PresentedOption<Option<T>>` to a `Option<PresentedOption<T>>`, discarding
+    /// missing values. Useful for API parsing.
     pub fn collect_result(self) -> Result<PresentedOption<T>, U> {
         match self {
             PresentedOption::Base(Ok(v)) => Ok(PresentedOption::Base(v)),
