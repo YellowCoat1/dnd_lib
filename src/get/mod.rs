@@ -14,7 +14,7 @@ mod race;
 mod subclass;
 mod class;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 use std::sync::Mutex;
 use async_trait::async_trait;
 
@@ -63,7 +63,9 @@ pub struct Dnd5eapigetter {
 #[async_trait]
 impl crate::getter::DataProvider for Dnd5eapigetter {
     async fn get_race(&self, name: &str) -> Result<crate::character::Race, crate::getter::CharacterDataError> {
-        get_race_inner(name).await
+        let mut c = get_race_inner(name).await?;
+        capitalize(&mut c.name);
+        Ok(c)
     }
     async fn get_background(&self, name: &str) -> Result<crate::character::Background, crate::getter::CharacterDataError> {
         if let Some(cached) = self.background_cache.lock().unwrap().get(name) {
@@ -77,7 +79,8 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.class_cache.lock().unwrap().get(name) {
             return Ok(cached.clone())
         }
-        let class = get_class_inner(self, name).await?;
+        let mut class = get_class_inner(self, name).await?;
+        capitalize(&mut class.name);
         self.class_cache.lock().unwrap().insert(name.to_string(), class.clone());
         Ok(class)
     }
@@ -85,12 +88,15 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.item_cache.lock().unwrap().get(name) {
             return Ok(cached.clone())
         }
-        let item = get_item_inner(name).await?;
+        let mut item = get_item_inner(name).await?;
+        capitalize(&mut item.name);
         self.item_cache.lock().unwrap().insert(name.to_string(), item.clone());
         Ok(item)
     }
     async fn get_spell(&self, name: &str) -> Result<crate::character::spells::Spell, crate::getter::CharacterDataError> {
-        get_spell_inner(name).await
+        let mut s = get_spell_inner(name).await?;
+        capitalize(&mut s.name);
+        Ok(s)
     }
 }
 
@@ -124,6 +130,13 @@ impl Default for Dnd5eapigetter {
 mod class_tests;
 #[cfg(test)]
 mod race_tests;
+
+
+// Capitalize the first character of a string
+fn capitalize(s: &mut String) {
+    let c = s.remove(0);
+    s.insert(0, c.to_ascii_uppercase());
+}
 
 #[cfg(test)]
 mod test {
