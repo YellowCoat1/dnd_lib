@@ -45,15 +45,58 @@ use super::{CharacterDescriptors, CharacterStory};
 ///  and 1 level in fighter, they'll have a level 3 SpeccedClass wizard at `classes[0]` and a level 1
 /// SpeccedClass fighter at `classes[1]`.
 ///
-/// Most customization is done through choosing an option in a [PresentedOption].
+/// Some methods have a field of "class_index". This is just an index of the `Character.classes` vec, at the class the method wants to target.
 ///
+/// ## Customization 
+///
+/// Here, we talk about customization as in the choices you make for the character. Things like an
+/// ability score increase, a possible subrace or subclass, or a language option.
+///
+/// Most customization is done through choosing an option in a [PresentedOption], which is often
+/// done by using
+/// [PresentedOption::choose_in_place].
+///
+/// There's also occasionally a regular [Option]. A `None` value would mean an unfilled
+/// choice, which you can fill into a `Some(T)` to "choose" it's value. This is usually used for
+/// open ended choices, such as langauges.
+///
+/// Languages can be really anything, so instead of a concrete list of choices, you can just fill
+/// it with any string.
+///
+/// The following can be found manually, but is provided as a convinience.
+///
+/// #### Major features
 /// The choice for subraces is available through the [Character::race] field, and then
 /// [Race::subraces].
+/// 
+/// If a race or subrace can choose an ability score, (like how variant human can chose any two to
+/// add +1), then that can be found from the `ability_bonuses` field, at `ability_bonuses[n].0`
+/// where n is the index of the ability score increase. An unchosen ability bonus is represented by
+/// a `None` value, and filling it with a `Some(StatType)` will "choose" it.
 ///
 /// The choice for subclasses is available through `Character.classes[n].subclass`.
 ///
-/// It's also important to select the items available through your starting class. Those are
-/// available through `Character.classes[0].items`.
+/// Beginning item choices are available through `Character.classes[0].items`.
+///
+/// #### Spells
+///
+/// Spells are per-class. You can find the prepared/known spells of a class in the character at
+/// `Character.classes[n].spellcasting.unwrap().1`. You can push or change spells here. This isn't
+/// logically bounded; There's nothing in the crate stopping you from pushing 100 spells.
+///
+/// The amount of spells the character can prepare in that class can be found by
+/// `Character.num_spells(n)` where n is the index of the class.
+///
+/// #### Minor features
+///
+/// Various strings for describing the character's story are availiable at [Character::story].
+/// Similarly, strings about the character's personality and appearance are at
+/// [Character::descriptors].
+///
+/// Character alignment is also available at [Character::descriptors].
+///
+
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Character {
     pub name: String,
@@ -201,12 +244,16 @@ impl Character {
         let mut new_stats = self.base_stats;
 
         for (race_stat_change, amount) in self.race.ability_bonuses.iter() {
-            *new_stats.get_stat_type_mut(race_stat_change) += amount;
+            if let Some(s) = race_stat_change {
+                *new_stats.get_stat_type_mut(s) += amount;
+            }
         }
 
         if let PresentedOption::Base(ref chosen_subrace) = self.race.subraces {
             for (subrace_stat, amount) in chosen_subrace.ability_bonuses.iter() {
-                *new_stats.get_stat_type_mut(subrace_stat) += amount;
+                if let Some(s) = subrace_stat {
+                *new_stats.get_stat_type_mut(s) += amount;
+                }
             }
         }
 
@@ -1211,6 +1258,25 @@ impl Character {
         }
 
         return_vector
+    }
+
+    /// Gets the amount of spells the class at the index can prepare or know.
+    ///
+    /// Returns [None] if the class does not exist, or if the class is not a spellcaster.
+    pub fn num_spells(&mut self, class_index: usize) -> Option<(usize, usize)> {
+        let class_level = self.classes.get(class_index)?.level;
+        if class_level == 0 {
+            return None;
+        }
+        let casting = &self.classes.get(class_index)?
+            .spellcasting.as_ref()?
+            .0;
+        let spellcasting_ability = casting.spellcasting_ability;
+        let modifier = *self.stats().modifiers().get_stat_type(&spellcasting_ability);
+        let cantrips_num = casting.cantrips_per_level[class_level-1];
+        let spells_num = (class_level as isize + modifier).max(0) as usize;
+
+        Some((spells_num, cantrips_num))
     }
 
 

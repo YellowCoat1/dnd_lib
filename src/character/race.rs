@@ -11,7 +11,11 @@ use super::stats::Size;
 pub struct Race {
     pub name: String,
     pub speed: usize,
-    pub ability_bonuses: Vec<(StatType, isize)>,
+    /// Lists ability bonus by stat and the amount of the bonus.
+    ///
+    /// If the `Option<StatType>` is [None], then this means that the bonus can be chosen from any
+    /// stat.
+    pub ability_bonuses: Vec<(Option<StatType>, isize)>,
     pub size: Size,
     pub traits: Vec<PresentedOption<Feature>>,
     pub subraces: PresentedOption<Subrace>,
@@ -35,6 +39,8 @@ impl Race {
 pub struct Subrace {
     pub name: String,
     pub description: String,
-    pub ability_bonuses: Vec<(StatType, isize)>,
+    /// Lists ability bonuses.
+    /// See [Race::ability_bonuses]
+    pub ability_bonuses: Vec<(Option<StatType>, isize)>,
     pub traits: Vec<PresentedOption<Feature>>,
 }

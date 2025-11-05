@@ -35,8 +35,8 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
     })
 }
 
-pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(StatType, isize)>, CharacterDataError> {
-    let mut ability_bonuses: Vec<(StatType, isize)> = vec![];
+pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
+    let mut ability_bonuses: Vec<(Option<StatType>, isize)> = vec![];
 
     for ability_bonus in arr.iter() {
 
@@ -47,7 +47,7 @@ pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(StatType, isize)>, 
         let stat_type = StatType::from_shorthand(ability_score_name.as_str())
             .ok_or_else(|| CharacterDataError::mismatch("ability score name", "StatType string", "improper StatType string"))?;
 
-        ability_bonuses.push((stat_type, ability_score_bonus));
+        ability_bonuses.push((Some(stat_type), ability_score_bonus));
     }
 
     Ok(ability_bonuses)
