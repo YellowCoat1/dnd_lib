@@ -13,7 +13,7 @@ use super::{
     stats::{SkillType, StatType}
 };
 
-pub use super::choice::{PresentedOption, chosen};
+pub use super::choice::*;
 
 /// A feature represents a general effect/trait. Any extra effect from a race, class, etc is a feature.
 ///

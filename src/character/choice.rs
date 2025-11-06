@@ -220,4 +220,19 @@ pub fn chosen<T>(presented: &[PresentedOption<T>]) -> Vec<&T> {
         .collect()
 }
 
+/// Returns two lists: One with refrences to all `Base` values, and one with refrences to all
+/// `Choice` values.
+/// `split(t).0` is equivalent to `chosen(t)`.
+pub fn split<T>(presented: &[PresentedOption<T>]) -> (Vec<&T>, Vec<&Vec<PresentedOption<T>>>) {
+    let mut chosen = vec![];
+    let mut unchosen = vec![];
 
+    for presented_val in presented {
+        match presented_val {
+            PresentedOption::Base(b) => chosen.push(b),
+            PresentedOption::Choice(c) => unchosen.push(c)
+        }
+    }
+
+    (chosen, unchosen)
+}
