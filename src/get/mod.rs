@@ -71,7 +71,8 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.background_cache.lock().unwrap().get(name) {
             return Ok(cached.clone())
         }
-        let background = get_background_inner(self, name).await?;
+        let mut background = get_background_inner(self, name).await?;
+        capitalize(&mut background.name);
         self.background_cache.lock().unwrap().insert(name.to_string(), background.clone());
         Ok(background)
     }
