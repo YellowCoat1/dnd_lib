@@ -326,7 +326,7 @@ pub struct SkillProficiencies {
  
 /// Enumerates the different skills a character has. (e.g. Deception, Religion, Medicine)
 #[derive(Serialize, Deserialize)]
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 #[derive(EnumIter)]
 #[derive(Debug)]
 #[derive(Clone, Copy)]
@@ -652,6 +652,7 @@ impl AddAssign for EquipmentProficiencies {
 /// swimming
 /// 
 /// Most of these are only used in rare cases. The walking speed is almost always a given.
+#[derive(Debug, Clone)]
 pub struct Speeds {
     pub walking: Option<usize>,
     pub flying: Option<usize>,
@@ -661,7 +662,20 @@ pub struct Speeds {
     pub swimming: Option<usize>,
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+impl Default for Speeds {
+    fn default() -> Self {
+        Speeds {
+            walking: Some(30),
+            flying: None,
+            hovering: None,
+            burrowing: None,
+            climbing: None,
+            swimming: None,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, EnumIter, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Size {
     Tiny,
     Small,
@@ -685,7 +699,7 @@ impl Display for Size {
     }
 }
 
-#[derive(Clone, Copy, Debug,  Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, EnumIter, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Alignment {
     LawfulGood,
     NeutralGood,
