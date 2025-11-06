@@ -9,12 +9,16 @@ use super::choice::PresentedOption;
 #[derive(Clone)]
 pub struct Background {
     pub name: String,
-    /// Skill proficiencies granted by the background
+    /// Skill proficiencies granted by the background.
+    ///
+    /// This is a `Vec<PresentedOption<SkillType>>` instead of a `(usize,
+    /// PresentedOption<SkillType>)` like [Class](crate::character::class::Class), as this field can have base proficiencies. A background might
+    /// make you choose 2 from a list, or provide 2 static proficiencies.
     pub proficiencies: Vec<PresentedOption<SkillType>>,
     //pub languages: Vec<String>,
-    /// Item and count
+    /// Starting equipment. Each item is paired with its count.
     pub equipment: Vec<(Item, usize)>,
-    /// Total features the background adds.
+    /// Features granted by this background.
     pub features: Vec<Feature>,
 
     pub personality_traits: PresentedOption<String>,

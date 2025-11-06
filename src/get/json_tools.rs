@@ -179,8 +179,8 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
             .collect::<Result<Vec<_>,_>>()?
             .into_iter()
             .map(|v| v.as_base()
-                .ok_or_else(|| CharacterDataError::mismatch("Choice option field", "One dimensional choice", "recursive choice")) 
-                .map(|v| *v)
+                .ok_or_else(|| CharacterDataError::mismatch("Choice option field", "One dimensional choice", "recursive choice"))
+                .copied()
             )
             .collect::<Result<Vec<_>, _>>()?;
         return Ok(PresentedOption::Choice(assembled_choice));
