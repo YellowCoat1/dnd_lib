@@ -103,7 +103,6 @@ pub struct Character {
     /// Individual classes that the character has specced into.
     pub classes: Vec<SpeccedClass>,
     pub race: Race,
-    pub background: Background,
     /// Lists active spell slots. These can be spent.
     pub available_spell_slots: Option<SpellSlots>,
     /// Lists active pact magic slots. These can be spent. Seperate from regular spell slots.
@@ -119,6 +118,17 @@ pub struct Character {
     class_saving_throw_proficiencies: Vec<StatType>,
     pub hp: usize,
     pub temp_hp: usize,
+
+    /// The name of the character's background
+    pub background: String,
+    /// The proficiencies granted by the background
+    pub background_proficiencies: Vec<PresentedOption<SkillType>>,
+
+    /// The character can choose 2 personality traits.
+    pub personality_traits: (PresentedOption<String>, PresentedOption<String>),
+    pub ideal: PresentedOption<String>,
+    pub bond: PresentedOption<String>,
+    pub flaw: PresentedOption<String>,
 
     /// Etc field for describing the character's story, enemies, personality, etc
     pub story: CharacterStory,
@@ -144,7 +154,6 @@ impl Character {
         let mut new_character = Character {
             name,
             classes: vec![SpeccedClass::from_class(class, 1)],
-            background: background.clone(),
             items: vec![],
             equipment_proficiencies: class.equipment_proficiencies.clone(),
             race: race.clone(),
@@ -154,6 +163,14 @@ impl Character {
             available_pact_slots: None,
             class_skill_proficiencies: vec![class.skill_proficiency_choices.1.clone(); class.skill_proficiency_choices.0],
             class_saving_throw_proficiencies: class.saving_throw_proficiencies.clone(),
+
+            background: background.name.clone(),
+            background_proficiencies: background.proficiencies.clone(),
+            personality_traits: (PresentedOption::Choice(background.personality_traits.clone()), PresentedOption::Choice(background.personality_traits.clone())),
+            ideal: PresentedOption::Choice(background.ideals.clone()),
+            bond: PresentedOption::Choice(background.bonds.clone()),
+            flaw: PresentedOption::Choice(background.flaws.clone()),
+
             hp: 1,
             temp_hp: 0,
             story: CharacterStory::default(),
@@ -163,9 +180,9 @@ impl Character {
         };
 
         // add background items
-        let mut items = vec![];
-        items.append(&mut new_character.background.equipment);
-        new_character.add_item_list(items);
+        new_character.add_item_list(background.equipment.clone());
+
+        // set hp
         new_character.hp = new_character.max_hp();
 
         // add class items
@@ -351,7 +368,7 @@ impl Character {
     pub fn skills(&self) -> SkillProficiencies {
         let mut base = SkillProficiencies::default();
         let chosen_class_skills: Vec<&SkillType> = chosen(&self.class_skill_proficiencies);
-        let background_skills: Vec<&SkillType> = chosen(&self.background.proficiencies);
+        let background_skills: Vec<&SkillType> = chosen(&self.background_proficiencies);
 
         for skill in chosen_class_skills.iter().chain(background_skills.iter()) {
             let cloned_skill = *(*skill);

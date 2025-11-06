@@ -21,8 +21,8 @@ pub struct Background {
     /// Features granted by this background.
     pub features: Vec<Feature>,
 
-    pub personality_traits: PresentedOption<String>,
-    pub ideals: PresentedOption<String>,
-    pub bonds: PresentedOption<String>,
-    pub flaws: PresentedOption<String>,
+    pub personality_traits: Vec<String>,
+    pub ideals: Vec<String>,
+    pub bonds: Vec<String>,
+    pub flaws: Vec<String>,
 }
