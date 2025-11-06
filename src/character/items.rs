@@ -1,5 +1,5 @@
 //! D&D items, item types, and damage types.
-use std::{cmp::PartialEq, str::FromStr};
+use std::{cmp::PartialEq, fmt::Display, str::FromStr};
 
 use serde::{Serialize, Deserialize};
 
@@ -125,6 +125,17 @@ pub enum ArmorCategory {
     Heavy,
 }
 
+impl Display for ArmorCategory {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use ArmorCategory::*;
+        write!(f, "{}", match self {
+            Light => "Light",
+            Medium => "Medium",
+            Heavy => "Heavy",
+        })
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Weapon {
     /// The damage the weapon causes on hit.
@@ -159,6 +170,19 @@ pub enum WeaponType {
     SimpleRanged,
     Martial,
     MartialRanged,
+}
+
+impl Display for WeaponType {
+
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use WeaponType::*;
+        write!(f, "{}", match self {
+            Simple => "Simple",
+            SimpleRanged => "Simple Ranged",
+            Martial => "Martial",
+            MartialRanged => "Martial Ranged",
+        })
+    }
 }
 
 /// Takes equipment proficiencies and a weapon type, returns if the proficiencies has that weapon
