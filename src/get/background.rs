@@ -18,6 +18,8 @@ pub async fn get_background(getter: &impl DataProvider, name: &str) -> Result<Ba
     let index = parse_string(name);
     let json = get_raw_json(format!("backgrounds/{index}")).await?;
 
+    let name = json.get_str("index")?;
+
     let proficiencies = json.get_array("starting_proficiencies")?
         .iter().map(|v| {
             SkillType::from_name(&v.get_str("name")?[7..])
@@ -62,6 +64,7 @@ pub async fn get_background(getter: &impl DataProvider, name: &str) -> Result<Ba
     let ideals = PresentedOption::Choice(ideals_vec);
     
     Ok(Background {
+        name,
         proficiencies,
         equipment,
         features: vec![feature],

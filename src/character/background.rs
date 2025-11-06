@@ -8,6 +8,7 @@ use super::choice::PresentedOption;
 #[derive(Serialize, Deserialize)]
 #[derive(Clone)]
 pub struct Background {
+    pub name: String,
     /// Skill proficiencies granted by the background
     pub proficiencies: Vec<PresentedOption<SkillType>>,
     //pub languages: Vec<String>,
