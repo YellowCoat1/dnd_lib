@@ -81,7 +81,7 @@ pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
 
 pub mod prelude {
     pub use crate::{
-        getter::DataProvider,
+        getter::{DataProvider, CharacterDataError},
         get::Dnd5eapigetter,
         character::{Character, CharacterBuilder, Race, Background},
         character::stats::Stats,
