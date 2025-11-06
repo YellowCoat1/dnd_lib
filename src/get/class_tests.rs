@@ -47,16 +47,16 @@ fn wizard_multiclassing(class: &Class) {
 
 
 fn wizard_skill_proficiencies(class: &Class) {
-   use PresentedOption::{Base, Choice};
+   use PresentedOption::Choice;
    use SkillType::{Arcana, History, Insight, Investigation, Medicine, Religion};
 
-   let proficiencies: Vec<PresentedOption<SkillType>> = vec![
-       Base(Arcana),
-       Base(History),
-       Base(Insight),
-       Base(Investigation),
-       Base(Medicine),
-       Base(Religion),
+   let proficiencies: Vec<SkillType> = vec![
+       Arcana,
+       History,
+       Insight,
+       Investigation,
+       Medicine,
+       Religion,
    ];
 
    assert_eq!(class.skill_proficiency_choices.1, Choice(proficiencies), "Couldn't retrieve proper wizard proficiencies");

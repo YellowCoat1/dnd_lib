@@ -13,11 +13,8 @@ async fn get_elf() {
         PresentedOption::Choice(c) => c,
     };
 
-    let high_elf = match subraces.first().expect("Elf should have subraces!") {
-        PresentedOption::Base(b) => b,
-        PresentedOption::Choice(_) => panic!("Elf should not have recursive subraces!")
-    };
-
+    let high_elf = subraces.first().expect("Elf should have subraces!");
+    
     assert_eq!(high_elf.name.as_str(), "High Elf");
     assert_eq!(high_elf.ability_bonuses.first().cloned(), Some((Some(StatType::Intelligence), 1)));
 }

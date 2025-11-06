@@ -44,7 +44,7 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
 
     let subrace_array = race_json.get_array("subraces")?;
     let subraces_raw = process_subraces(subrace_array).await?;
-    let subraces = PresentedOption::Choice(subraces_raw.into_iter().map(PresentedOption::Base).collect());
+    let subraces = PresentedOption::Choice(subraces_raw.into_iter().collect());
     Ok(Race {
         name,
         size,

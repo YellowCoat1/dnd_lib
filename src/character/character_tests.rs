@@ -28,7 +28,7 @@ async fn char_stats() {
     other_stats.constitution += 2;
     assert_eq!(jill.stats(), other_stats);
     // choose
-    jill.race.subraces = jill.race.subraces.choose(0).unwrap().clone();
+    jill.race.subraces.choose_in_place(0);
     other_stats.wisdom += 1;
     assert_eq!(jill.stats(), other_stats);
     other_stats.wisdom += 3;

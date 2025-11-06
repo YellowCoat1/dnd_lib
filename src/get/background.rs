@@ -58,8 +58,8 @@ pub async fn get_background(getter: &impl DataProvider, name: &str) -> Result<Ba
         .get_map("from")?.get_array("options")?
         .iter()
         .map(|v| {
-            Ok(PresentedOption::Base(v.get_str("desc")?))
-        }).collect::<Result<Vec<PresentedOption<String>>, CharacterDataError>>()?;
+            v.get_str("desc")
+        }).collect::<Result<Vec<String>, CharacterDataError>>()?;
 
     let ideals = PresentedOption::Choice(ideals_vec);
     
@@ -79,8 +79,8 @@ fn process_personality(json: &Value) -> Result<PresentedOption<String>, Characte
     let array = json.get_map("from")?.get_array("options")?
         .iter()
         .map(|v| {
-            Ok(PresentedOption::Base(v.get_str("string")?))
-        }).collect::<Result<Vec<PresentedOption<String>>, CharacterDataError>>()?;
+            v.get_str("string")
+        }).collect::<Result<Vec<String>, CharacterDataError>>()?;
 
     Ok(PresentedOption::Choice(array))
 }

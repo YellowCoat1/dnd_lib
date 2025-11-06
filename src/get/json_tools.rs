@@ -173,10 +173,16 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
     }
 
     if let Some(Value::Array(a)) = choice_array.get("options") {
-        let assembled_choice: Vec<PresentedOption<&Map<String, Value>>> = a
+        let assembled_choice  = a
             .iter()
             .map(process_bare_choice)
-            .collect::<Result< Vec<PresentedOption<&Map<String, Value>>>, CharacterDataError>>()?;
+            .collect::<Result<Vec<_>,_>>()?
+            .into_iter()
+            .map(|v| v.as_base()
+                .ok_or_else(|| CharacterDataError::mismatch("Choice option field", "One dimensional choice", "recursive choice")) 
+                .map(|v| *v)
+            )
+            .collect::<Result<Vec<_>, _>>()?;
         return Ok(PresentedOption::Choice(assembled_choice));
     };
 

@@ -153,15 +153,9 @@ mod tests {
     #[tokio::test]
     async fn test_draconic() {
         let draconic_ancestry = get_feature_from_trait("draconic-ancestry").await.unwrap();
-        let first = match &draconic_ancestry.choices().unwrap()[0] {
-            PresentedOption::Base(b) => b,
-            _ => panic!("invalid draconic formatting"),
-        };
 
-        let tenth = match &draconic_ancestry.choices().unwrap()[9] {
-            PresentedOption::Base(b) => b,
-            _ => panic!("invalid draconic formatting"),
-        };
+        let first = &draconic_ancestry.choices().unwrap()[0];
+        let tenth = &draconic_ancestry.choices().unwrap()[9];
 
         assert_eq!(first.name, "Draconic Ancestry (Black)");
         assert_eq!(tenth.name, "Draconic Ancestry (White)");

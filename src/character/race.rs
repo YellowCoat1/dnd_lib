@@ -24,13 +24,12 @@ pub struct Race {
 
 impl Race {
     pub fn add_subrace(&mut self, subrace: Subrace) {
-        self.subraces = match self.subraces {
-           PresentedOption::Base(ref b) => PresentedOption::Choice(vec![PresentedOption::Base(b.clone()), PresentedOption::Base(subrace)]),
-           PresentedOption::Choice(ref v) => {
-                let mut e = v.clone();
-                e.push(PresentedOption::Base(subrace));
-                PresentedOption::Choice(e)
-           }
+        match &mut self.subraces {
+           PresentedOption::Base(b) => {
+               let old = std::mem::replace(b, subrace.clone());
+               self.subraces = PresentedOption::Choice(vec![old, subrace]);
+           },
+           PresentedOption::Choice(v) => v.push(subrace),
         }
     }
 }

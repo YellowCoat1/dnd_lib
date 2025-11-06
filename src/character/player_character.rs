@@ -1437,9 +1437,7 @@ impl SpeccedClass {
     
     /// Get a specced class from a class, up to the specified level.
     fn from_class(class: &Class, level: usize) -> SpeccedClass {
-
-        let subclass_option_vec = class.subclasses.iter().map(|v| PresentedOption::Base(v.clone())).collect();
-        let subclass = PresentedOption::Choice(subclass_option_vec);
+        let subclass = PresentedOption::Choice(class.subclasses.to_vec());
 
         SpeccedClass {
             class: class.name.clone(),
