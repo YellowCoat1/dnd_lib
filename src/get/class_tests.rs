@@ -63,12 +63,22 @@ fn wizard_skill_proficiencies(class: &Class) {
 }
 
 async fn wizard_items(class: &Class) {
-    // gets the spellbook item
-    // shouldn't cause an api call due to the memoization
     let spellbook_item = get_item("spellbook")
         .await.unwrap();
+
     let spellbook_choice_entry = PresentedOption::Base(vec![(ItemCategory::Item(spellbook_item), 1)]);
-    assert!(class.beginning_items.contains(&spellbook_choice_entry), "class invalid items");
+    assert_eq!(class.beginning_items.first().cloned(), Some(spellbook_choice_entry));
+    let first_choice = class.beginning_items.get(1)
+        .expect("Wizard should have more than one item")
+        .choices()
+        .expect("Wizard's second item list should be a choice");
+
+    assert_eq!(first_choice.len(), 2, "Wizard's first item choice should be between two items");
+    let quarterstaff = get_item("quarterstaff").await.expect("Couldn't get quarterstaff");
+    let dagger = get_item("dagger").await.expect("Couldn't get dagger");
+    assert_eq!(first_choice[0], vec![(ItemCategory::Item(quarterstaff), 1)]);
+    assert_eq!(first_choice[1], vec![(ItemCategory::Item(dagger), 1)]);
+
 }
 
 async fn wizard_features(class: &Class) {
@@ -95,11 +105,40 @@ fn wizard_subclass(class: &Class) {
 
 
 #[tokio::test]
-async fn warlock_retrieval() {
+async fn fighter_items() {
     let provider = provider();
-    let warlock = provider.get_class("warlock")
+    let fighter = provider.get_class("fighter")
         .await
         .expect("failed to get warlock class from api");
 
-    let _ = warlock.spellcasting.expect("Warlock should have spellcasting info");
+    assert_eq!(fighter.beginning_items.len(), 4, "Fighter should have 4 item choices");
+
+    let first_choice = fighter.beginning_items[0].choices()
+        .expect("Fighter should have beginning choices");
+    assert_eq!(first_choice.len(), 2, "Fighter's first option should have 2 choice");
+
+    assert_eq!(first_choice[0].len(), 1, "The first choice of fighter's first option should have 1 item");
+    match &first_choice[0][0].0 {
+        ItemCategory::Item(i) => assert_eq!(i.name, "Chain Mail"),
+        _ => panic!("Item should be an item, not a category"),
+    }
+    assert_eq!(first_choice[0][0].1, 1, "Fighter's first choice in the first option should have a count of 1");
+
+    assert_eq!(first_choice[1].len(), 3, "The second choice of fighter's first option should have 3 item");
+    match &first_choice[1][0] {
+        (ItemCategory::Item(i), 1) => assert_eq!(i.name, "Leather Armor"),
+        (ItemCategory::Item(_), _) => panic!("Fighter should have only 1 leather armor"),
+        _ => panic!("Leather armor should be an item, not a category"),
+    }
+    match &first_choice[1][1] {
+        (ItemCategory::Item(i), 1) => assert_eq!(i.name, "Longbow"),
+        (ItemCategory::Item(_), _) => panic!("Fighter should have only 1 longbow"),
+        _ => panic!("Longbow should be an item, not a category"),
+    }
+    match &first_choice[1][2] {
+        (ItemCategory::Item(i), 20) => assert_eq!(i.name, "Arrow"),
+        (ItemCategory::Item(_), _) => panic!("Fighter should have 30 arrows"),
+        _ => panic!("Arrows should be items, not a category"),
+    }
 }
+

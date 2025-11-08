@@ -114,9 +114,25 @@ pub fn unwrap_number(num: &Number) -> usize {
     num.as_f64().unwrap() as usize
 }
 
+
+// A choice between single values
+type NameCountMapSingle<'a> = (String, usize, PresentedOption<&'a Map<String, Value>>);
+pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMapSingle<'a>, CharacterDataError> {
+    let c = choice_multi(map_value)?;
+    let option2 = c.2
+        .map(|v| {
+            if v.is_empty() {
+                return Err(CharacterDataError::not_found("Map", "First Choice"));
+            }
+            Ok(v[0])
+        })
+        .collect_result()?;
+    Ok((c.0, c.1, option2))
+}
+
 // description, count, value_choices
-type NameCountMap<'a> = (String, usize, PresentedOption<&'a Map<String, Value>>);
-pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, CharacterDataError> {
+type NameCountMap<'a> = (String, usize, PresentedOption<Vec<&'a Map<String, Value>>>);
+pub fn choice_multi<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, CharacterDataError> {
     let map = map_value.as_object()
         .ok_or_else(|| CharacterDataError::mismatch("choice", "Object", value_name(map_value)))?;
 
@@ -135,7 +151,7 @@ pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, CharacterDat
     Ok((description, count, value_choices))
 }
 
-fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<String, Value>>, CharacterDataError> {
+fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<Vec<&Map<String, Value>>>, CharacterDataError> {
     let choice_array = choice_array.as_object()
         .ok_or_else(|| CharacterDataError::mismatch("choice", "Object", value_name(choice_array)))?;
 
@@ -145,31 +161,29 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
             // getting the choice array and unwrapping the value
             let choice_val = choice_array.get("choice")
                 .ok_or_else(|| CharacterDataError::not_found("Object", "choice object"))?;
-            return Ok(choice(choice_val)?.2);
+            return Ok(choice_multi(choice_val)?.2);
         } else if s == "multiple" {
-            // TODO
-            // i'd have to restructure a good bit to allow for multiple in a PresentedOption,
-            // so for now it's just the first item. Later ill implement it as Base: Vec<T>
             let items_arr = match choice_array.get("items") {
                 Some(Value::Array(a)) => a,
                 Some(o) => return Err(CharacterDataError::mismatch("choice items", "Array", value_name(o))),
                 None => return Err(CharacterDataError::not_found("Array", "choice items"))
-            };
-            if items_arr.is_empty() {
-                return Err(CharacterDataError::not_found("Object items first entry", "object items"));
-            };
-            return process_bare_choice(&items_arr[0]);
+            }
+                .iter()
+                .map(|v| v.as_object())
+                .collect::<Option<Vec<_>>>()
+                .ok_or_else(|| CharacterDataError::mismatch("Choice multiple", "Object", "Non-Object"))?;
+            return Ok(PresentedOption::Base(items_arr));
         }
-        return Ok(PresentedOption::Base(choice_array));
+        return Ok(PresentedOption::Base(vec![choice_array]));
     };
 
     let opt_type = match choice_array.get("option_set_type") {
         Some(Value::String(s)) => s.as_str(),
-        _ => return Ok(PresentedOption::Base(choice_array)),
+        _ => return Ok(PresentedOption::Base(vec![choice_array])),
     };
 
     if opt_type != "options_array" {
-        return Ok(PresentedOption::Base(choice_array));
+        return Ok(PresentedOption::Base(vec![choice_array]));
     }
 
     if let Some(Value::Array(a)) = choice_array.get("options") {
@@ -180,7 +194,7 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<&Map<Stri
             .into_iter()
             .map(|v| v.as_base()
                 .ok_or_else(|| CharacterDataError::mismatch("Choice option field", "One dimensional choice", "recursive choice"))
-                .copied()
+                .cloned()
             )
             .collect::<Result<Vec<_>, _>>()?;
         return Ok(PresentedOption::Choice(assembled_choice));

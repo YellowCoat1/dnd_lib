@@ -13,7 +13,7 @@ use crate::get::{
     get_page::get_raw_json, 
     subclass::get_subclass,
     json_tools::{
-        value_name, array_index_values, choice, parse_string, unwrap_number, ValueExt
+        value_name, array_index_values, choice, choice_multi, parse_string, unwrap_number, ValueExt
     }, 
 };
 use crate::getter::CharacterDataError;
@@ -165,37 +165,68 @@ async fn items(getter: &impl DataProvider, map: &Value) -> Result<Vec<PresentedO
 }
 
 async fn class_item_choice(getter: &impl DataProvider, equipment_option: &Value) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
-    let (_, _, map_option) = choice(equipment_option)?;
-    let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, CharacterDataError>> = map_option.map_async(|m| async move {
+    let (_, _, map_option) = choice_multi(equipment_option)?;
+    let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, CharacterDataError>> = map_option.map_async(|v| async move {
+        let mut new_vec = Vec::with_capacity(v.len());
+        
+        for m in v {
+            let count = m.get("count")
+                .and_then(|v| v.as_number())
+                .map(unwrap_number)
+                .unwrap_or(1);
 
-        let count = m.get("count")
-            .and_then(|v| v.as_number())
-            .map(unwrap_number)
-            .unwrap_or(1);
-
-        // if its an equipment category rather than an item,
-        if let Some(Value::String(s)) = m.get("option_set_type") {
-            if s == "equipment_category" {
-                let v = m.get("equipment_category")
-                    .ok_or_else(|| CharacterDataError::not_found("Object", "equipment category"))?;
-                let category = equipment_category(v)
-                    .map_err(|v| v.prepend("equipment category "))?;
-                // return the proper function
-                return Ok(vec![(category, 1)])
+            // if its an equipment category rather than an item,
+            if let Some(Value::String(s)) = m.get("option_set_type") {
+                if s == "equipment_category" {
+                    let v = m.get("equipment_category")
+                        .ok_or_else(|| CharacterDataError::not_found("Object", "equipment category"))?;
+                    let category = equipment_category(v)
+                        .map_err(|v| v.prepend("equipment category "))?;
+                    // return the proper function
+                    new_vec.push((category, 1));
+                    continue;
+                }
             }
+
+            if let Some(Value::String(s)) = m.get("option_type") {
+                if s == "choice" {
+                    let v = m.get("choice")
+                        .ok_or_else(|| CharacterDataError::not_found("Object", "equipment category"))?;
+                    let category = equipment_category_choice(v)
+                        .map_err(|v| v.prepend("equipment category "))?;
+                    // return the proper function
+                    new_vec.push((category, 1));
+                    continue;
+                }
+            }
+
+            let equipment = m.get("of")
+                .ok_or_else(|| CharacterDataError::not_found("Object", "equipment 'of' "))?;
+
+            let item = process_equipment(getter, equipment).await?;
+
+            new_vec.push((ItemCategory::Item(item), count));
         }
 
-        let equipment = m.get("of")
-            .ok_or_else(|| CharacterDataError::not_found("Object", "equipment of"))?;
-
-        let item = process_equipment(getter, equipment).await?;
-
-        Ok(vec![(ItemCategory::Item(item), count)])
+        Ok(new_vec)
     }).await;
 
     v.collect_result()
 }
 
+fn equipment_category_choice(map: &Value) -> Result<ItemCategory, CharacterDataError> {
+    if !map.is_object() {
+        return Err(CharacterDataError::mismatch("Equipment category choice", "Object", value_name(map)));
+    }
+
+    let desc = map.get_str("desc")?;
+
+    match desc.as_str() {
+        "a martial weapon" => Ok(ItemCategory::Weapon(WeaponType::Martial)),
+        "a simple weapon" => Ok(ItemCategory::Weapon(WeaponType::Simple)),
+        o => Err(CharacterDataError::mismatch("Choice description", "Valid weapon category name", format!("string {}", o).as_str())),
+    }
+}
 
 fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
     let equipment_name = map.get_str("name")?;
@@ -486,7 +517,8 @@ async fn json_to_class(getter: &impl DataProvider, json: Value, levels: Value) -
         .map_err(|v| v.prepend("Subclass "))?;
 
     let saving_throw_proficiencies: Vec<StatType> = saves(&json).unwrap_or_default();
-    let equipment_proficiencies = equipment_proficiencies(&json)?;
+    let equipment_proficiencies = equipment_proficiencies(&json)
+        .map_err(|v| v.prepend("equipement proficiencies "))?;
     let skill_proficiency_choices: (usize, PresentedOption<SkillType>) = proficiency_choices(&json)
         .map_err(|v| v.prepend("Skill choices "))?;
     let beginning_items = items(getter, &json).await
@@ -502,7 +534,7 @@ async fn json_to_class(getter: &impl DataProvider, json: Value, levels: Value) -
 
     let class_specific_leveled = class_specific(levels_arr)
         .map_err(|v| v.prepend("Class specific values"))?;
-    
+     
     let spellcasting = process_spellcasting(&json, levels_arr).await?;
 
     let (multiclassing_prerequisites, multiclassing_prerequisites_or) = multiclassing_prerequisites(&name);
