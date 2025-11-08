@@ -118,12 +118,14 @@ fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>
         .ok_or_else(|| CharacterDataError::mismatch("array", "array", "empty array"))?;
 
     // gets the choices in json values
-    let (_, count, options) = choice(first_choice)?;
+    let options = choice(first_choice)?;
+    let num = first_choice.get_usize("choose")?;
 
     // converts from json to skill types
     let proficiency_options  =  options.map(|val_map| {
-        let val_obj = Value::Object(val_map.clone());
+        let val_obj = Value::Object(val_map.1.clone());
         let val = val_obj.get_map("item")?;
+
 
         let name = val.get_str("name")?;
 
@@ -132,7 +134,7 @@ fn proficiency_choices(map: &Value) -> Result<(usize, PresentedOption<SkillType>
             .ok_or_else(|| CharacterDataError::mismatch("proficiency name", "Valid SkillType string", "Invalid SkillType string"))
     }).collect_result()?;
 
-    Ok((count, proficiency_options))
+    Ok((num, proficiency_options))
 }
 
 async fn items(getter: &impl DataProvider, map: &Value) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, CharacterDataError>  {
@@ -165,25 +167,27 @@ async fn items(getter: &impl DataProvider, map: &Value) -> Result<Vec<PresentedO
 }
 
 async fn class_item_choice(getter: &impl DataProvider, equipment_option: &Value) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
-    let (_, _, map_option) = choice_multi(equipment_option)?;
+    let map_option = choice_multi(equipment_option)?;
     let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, CharacterDataError>> = map_option.map_async(|v| async move {
         let mut new_vec = Vec::with_capacity(v.len());
         
-        for m in v {
+        for (n, m) in v {
             let count = m.get("count")
                 .and_then(|v| v.as_number())
                 .map(unwrap_number)
-                .unwrap_or(1);
+                .unwrap_or(n);
 
             // if its an equipment category rather than an item,
             if let Some(Value::String(s)) = m.get("option_set_type") {
                 if s == "equipment_category" {
+                    dbg!(m);
+                    dbg!(equipment_option);
                     let v = m.get("equipment_category")
                         .ok_or_else(|| CharacterDataError::not_found("Object", "equipment category"))?;
                     let category = equipment_category(v)
                         .map_err(|v| v.prepend("equipment category "))?;
                     // return the proper function
-                    new_vec.push((category, 1));
+                    new_vec.push((category, n));
                     continue;
                 }
             }
@@ -195,13 +199,26 @@ async fn class_item_choice(getter: &impl DataProvider, equipment_option: &Value)
                     let category = equipment_category_choice(v)
                         .map_err(|v| v.prepend("equipment category "))?;
                     // return the proper function
-                    new_vec.push((category, 1));
+                    new_vec.push((category, n));
                     continue;
+                } 
+            }
+
+            if let Some(Value::String(s)) = m.get("type") {
+                if s == "equipment" {
+                    let val_map = Value::Object(m.clone());
+                    let category = val_map.get_map("from")?
+                        .get_map("equipment_category")?;
+                    let num = val_map.get_usize("choose")?;
+                    let category = equipment_category(category)?;
+                    new_vec.push((category, num));
+                    continue;
+
                 }
             }
 
             let equipment = m.get("of")
-                .ok_or_else(|| CharacterDataError::not_found("Object", "equipment 'of' "))?;
+                .ok_or_else(|| CharacterDataError::not_found("Object", "equipment 'of' field"))?;
 
             let item = process_equipment(getter, equipment).await?;
 
@@ -220,21 +237,25 @@ fn equipment_category_choice(map: &Value) -> Result<ItemCategory, CharacterDataE
     }
 
     let desc = map.get_str("desc")?;
+    str_to_cat(&desc)
+        .ok_or_else(|| CharacterDataError::mismatch("Choice description", "Valid weapon category name", format!("string {}", desc).as_str()))
+}
 
-    match desc.as_str() {
-        "a martial weapon" => Ok(ItemCategory::Weapon(WeaponType::Martial)),
-        "a simple weapon" => Ok(ItemCategory::Weapon(WeaponType::Simple)),
-        o => Err(CharacterDataError::mismatch("Choice description", "Valid weapon category name", format!("string {}", o).as_str())),
+fn str_to_cat(s: &str) -> Option<ItemCategory> {
+    match s.to_lowercase().replace(['_', '-']," ").as_str() {
+        "simple weapons" => Some(ItemCategory::Weapon(WeaponType::Simple)),
+        "martial weapons" => Some(ItemCategory::Weapon(WeaponType::Martial)),
+        "a martial weapon" => Some(ItemCategory::Weapon(WeaponType::Martial)),
+        "a simple weapon" => Some(ItemCategory::Weapon(WeaponType::Simple)),
+        _ => None
     }
 }
 
 fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
     let equipment_name = map.get_str("name")?;
 
-    match equipment_name.as_str() {
-        "Simple Weapons" => return Ok(ItemCategory::Weapon(WeaponType::Simple)),
-        "Martial Weapons" => return Ok(ItemCategory::Weapon(WeaponType::Martial)),
-        _ => ()
+    if let Some(c) = str_to_cat(&equipment_name) {
+        return Ok(c);
     }
 
     let item = Item {

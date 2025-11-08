@@ -70,10 +70,10 @@ async fn get_draconic_ancestry(json: Value) -> Result<PresentedOption<Feature>, 
     let subtrait_options = trait_specific.get("subtrait_options")
         .ok_or_else(|| CharacterDataError::not_found("Object", "subtrait_options"))?;
 
-    let (_, _, trait_option) = choice(subtrait_options)
+    let trait_option = choice(subtrait_options)
         .map_err(|v| v.prepend("subtrait_options "))?;
 
-    trait_option.map_async(|m| async {
+    trait_option.map_async(|(_, m)| async {
         let item_map = m.get("item")
             .ok_or_else(|| CharacterDataError::not_found("Object", "item"))?;
 

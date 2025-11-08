@@ -140,5 +140,19 @@ async fn fighter_items() {
         (ItemCategory::Item(_), _) => panic!("Fighter should have 30 arrows"),
         _ => panic!("Arrows should be items, not a category"),
     }
+
+    let second_choice = fighter.beginning_items[1].choices()
+        .expect("Fighter's second item field should be a choice");
+    assert_eq!(second_choice.len(), 2, "Fighter's second item field should have 2 choices");
+
+    assert_eq!(second_choice[1].len(), 1, "the latter part of fighter's second item field should be only one item (2 martial weapons, 1 unique item type)");
+    let two_martial_weapons = &second_choice[1][0];
+    assert_eq!(two_martial_weapons.0, ItemCategory::Weapon(crate::character::items::WeaponType::Martial), "Fighter should be able to choose martial weapons");
+    assert_eq!(two_martial_weapons.1, 2, "Fighter should be able to choose 2 martial weapons");
+
+
+    // proficiencies. ew.
+    let (n, _ops) = fighter.skill_proficiency_choices;
+    assert_eq!(n, 2);
 }
 

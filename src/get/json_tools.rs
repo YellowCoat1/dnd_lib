@@ -116,42 +116,28 @@ pub fn unwrap_number(num: &Number) -> usize {
 
 
 // A choice between single values
-type NameCountMapSingle<'a> = (String, usize, PresentedOption<&'a Map<String, Value>>);
+type NameCountMapSingle<'a> = PresentedOption<(usize, &'a Map<String, Value>)>;
 pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMapSingle<'a>, CharacterDataError> {
-    let c = choice_multi(map_value)?;
-    let option2 = c.2
+    choice_multi(map_value)?
         .map(|v| {
             if v.is_empty() {
                 return Err(CharacterDataError::not_found("Map", "First Choice"));
             }
             Ok(v[0])
         })
-        .collect_result()?;
-    Ok((c.0, c.1, option2))
+        .collect_result()
 }
 
 // description, count, value_choices
-type NameCountMap<'a> = (String, usize, PresentedOption<Vec<&'a Map<String, Value>>>);
+type NameCountMap<'a> = PresentedOption<Vec<(usize, &'a Map<String, Value>)>>;
 pub fn choice_multi<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, CharacterDataError> {
-    let map = map_value.as_object()
-        .ok_or_else(|| CharacterDataError::mismatch("choice", "Object", value_name(map_value)))?;
-
     let count = map_value.get_usize("choose")?;
+    let choice_arr = map_value.get_map("from")?;
 
-    let description = map.get("desc")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .to_string();
-
-    let choice_arr = map.get("from")
-        .ok_or_else(|| CharacterDataError::not_found("Object", "from"))?;
-
-    let value_choices = process_bare_choice(choice_arr)?;
-
-    Ok((description, count, value_choices))
+    process_bare_choice(count, choice_arr)
 }
 
-fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<Vec<&Map<String, Value>>>, CharacterDataError> {
+fn process_bare_choice<'a>(num: usize, choice_array: &'a Value) -> Result<NameCountMap<'a>, CharacterDataError> {
     let choice_array = choice_array.as_object()
         .ok_or_else(|| CharacterDataError::mismatch("choice", "Object", value_name(choice_array)))?;
 
@@ -161,7 +147,8 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<Vec<&Map<
             // getting the choice array and unwrapping the value
             let choice_val = choice_array.get("choice")
                 .ok_or_else(|| CharacterDataError::not_found("Object", "choice object"))?;
-            return Ok(choice_multi(choice_val)?.2);
+            let num = choice_val.get_usize("choose")?;
+            return process_bare_choice(num, choice_val);
         } else if s == "multiple" {
             let items_arr = match choice_array.get("items") {
                 Some(Value::Array(a)) => a,
@@ -169,27 +156,27 @@ fn process_bare_choice(choice_array: &Value) -> Result<PresentedOption<Vec<&Map<
                 None => return Err(CharacterDataError::not_found("Array", "choice items"))
             }
                 .iter()
-                .map(|v| v.as_object())
+                .map(|v| v.as_object().map(|w| (num, w)))
                 .collect::<Option<Vec<_>>>()
                 .ok_or_else(|| CharacterDataError::mismatch("Choice multiple", "Object", "Non-Object"))?;
             return Ok(PresentedOption::Base(items_arr));
         }
-        return Ok(PresentedOption::Base(vec![choice_array]));
+        return Ok(PresentedOption::Base(vec![(num, choice_array)]));
     };
 
     let opt_type = match choice_array.get("option_set_type") {
         Some(Value::String(s)) => s.as_str(),
-        _ => return Ok(PresentedOption::Base(vec![choice_array])),
+        _ => return Ok(PresentedOption::Base(vec![(num, choice_array)])),
     };
 
     if opt_type != "options_array" {
-        return Ok(PresentedOption::Base(vec![choice_array]));
+        return Ok(PresentedOption::Base(vec![(num, choice_array)]));
     }
 
     if let Some(Value::Array(a)) = choice_array.get("options") {
         let assembled_choice  = a
             .iter()
-            .map(process_bare_choice)
+            .map(|v| process_bare_choice(num, v))
             .collect::<Result<Vec<_>,_>>()?
             .into_iter()
             .map(|v| v.as_base()
