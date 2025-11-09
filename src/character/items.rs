@@ -5,6 +5,26 @@ use serde::{Serialize, Deserialize};
 
 use super::{features::Feature, stats::EquipmentProficiencies};
 
+/// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately. 
+///
+/// If you want stats, you need to use a get function. 
+pub const SIMPLE_WEAPONS_MELEE: [&'static str; 9] = ["club", "dagger", "greatclub", "handaxe", "javelin", "mace", "quarterstaff", "sickle", "spear"];
+/// Lists the names of all regular D&D  ranged simple weapons. See [SIMPLE_WEAPONS_MELEE].
+///
+/// Note that with Dnd5eapigetter, "light crossbow" is "crossbow light"
+pub const SIMPLE_WEAPONS_RANGED: [&'static str; 4] = ["light crossbow", "dart", "shortbow", "sling"];
+
+/// Lists the names of all regular D&D melee martial weapons. Ranged weapons are listed seperately.
+///
+/// If you want stats, you need to use a get function. 
+pub const MARTIAL_WEAPONS_MELEE: [&'static str; 18] = ["battleaxe", "flail", "glaive", "greataxe", "greatsword", "halberd", "lance", "longsword", "maul", "morningstar", "pike", "rapier", "scimitar", "shortsword", "trident", "war pick", "warhammer", "whip"];
+/// Lists the names of all regular D&D ranged martial weapons. See [MARTIAL_WEAPONS_MELEE].
+///
+/// Note that with Dnd5eapigetter, "hand crossbow" is "crossbow hand", and "heavy crossbow" is
+/// "crossbow heavy"
+pub const MARTIAL_WEAPONS_RANGED: [&'static str; 5] = ["blowgun", "hand crossbow", "heavy crossbow", "longbow", "net"];
+
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum DamageType {
     Acid,
