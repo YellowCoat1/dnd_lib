@@ -3,6 +3,7 @@ use super::{get_page::get_raw_json, json_tools::{parse_string, ValueExt}};
 use crate::getter::CharacterDataError;
 use crate::character::items::{Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties, WeaponType};
 
+
 pub async fn get_item(name: &str) -> Result<Item, CharacterDataError> {
     let index = parse_string(name);
     get_item_raw(index).await
