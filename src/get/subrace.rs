@@ -53,4 +53,7 @@ pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(Option<StatType>, i
     Ok(ability_bonuses)
 }
 
-
+pub fn ability_bonus_choice(val: &Value) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
+    let num = val.get_usize("choose")?;
+    Ok(vec![(None, 1); num])
+}

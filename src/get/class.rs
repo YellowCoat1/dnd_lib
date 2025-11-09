@@ -180,8 +180,6 @@ async fn class_item_choice(getter: &impl DataProvider, equipment_option: &Value)
             // if its an equipment category rather than an item,
             if let Some(Value::String(s)) = m.get("option_set_type") {
                 if s == "equipment_category" {
-                    dbg!(m);
-                    dbg!(equipment_option);
                     let v = m.get("equipment_category")
                         .ok_or_else(|| CharacterDataError::not_found("Object", "equipment category"))?;
                     let category = equipment_category(v)

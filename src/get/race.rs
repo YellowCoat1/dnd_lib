@@ -2,6 +2,7 @@ use serde_json::Value;
 use crate::character::stats::Size;
 use crate::character::{Race, Subrace};
 use crate::character::features::PresentedOption;
+use crate::get::subrace::ability_bonus_choice;
 use super::get_page::get_raw_json;
 use super::json_tools::{parse_string, ValueExt};
 use crate::getter::CharacterDataError;
@@ -26,8 +27,13 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
     let size = process_size(&size_string)
         .ok_or_else(||CharacterDataError::mismatch("size", "Valid size string", "Invalid size string"))?;
 
-    let ability_bonuses_array= race_json.get_array("ability_bonuses")?;
-    let ability_bonuses = process_ability_bonuses(ability_bonuses_array)?;
+    let ability_bonuses_array= process_ability_bonuses(race_json.get_array("ability_bonuses")?)?;
+    let ability_bonuses_wildcard = race_json.get_map("ability_bonus_options").ok().map(|v| ability_bonus_choice(v)).transpose()?;
+
+    let ability_bonuses = match ability_bonuses_wildcard {
+        Some(s) => ability_bonuses_array.into_iter().chain(s).collect(),
+        None => ability_bonuses_array,
+    };
 
     let languages_array = race_json.get_array("languages")?;
     let languages = process_languages(languages_array)?;
