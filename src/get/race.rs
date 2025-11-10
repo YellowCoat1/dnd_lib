@@ -28,7 +28,7 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
         .ok_or_else(||CharacterDataError::mismatch("size", "Valid size string", "Invalid size string"))?;
 
     let ability_bonuses_array= process_ability_bonuses(race_json.get_array("ability_bonuses")?)?;
-    let ability_bonuses_wildcard = race_json.get_map("ability_bonus_options").ok().map(|v| ability_bonus_choice(v)).transpose()?;
+    let ability_bonuses_wildcard = race_json.get_map("ability_bonus_options").ok().map(ability_bonus_choice).transpose()?;
 
     let ability_bonuses = match ability_bonuses_wildcard {
         Some(s) => ability_bonuses_array.into_iter().chain(s).collect(),
