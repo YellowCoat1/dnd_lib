@@ -5,9 +5,9 @@
 //! building the foundations for a complete D&D character.
 //!
 //! ```
+//! # #[cfg(feature = "dnd5eapi")] {
 //! #[tokio::main]
 //! async fn main() {
-//!     extern crate rand;
 //!     use rand::Rng;
 //!     use dnd_lib::prelude::*;
 //!     let mut rng = rand::thread_rng();
@@ -49,6 +49,7 @@
 //!     // Afterwards, john is smited from reality for the sin of existance.
 //!     drop(john);
 //! }
+//! # }
 //! ```
 //!
 //! This crate stores different choices for a character as different structs. For example, a
@@ -60,21 +61,26 @@
 //!
 //! ## Feature flags
 //!
-//! - `integration` specifically for testing. Enables all tests.
+//! - `integration` Specifically for testing. Enables all tests.
+//! - `dnd5eapi` - *(enabled by default)* Enables retrieving through the dnd5eapi.co api.
 
 
 pub mod character;
 pub mod getter;
-pub mod get;
 pub mod save;
+#[cfg(feature = "dnd5eapi")]
+pub mod get;
 
 #[cfg_attr(not(test), allow(dead_code))]
+#[cfg(feature = "dnd5eapi")]
 use std::sync::{Arc, OnceLock};
+#[cfg(feature = "dnd5eapi")]
 #[cfg_attr(not(test), allow(dead_code))]
 static PROVIDER: OnceLock<Arc<get::Dnd5eapigetter>> = OnceLock::new();
 
 // Global api getter for all tests, in order for a shared cache
 #[cfg(test)]
+#[cfg(feature = "dnd5eapi")]
 pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
     PROVIDER.get_or_init(|| Arc::new(get::Dnd5eapigetter::new())).clone()
 }
@@ -82,9 +88,10 @@ pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
 pub mod prelude {
     pub use crate::{
         getter::{DataProvider, CharacterDataError},
-        get::Dnd5eapigetter,
         character::{Character, CharacterBuilder, Race, Background},
         character::stats::Stats,
         character::class::Class,
     };
+    #[cfg(feature = "dnd5eapi")]
+    pub use crate::get::Dnd5eapigetter;
 }

@@ -1,6 +1,7 @@
 //! A simple helper to save other data to a file.
 //!
 //! ```
+//! # #[cfg(feature = "dnd5eapi")] {
 //! use dnd_lib::prelude::*;
 //! use dnd_lib::character::items::Item;
 //! use dnd_lib::save::{save_serialized, get_serialized};
@@ -25,6 +26,8 @@
 //!     // Finally, we just double check that it's the same
 //!     assert_eq!(item, gotten_item);
 //! }
+//! # }
+//! ```
 
 
 use std::path::Path;

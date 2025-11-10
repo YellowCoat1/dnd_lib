@@ -1,3 +1,4 @@
+#![cfg(feature = "network-intensive-tests")]
 use crate::character::features::{Feature, FeatureEffect};
 use crate::character::stats::StatType;
 use crate::getter::DataProvider;
@@ -7,7 +8,6 @@ use super::player_character::Character;
 use crate::provider;
 
 
-//#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn char_stats() {
     let provider = provider();
@@ -35,7 +35,6 @@ async fn char_stats() {
     assert_ne!(jill.stats(), other_stats);
 }
 
-//#[cfg(feature = "network-intensive-tests")]
 #[tokio::test]
 async fn char_spells() {
     let provider = provider();

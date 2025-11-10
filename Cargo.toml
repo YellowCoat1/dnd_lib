@@ -16,8 +16,11 @@ thiserror = "2.0.17"
 tokio = { version = "1.45.0", features = ["macros", "rt-multi-thread"] }
 
 [features]
-default = []
+dnd5eapi = []
+default = ["dnd5eapi"]
 disk-tests = []
-network-intensive-tests = []
+network-intensive-tests = ["dnd5eapi"]
 integration = ["disk-tests", "network-intensive-tests"]
 
+[package.metadata.docs.rs]
+features = ["dnd5eapi"]

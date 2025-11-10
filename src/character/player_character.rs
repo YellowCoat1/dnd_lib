@@ -1,3 +1,4 @@
+#![cfg_attr(doc, feature(doc_auto_cfg))]
 use serde::{Serialize, Deserialize};
 
 use crate::character::class::ItemCategory;
@@ -14,7 +15,6 @@ use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, 
 use super::class::{Class, Subclass, UNARMORED_MOVEMENT};
 use super::{CharacterDescriptors, CharacterStory};
 
-
 /// A struct to represent a Dungeons and Dragons character.
 ///
 /// In order to build a character, you need a [Class], a [Background], and a [Race].
@@ -22,6 +22,7 @@ use super::{CharacterDescriptors, CharacterStory};
 /// or build them from scratch in the case of homebrew.
 ///
 /// ```
+/// # #[cfg(feature = "dnd5eapi")] {
 /// #[tokio::main]
 /// async fn main() {
 ///     use dnd_lib::prelude::*;
@@ -39,6 +40,7 @@ use super::{CharacterDescriptors, CharacterStory};
 ///         .stats(Stats::default())
 ///         .build().unwrap();
 /// }
+/// # }
 /// ```
 ///
 /// Each class the character uses is represented by a [SpeccedClass] instance. If a character has 3 levels in wizard
@@ -424,8 +426,17 @@ impl Character {
     ///
     /// Returns a [None] if the character is not a spellcaster.
     ///
-    /// ```ignore
-    ///     // this is john. john has a base int score of 13, and john is a high elf. His int should be 14.
+    /// ```rust
+    ///     # #[cfg(feature = "dnd5eapi")] {
+    ///     # #[tokio::main]
+    ///     # async fn main() { 
+    ///     # use dnd_lib::prelude::*;
+    ///     # let provider = Dnd5eapigetter::new();
+    ///     # let wizard = provider.get_class("wizard").await.unwrap();
+    ///     # let acolyte = provider.get_background("acolyte").await.unwrap();
+    ///     # let elf = provider.get_race("elf").await.unwrap();
+    ///     // John has a base int score of 13, and john is a high elf.
+    ///     // His int should be 14.
     ///     let stats = Stats::from(&[10, 10, 10, 13, 10, 10]);
     ///     let mut john = CharacterBuilder::new("john")
     ///         .class(&wizard)
@@ -443,6 +454,8 @@ impl Character {
     ///         .expect("wizard character should be a spellcaster");
     ///     assert_eq!(spell_save, 12);
     ///     assert_eq!(spell_mod, 4);
+    ///     # }
+    ///     # }
     /// ```
     pub fn spellcasting_scores(&self, class_index: usize) -> Option<(isize, isize)> {
         let modifiers = self.stats().modifiers();
