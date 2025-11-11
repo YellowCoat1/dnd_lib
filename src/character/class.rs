@@ -42,6 +42,8 @@ pub struct Class {
     pub multiclassing_prerequisites_or: bool,
     /// The proficiencies a character would gain if they multiclassed into this class.
     pub multiclassing_proficiency_gain: EquipmentProficiencies,
+
+    pub etc_fields: Vec<EtcClassField>,
 }
 
 impl Class {
@@ -88,6 +90,40 @@ pub enum ItemCategory {
     Armor(ArmorCategory),
 }
 
+/// Tracks a resource that the class uses. Things like the barbarian rages or the druid wildshapes,
+/// which need to be actively tracked and stored.
+///
+/// This stores only the metadata about the field; the actual value for a character would be stored
+/// in that character's [SpeccedClass](crate::character::SpeccedClass).
+#[derive(Debug)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
+pub struct EtcClassField {
+    pub name: String,
+    /// restore on long rest
+    pub long_rest: bool,
+    /// restore on short rest
+    pub short_rest: bool,
+    /// restore on level up
+    pub level_up: bool,
+    /// a class specific field that acts as the maximum.
+    ///
+    /// For example, the class specific field of "rage count" for barbarian at level 5 is 3, and so
+    /// with a Some("rage count") for this field, the max would be 3 if they're level 5.
+    pub class_specific_max: Option<String>,
+    /// A hard set maximum. If both class_specific_max and hard_max are set, then hard_max takes
+    /// precedent.
+    pub hard_max: Option<usize>,
+}
+
+impl EtcClassField {
+    /// Get the maximum at level 1. Useful for getting the beginning value
+    pub fn get_base_max(&self, class: &Class) -> Option<usize> {
+        let level_1_fields: HashMap<&String, &String> = class.class_specific_leveled.iter().map(|(k, v)| (k, &v[0])).collect();
+        self.hard_max.or(self.class_specific_max.clone().and_then(|v| level_1_fields.get(&v)?.parse().ok()))
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -126,6 +162,7 @@ mod tests {
             multiclassing_prerequisites: HashMap::new(),
             multiclassing_prerequisites_or: false,
             multiclassing_proficiency_gain: EquipmentProficiencies::default(),
+            etc_fields: vec![],
         };
 
         let error_msg: &str = "failed to get correct class features";

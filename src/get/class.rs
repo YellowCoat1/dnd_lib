@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde_json::{Map, Value};
 use crate::{character::{
-    class::{Class, ItemCategory, Subclass}, 
+    class::{Class, EtcClassField, ItemCategory, Subclass}, 
     features::{Feature, PresentedOption}, 
     items::{Item, ItemType, WeaponType}, 
     spells::{SpellCasterType, SpellCastingPreperation, Spellcasting}, 
@@ -525,6 +525,36 @@ fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, C
     Ok(equipment_proficiencies_inner(proficiency_strings))
 }
 
+fn etc_class_field_option(name: &str) -> Option<EtcClassField> {
+    match name {
+        "barbarian" => Some(EtcClassField { 
+            name: "Rage".to_string(),
+            long_rest: true, 
+            short_rest: false, 
+            level_up: false, 
+            class_specific_max: Some("rage count".to_string()), 
+            hard_max: None 
+        }),
+        "druid" => Some(EtcClassField { 
+            name: "Wildshape".to_string(), 
+            long_rest: true, 
+            short_rest: true, 
+            level_up: false, 
+            class_specific_max: None,
+            hard_max: Some(2),
+        }),
+        "sorcerer" => Some(EtcClassField { 
+            name: "Sorcery Points".to_string(),
+            long_rest: true, 
+            short_rest: false, 
+            level_up: false, 
+            class_specific_max: Some("sorcery points".to_string()), 
+            hard_max: None 
+        }),
+        _ => None,
+    }
+}
+
 async fn json_to_class(getter: &impl DataProvider, json: Value, levels: Value) -> Result<Class, CharacterDataError> {
 
     let name: String = json.get_str("index")
@@ -559,6 +589,7 @@ async fn json_to_class(getter: &impl DataProvider, json: Value, levels: Value) -
     let (multiclassing_prerequisites, multiclassing_prerequisites_or) = multiclassing_prerequisites(&name);
     let multiclassing_proficiency_gain = multiclassing_proficiencies(&json)?;
 
+    let etc_fields = etc_class_field_option(&name).map(|v| vec![v]).unwrap_or_default();
 
     let class = Class {
         name,
@@ -574,6 +605,7 @@ async fn json_to_class(getter: &impl DataProvider, json: Value, levels: Value) -
         multiclassing_prerequisites,
         multiclassing_prerequisites_or,
         multiclassing_proficiency_gain,
+        etc_fields,
     };
 
     Ok(class)

@@ -1,4 +1,5 @@
 #![cfg(feature = "network-intensive-tests")]
+use crate::character::class::EtcClassField;
 use crate::character::features::{Feature, FeatureEffect};
 use crate::character::stats::StatType;
 use crate::getter::DataProvider;
@@ -83,10 +84,7 @@ async fn char_multiclassing() {
         ..stats_bonus_dex.clone()
     };
 
-
-
     let mut john = Character::new(String::from("John"), &monk, &acolyte, &human, Stats::default());
-
 
     // should fail, since john doesn't have the necessary stats
     assert_eq!(john.level_up(&fighter), None);
@@ -112,4 +110,70 @@ async fn char_multiclassing() {
 
     // with the requirements finally met, george can multiclass
     assert_eq!(george.level_up(&monk), Some(1));
+}
+
+#[tokio::test]
+async fn druid_wildshape() {
+    let provider = provider();
+    let druid_future = provider.get_class("druid");
+    let acolyte_future = provider.get_background("acolyte");
+    let human_future = provider.get_race("human");
+
+    let druid = druid_future.await.unwrap();
+    let acolyte = acolyte_future.await.unwrap();
+    let human = human_future.await.unwrap();
+
+    let bingus = Character::new(String::from("John"), &druid, &acolyte, &human, Stats::default());
+    assert_eq!(bingus.classes[0].class, "Druid");
+    assert_eq!(bingus.classes[0].level, 1);
+    let etc_fields = &bingus.classes[0].etc_fields;
+    assert_eq!(etc_fields.len(), 1);
+    let wildshape = &etc_fields[0];
+    assert_eq!(wildshape.1, 2);
+    assert_eq!(wildshape.0, EtcClassField {
+        name: "Wildshape".to_string(),
+        long_rest: true,
+        short_rest: true,
+        level_up: false,
+        class_specific_max: None,
+        hard_max: Some(2),
+    });
+}
+
+#[tokio::test]
+async fn barbarian_rage() {
+    let provider = provider();
+    let barbarian_future = provider.get_class("barbarian");
+    let acolyte_future = provider.get_background("acolyte");
+    let human_future = provider.get_race("human");
+
+    let barbarian = barbarian_future.await.unwrap();
+    let acolyte = acolyte_future.await.unwrap();
+    let human = human_future.await.unwrap();
+
+    let mut boko = Character::new(String::from("Boko"), &barbarian, &acolyte, &human, Stats::default());
+    assert_eq!(boko.classes[0].class, "Barbarian");
+    assert_eq!(boko.classes[0].level, 1);
+
+    let etc_fields = &boko.classes[0].etc_fields;
+    assert_eq!(etc_fields.len(), 1);
+    let rage = &etc_fields[0];
+    assert_eq!(rage.1, 2);
+    assert_eq!(rage.0, EtcClassField {
+        name: "Rage".to_string(),
+        long_rest: true,
+        short_rest: false,
+        level_up: false,
+        class_specific_max: Some("rage count".to_string()),
+        hard_max: None,
+    });
+
+
+    boko.level_up_to_level(&barbarian, 11);
+    let rage = boko.classes[0].etc_fields.get(0).unwrap();
+    assert_eq!(rage.1, 4);
+
+    boko.level_up(&barbarian);
+    let rage = boko.classes[0].etc_fields.get(0).unwrap();
+    assert_eq!(rage.1, 5);
 }

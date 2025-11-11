@@ -1,4 +1,6 @@
 #![cfg_attr(doc, feature(doc_auto_cfg))]
+use std::collections::HashMap;
+
 use serde::{Serialize, Deserialize};
 
 use crate::character::class::ItemCategory;
@@ -12,8 +14,9 @@ use super::features::{AbilityScoreIncrease, ComputedCustomAction, CustomAction, 
 use super::choice::chosen;
 use super::items::{DamageRoll, DamageType, Item, ItemType, Weapon, WeaponAction, WeaponType};
 use super::spells::{PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS, PACT_CASTING_SLOTS};
-use super::class::{Class, Subclass, UNARMORED_MOVEMENT};
+use super::class::{Class, Subclass, EtcClassField, UNARMORED_MOVEMENT};
 use super::{CharacterDescriptors, CharacterStory};
+
 
 /// A struct to represent a Dungeons and Dragons character.
 ///
@@ -872,9 +875,24 @@ impl Character {
         self.level_up_spellslots(spell_slots_before);
         self.level_up_warlock_pactslots(pact_slots_before);
 
+
         Some(v)
     }
 
+    fn level_up_etc_specific(&mut self, class: &Class) {
+        for specced_class in self.classes.iter_mut() {
+            let level_before = specced_class.level - 1;
+            let level_after = specced_class.level;
+            for etc_field in specced_class.etc_fields.iter_mut() {
+                let max_before = self::get_etc_field_max(&etc_field.0, &class.class_specific_leveled, level_before);
+                let max_after = self::get_etc_field_max(&etc_field.0, &class.class_specific_leveled, level_after);
+                match (max_before, max_after) {
+                    (Some(b), Some(a)) => etc_field.1 += a.saturating_sub(b),
+                    _ => continue,
+                }
+            }
+        }
+    }
     /// Inner function for leveling up without recalculating etc info.
     fn level_up_inner(&mut self, class: &Class, stats: &Stats) -> Option<usize> {
         let class_name: &String = &class.name;
@@ -883,7 +901,7 @@ impl Character {
             .iter_mut()
             .find(|specced_class| specced_class.class == *class_name );
 
-        match current_class {
+        let v = match current_class {
             Some(specced_class) => {
                 specced_class.add_level(class);
                 Some(specced_class.level)
@@ -891,7 +909,10 @@ impl Character {
             None => {
                 self.level_multiclass(class, stats)
             }
-        }
+        };
+        // add things like extra rages or ki points
+        self.level_up_etc_specific(class);
+        v
     }
 
     // When a character tries to multiclass into a new class.
@@ -1247,6 +1268,21 @@ impl Character {
         self.spent_hit_dice = self.spent_hit_dice.min(self.level()); // make sure it's valid
         let regained = (self.level() as f32 / 2.0).ceil() as usize;
         self.spent_hit_dice = self.spent_hit_dice.saturating_sub(regained);
+
+        // regain features
+        for class in self.classes.iter_mut() {
+            let (specific_fields, etc_fields) = (&mut class.class_specific, &mut class.etc_fields);
+            for v in etc_fields {
+                if !v.0.long_rest {
+                    continue
+                }
+                let class_specific_max: Option<usize> = v.0.class_specific_max.clone().and_then(|ref v| specific_fields.get(v)?.parse().ok());
+                let max = v.0.hard_max.or(class_specific_max);
+                if let Some(s) = max {
+                    v.1 = s
+                }
+            }
+        }
     }
 
     /// Returns the information necessary to select spells for each spellcasting class after a long rest. (or after creating
@@ -1414,7 +1450,6 @@ fn weapon_actions(name: &String, w: &Weapon, m: &Modifiers, p: &EquipmentProfici
 
     attacks
 }
-
 /// A class as it's used for a character. This contains all the relevant information from a class
 /// for a character at their level.
 ///
@@ -1460,6 +1495,14 @@ pub struct SpeccedClass {
     pub spellcasting: Option<(Spellcasting, Vec<Spell>)>,
     /// The class's hit die. This is the number of faces, so an 8 is a 1d8.
     pub hit_die: usize,
+
+    /// A list of extra class fields that need to be actively tracked. See [EtcClassField].
+    ///
+    /// The first field in the tuple is the [EtcClassField], and the second field is the current
+    /// amount the character has.
+    pub etc_fields: Vec<(EtcClassField, usize)>,
+
+    class_specific: HashMap<String, String>,
 }
 
 impl SpeccedClass {
@@ -1469,6 +1512,15 @@ impl SpeccedClass {
     fn from_class(class: &Class, level: usize) -> SpeccedClass {
         let subclass = PresentedOption::Choice(class.subclasses.to_vec());
 
+        let base_etc_fields = class.etc_fields.clone();
+        let etc_fields = base_etc_fields.into_iter()
+            .map(|v| {
+                let base_max = v.get_base_max(class).unwrap_or(1);
+                (v, base_max)
+            })
+            .collect::<Vec<_>>();
+
+
         SpeccedClass {
             class: class.name.clone(),
             level,
@@ -1477,6 +1529,10 @@ impl SpeccedClass {
             subclass,
             spellcasting: class.spellcasting.clone().map(|v| (v, vec![])),
             hit_die: class.hit_die,
+            etc_fields,
+            class_specific: class.class_specific_leveled.iter()
+                .map(|(k, arr)| (k.clone(), arr[0].clone()))
+                .collect()
         }
     }
 
@@ -1501,7 +1557,15 @@ impl SpeccedClass {
     fn add_level(&mut self, class: &Class) {
         if self.level >= 20 {return}
         self.current_class_features.push(class.features[self.level].clone());
+        self.class_specific = class.class_specific_leveled.iter()
+            .map(|(k, arr)| (k.clone(), arr[self.level].clone()))
+            .collect();
         self.level += 1;
+    }
+
+    /// gets the etc class specific fields for the level. This is the same as [Class::class_specific_leveled], but specifically for the level that the current class is at.
+    pub fn get_class_specific(&self) -> &HashMap<String, String> {
+        &self.class_specific
     }
 }
 
@@ -1523,4 +1587,9 @@ impl Castable for SpellAction {
         self.spell_level.try_into().expect("spell level was negative")
     }
 }
+
+fn get_etc_field_max(etc_field: &EtcClassField, class_specific: &HashMap<String, [String; 20]>, level: usize) -> Option<usize> {
+    etc_field.hard_max.or(etc_field.class_specific_max.clone().and_then(|v| class_specific.get(&v)?[level-1].parse::<usize>().ok()))
+}
+
 
