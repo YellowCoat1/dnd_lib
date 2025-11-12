@@ -551,6 +551,14 @@ fn etc_class_field_option(name: &str) -> Option<EtcClassField> {
             class_specific_max: Some("sorcery points".to_string()), 
             hard_max: None 
         }),
+        "monk" => Some(EtcClassField { 
+            name: "Ki Points".to_string(),
+            long_rest: true, 
+            short_rest: false, 
+            level_up: false, 
+            class_specific_max: Some("ki points".to_string()), 
+            hard_max: None 
+        }),
         _ => None,
     }
 }

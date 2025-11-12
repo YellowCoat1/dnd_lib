@@ -883,6 +883,7 @@ impl Character {
         for specced_class in self.classes.iter_mut() {
             let level_before = specced_class.level - 1;
             let level_after = specced_class.level;
+            dbg!((&level_before, &level_after));
             for etc_field in specced_class.etc_fields.iter_mut() {
                 let max_before = self::get_etc_field_max(&etc_field.0, &class.class_specific_leveled, level_before);
                 let max_after = self::get_etc_field_max(&etc_field.0, &class.class_specific_leveled, level_after);
@@ -904,14 +905,15 @@ impl Character {
         let v = match current_class {
             Some(specced_class) => {
                 specced_class.add_level(class);
-                Some(specced_class.level)
+                // add things like extra rages or ki points
+                let v = Some(specced_class.level.clone());
+                self.level_up_etc_specific(class);
+                v
             }
             None => {
                 self.level_multiclass(class, stats)
             }
         };
-        // add things like extra rages or ki points
-        self.level_up_etc_specific(class);
         v
     }
 

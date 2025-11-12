@@ -57,10 +57,17 @@ async fn level_3_elf_monk() {
     // there's only one option, (high elf) so we just choose the one available
     georg.race.subraces.choose_in_place(0);
 
+    // making sure the monk has zero ki points at level 1
+    assert_eq!(georg.classes[0].etc_fields.len(), 1, "monk should have 1 etc field at level 1");
+    assert_eq!(georg.classes[0].etc_fields[0].1, 0, "monk should have 0 ki points at level 1");
 
     // level georg to level 3
     georg.level_up_to_level(&monk, 3);
     assert_eq!(georg.level(), 3);
+
+    // monk should have 3 ki points at level 3
+    assert_eq!(georg.classes[0].etc_fields.len(), 1, "monk should have 1 etc field at level 3");
+    assert_eq!(georg.classes[0].etc_fields[0].1, 3, "monk should have 3 ki points at level 3");
 
     // double checking stats
     let final_stats = Stats {
