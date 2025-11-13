@@ -85,6 +85,12 @@ impl FromStr for DamageType {
     }
 }
 
+impl From<&str> for DamageType {
+    fn from(s: &str) -> Self {
+        DamageType::from_str(s).unwrap()
+    }
+}
+
 /// A general type an item could be.
 ///
 /// Shields are distinct from Armor, since they're calculated differently, and you may only receive

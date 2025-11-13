@@ -42,10 +42,43 @@ use crate::character::{
 ///     
 ///```
 ///
+/// ## Standards
+///
 /// There's no guarentee that different implementations return exactly the same values. It is
-/// requested that the name field is always the same, being capitalized like a title. e.g. "Wizard"
-/// or "Flag Bearer"
-
+/// requested that the name field is always the same, being capitalized like a title. e.g.
+/// "Wizard", "Tasha's Hideous Laughter" or "Master of the Seas"
+///
+/// In a class, the etc_field should always have the following items based off the class:
+/// - Monk: "ki points"
+/// - Barbarian: "rage count"
+/// - Sorcerer: "sorcery points"
+/// - Artificer: "infusions known"
+/// 
+/// When implementing `get_class` or another method that requires additional api calls (e.g. to
+/// `get_item`), you should use a &impl DataProvider instead of a &self for more flexibility.
+///
+///
+/// ## Mixing and matching
+/// You can combine multiple `DataProvider` implementations to make one struct that can get from
+/// multiple sources. For example, using one api for classes and another for items. 
+///
+/// This can be done by implementing `DataProvider` for your struct and calling the appropriate source in
+/// each method.
+///
+/// ```rust,ignore
+/// struct MixedSource;
+/// 
+/// #[async_trait]
+/// impl DataProvider for MixedSource {
+///     async fn get_class(&self, name: &str) -> Result<Class, CharacterDataError> {
+///         self.class_source.get_class(&self, name).await
+///     }
+///     async fn get_item(&self, name: &str) -> Result<Item, CharacterDataError> {
+///         self.item_source.get_item(name).await
+///     }
+///     // implement other methods similarly
+/// }
+/// ```
 
 #[async_trait]
 pub trait DataProvider: Send + Sync {
