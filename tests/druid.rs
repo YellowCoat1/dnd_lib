@@ -1,7 +1,7 @@
 #![cfg(feature = "network-intensive-tests")]
-use dnd_lib::prelude::*;
 use dnd_lib::character::spells::SpellSlots;
 use dnd_lib::character::spells::CASTER_SLOTS;
+use dnd_lib::prelude::*;
 
 use futures::future::try_join_all;
 
@@ -26,55 +26,62 @@ async fn level_3_druid() {
         provider.get_spell("darkvision"),
     ];
 
-
-    let human = human_future .await.expect("couldn't get human");
-    let druid = druid_future .await.expect("couldnt't get druid");
-    let acolyte = acolyte_future .await.expect("couldn't get acolyte");
-
+    let human = human_future.await.expect("couldn't get human");
+    let druid = druid_future.await.expect("couldnt't get druid");
+    let acolyte = acolyte_future.await.expect("couldn't get acolyte");
 
     let stats = Stats {
         strength: 8,
         constitution: 13,
         dexterity: 14,
-        intelligence: 12, 
+        intelligence: 12,
         wisdom: 15,
         charisma: 10,
     };
 
     let mut boopo = Character::new("Boopo".to_string(), &druid, &acolyte, &human, stats);
 
-    // choose skill proficiencies granted by the class 
-    
-    boopo.class_skill_proficiencies
+    // choose skill proficiencies granted by the class
+
+    boopo
+        .class_skill_proficiencies
         .get_mut(0)
         .expect("Character should have a 1st choice for skill proficiencies")
         // this is the 6th choice, which is perception
         .choose_in_place(5);
 
-    boopo.class_skill_proficiencies
+    boopo
+        .class_skill_proficiencies
         .get_mut(1)
         .expect("Character should have a 2nd choice for skill proficiencies")
         // this is the 8th choice, which is Survival
         .choose_in_place(7);
 
     boopo.level_up_to_level(&druid, 3);
-    
+
     // choose subclass
     boopo.classes[0].subclass.choose_in_place(0);
 
     assert_eq!(boopo.spell_slots(), Some(SpellSlots(CASTER_SLOTS[2])));
-    assert_eq!(boopo.available_spell_slots, Some(SpellSlots(CASTER_SLOTS[2])));
+    assert_eq!(
+        boopo.available_spell_slots,
+        Some(SpellSlots(CASTER_SLOTS[2]))
+    );
     assert_eq!(boopo.available_pact_slots, None);
 
     let v = boopo.prepare_spells();
-    assert_eq!(v.len(), 1, "There were more classes returned by the spells prepared utility than there should be");
+    assert_eq!(
+        v.len(),
+        1,
+        "There were more classes returned by the spells prepared utility than there should be"
+    );
     let (_, prepped_spell_list, amount, cantrips) = v.into_iter().next().unwrap();
     assert_eq!(amount, 6, "incorrect number of spells to prepare");
     assert_eq!(cantrips, 2, "incorrect number of cantrips to prepare");
-    *prepped_spell_list = try_join_all(spells).await
-        .expect("Couldn't get spells");
+    *prepped_spell_list = try_join_all(spells).await.expect("Couldn't get spells");
 
-    let spells = boopo.classes[0].spellcasting
+    let spells = boopo.classes[0]
+        .spellcasting
         .as_ref()
         .expect("Druid should be a spellcaster")
         .1
@@ -82,8 +89,19 @@ async fn level_3_druid() {
         .map(|spell| spell.name.to_lowercase())
         .collect::<Vec<_>>();
     let spells_lower = spells.iter().map(|v| v.to_lowercase()).collect::<Vec<_>>();
-    assert_eq!(spells_lower, vec!["poison spray", "shillelagh", "charm person", "cure wounds", "thunderwave", "healing word", "moonbeam", "darkvision"]);
-
+    assert_eq!(
+        spells_lower,
+        vec![
+            "poison spray",
+            "shillelagh",
+            "charm person",
+            "cure wounds",
+            "thunderwave",
+            "healing word",
+            "moonbeam",
+            "darkvision"
+        ]
+    );
 
     let spell_attacks = boopo.spell_actions();
     // macro to help test spell attack damage
@@ -92,8 +110,13 @@ async fn level_3_druid() {
             let spell_attack = spell_attacks.get($spell_index);
             match spell_attack {
                 Some(attack) => {
-                    assert_eq!(attack.damage_roll.to_string(), $expected_damage, "Damage roll for spell at index '{}' did not match expected value", $spell_index);
-                },
+                    assert_eq!(
+                        attack.damage_roll.to_string(),
+                        $expected_damage,
+                        "Damage roll for spell at index '{}' did not match expected value",
+                        $spell_index
+                    );
+                }
                 None => panic!("Spell attack at index '{}' not found", $spell_index),
             }
         };
@@ -104,17 +127,30 @@ async fn level_3_druid() {
     assert_spell_damage!(boopo, 2, "3d8 Thunder"); // Thunderwave (2nd level)
     assert_spell_damage!(boopo, 3, "2d10 Radiant"); // Moonbeam
 
-
-    let poison_spray = spell_attacks.first().expect("Couldn't get poison spray spell attack");
-    let moonbeam = spell_attacks.get(3).expect("Couldn't get moonbeam spell attack");
+    let poison_spray = spell_attacks
+        .first()
+        .expect("Couldn't get poison spray spell attack");
+    let moonbeam = spell_attacks
+        .get(3)
+        .expect("Couldn't get moonbeam spell attack");
 
     boopo.cast(poison_spray, None);
-    assert_eq!(boopo.available_spell_slots, Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])), "Spell slots after casting poison spray did not match expected value");
+    assert_eq!(
+        boopo.available_spell_slots,
+        Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])),
+        "Spell slots after casting poison spray did not match expected value"
+    );
     boopo.cast(moonbeam, None);
-    assert_eq!(boopo.available_spell_slots, Some(SpellSlots([4, 1, 0, 0, 0, 0, 0, 0, 0])), "Spell slots after casting moonbeam did not match expected value");
+    assert_eq!(
+        boopo.available_spell_slots,
+        Some(SpellSlots([4, 1, 0, 0, 0, 0, 0, 0, 0])),
+        "Spell slots after casting moonbeam did not match expected value"
+    );
 
     boopo.long_rest();
-    assert_eq!(boopo.available_spell_slots, Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])), "Spell slots after long rest did not match expected value");
+    assert_eq!(
+        boopo.available_spell_slots,
+        Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])),
+        "Spell slots after long rest did not match expected value"
+    );
 }
-
-

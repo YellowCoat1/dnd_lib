@@ -1,12 +1,11 @@
-use serde::{Deserialize, Serialize};
-use super::features::Feature;
-use super::stats::SkillType;
-use super::items::Item;
 use super::choice::PresentedOption;
+use super::features::Feature;
+use super::items::Item;
+use super::stats::SkillType;
+use serde::{Deserialize, Serialize};
 
 /// A D&D Character background.
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Background {
     pub name: String,
     /// Skill proficiencies granted by the background.

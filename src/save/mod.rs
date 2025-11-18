@@ -29,14 +29,12 @@
 //! # }
 //! ```
 
-
-use std::path::Path;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+use std::error::Error;
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::error::Error;
-use serde::Serialize;
-use serde::de::DeserializeOwned;
-
+use std::path::Path;
 
 /// Save the serializable datastructure to the given path.
 pub fn save_serialized<T: Serialize>(path: &Path, t: &T) -> Result<(), Box<dyn Error>> {
@@ -46,11 +44,9 @@ pub fn save_serialized<T: Serialize>(path: &Path, t: &T) -> Result<(), Box<dyn E
 }
 
 /// Gets some serializable data from the given path, parsing it back into the datastructure.
-pub fn get_serialized<T: DeserializeOwned>(path: &Path)  -> Result<T, Box<dyn Error>> {
+pub fn get_serialized<T: DeserializeOwned>(path: &Path) -> Result<T, Box<dyn Error>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
     Ok(serde_json::from_reader(reader)?)
 }
-
-

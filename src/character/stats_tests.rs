@@ -16,17 +16,26 @@ fn modifiers() {
     let modifiers = stats.modifiers();
 
     // making sure the base modifier calculation is correct.
-    assert_eq!(modifiers.strength, 5, "Incorrect calculated strength modifier");
+    assert_eq!(
+        modifiers.strength, 5,
+        "Incorrect calculated strength modifier"
+    );
     assert_eq!(modifiers.wisdom, 1, "Incorrect calculated wisdom modifier");
-    assert_eq!(modifiers.charisma, 2, "Incorrect calculated charisma modifier");
-    assert_eq!(modifiers.dexterity, 0, "Incorrect calculated dexterity modifier");
+    assert_eq!(
+        modifiers.charisma, 2,
+        "Incorrect calculated charisma modifier"
+    );
+    assert_eq!(
+        modifiers.dexterity, 0,
+        "Incorrect calculated dexterity modifier"
+    );
 
     // getting the skill modifiers, with a proficiency in Insight and a proficiency bonus of 2.
     let mut skill_proficiencies = SkillProficiencies::default();
     skill_proficiencies.add_proficiency_from_type(SkillType::Insight);
     let skill_modifiers = skill_proficiencies.modifiers(&stats, proficiency_bonus);
 
-    // Both of these are based on Wisdom, Wisdom's modifier is 1, and there's proficiency in insight 
+    // Both of these are based on Wisdom, Wisdom's modifier is 1, and there's proficiency in insight
     // so insight should be 3, and perception should be 1
     assert_eq!(skill_modifiers.insight, 3);
     assert_eq!(skill_modifiers.perception, 1);
@@ -35,8 +44,11 @@ fn modifiers() {
     let mut saves = Saves::default();
     saves.add_proficiency_from_type(StatType::Charisma);
     let save_modifiers = saves.modifiers(&stats, proficiency_bonus);
-    
-    assert_eq!(save_modifiers.charisma, 4, "Incorrect calculated charisma saving throw");
+
+    assert_eq!(
+        save_modifiers.charisma, 4,
+        "Incorrect calculated charisma saving throw"
+    );
 }
 
 #[test]
@@ -45,10 +57,10 @@ fn add_stats() {
 
     let subbed_stats = stats - 2;
     assert_eq!(subbed_stats, Stats::from(&[18, 8, 8, 8, 10, 12]));
-    
+
     let special_added_stats = stats + Stats::from(&[0, 0, 0, 2, 2, 0]);
     assert_eq!(special_added_stats, Stats::from(&[20, 10, 10, 12, 14, 14]));
-    
+
     *stats.get_stat_type_mut(&StatType::Constitution) = 16;
     assert_eq!(stats.constitution, 16);
 }

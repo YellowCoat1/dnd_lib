@@ -1,24 +1,24 @@
-use crate::character::{class::Subclass, features::PresentedOption};
-use crate::character::features::Feature;
-use crate::get::json_tools::value_name;
 use super::{
-    get_page::get_raw_json, 
-    json_tools::{parse_string, ValueExt, string_array}
+    get_page::get_raw_json,
+    json_tools::{parse_string, string_array, ValueExt},
 };
+use crate::character::features::Feature;
+use crate::character::{class::Subclass, features::PresentedOption};
+use crate::get::json_tools::value_name;
 use crate::getter::CharacterDataError;
 
 pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
-    let index =  parse_string(name);
+    let index = parse_string(name);
     let json = get_raw_json(format!("subclasses/{index}")).await?;
     let levels = get_raw_json(format!("subclasses/{index}/levels")).await?;
 
     let api_getter = super::Dnd5eapigetter::new();
 
-
     let name = json.get_str("name")?;
     let description = string_array(json.get_array("desc")?)?;
 
-    let levels_arr = levels.as_array()
+    let levels_arr = levels
+        .as_array()
         .ok_or_else(|| CharacterDataError::mismatch("levels json", "array", value_name(&levels)))?;
 
     let mut features: [Vec<PresentedOption<Feature>>; 20] = Default::default();
@@ -34,18 +34,15 @@ pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
             features_vec.push(PresentedOption::Base(feature));
         }
 
-        features[level_number-1] = features_vec;
+        features[level_number - 1] = features_vec;
     }
 
-
-    
     Ok(Subclass {
         name,
         description,
         features,
     })
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -57,11 +54,13 @@ mod tests {
     async fn retrieve_subclass() {
         let champion = get_subclass("champion").await.unwrap();
         assert_eq!(champion.name, "Champion");
-        let improved_critical = match champion.features[2].first().expect("champion should have a third level feature") {
+        let improved_critical = match champion.features[2]
+            .first()
+            .expect("champion should have a third level feature")
+        {
             PresentedOption::Base(b) => b,
             _ => panic!("feature was an unexpected type!"),
         };
         assert_eq!(improved_critical.name, "Improved Critical");
-
     }
 }

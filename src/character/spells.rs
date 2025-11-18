@@ -1,10 +1,10 @@
 use std::str::FromStr;
 
-use serde::{Serialize, Deserialize};
 use super::{
-    items::{Action, DamageRoll}, 
-    stats::StatType
+    items::{Action, DamageRoll},
+    stats::StatType,
 };
+use serde::{Deserialize, Serialize};
 
 /// A spell definition, either manually created or loaded from the API.
 ///
@@ -46,7 +46,7 @@ pub struct Spell {
     ///
     /// The first field of the vec is the class level, and the second field is the damage.
     ///
-    pub leveled_damage: Option<Vec<(usize, DamageRoll)>>
+    pub leveled_damage: Option<Vec<(usize, DamageRoll)>>,
 }
 
 /// Represents a resolved spell's damage.
@@ -62,14 +62,22 @@ pub struct SpellAction {
 }
 
 impl Action for SpellAction {
-    fn name(&self) -> &str { &self.name }
-    fn damage_roll(&self) -> DamageRoll { self.damage_roll }
-    fn attack_bonus(&self) -> isize { self.spell_attack_mod }
-    fn damage_roll_bonus(&self) -> isize { 0 } // spells don't typically have a damage roll bonus
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn damage_roll(&self) -> DamageRoll {
+        self.damage_roll
+    }
+    fn attack_bonus(&self) -> isize {
+        self.spell_attack_mod
+    }
+    fn damage_roll_bonus(&self) -> isize {
+        0
+    } // spells don't typically have a damage roll bonus
 }
 
 /// A school of magic.
-/// 
+///
 /// Doc comments are just copy-pasted from the official descriptions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum School {
@@ -91,7 +99,6 @@ pub enum School {
     Transmutation,
 }
 
-
 impl FromStr for School {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -108,7 +115,6 @@ impl FromStr for School {
         }
     }
 }
-
 
 /// Represents the spell slots for levels 0-9.
 ///

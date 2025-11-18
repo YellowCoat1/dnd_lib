@@ -1,4 +1,4 @@
-//! Features, or etc listed effects. 
+//! Features, or etc listed effects.
 //!
 //! Most character effects that are descriptive rather than numerical are listed under here.
 //! As of right now, that only includes the [Feature] struct, and the many surrounding
@@ -7,11 +7,11 @@
 //! Another major part of this module is the [PresentedOption] enum, which is used throughout the
 //! crate to describe a choice between options that the character can pick.
 
-use serde::{Serialize, Deserialize};
 use super::{
-    items::{Action, ArmorCategory, DamageRoll, WeaponType}, 
-    stats::{SkillType, StatType}
+    items::{Action, ArmorCategory, DamageRoll, WeaponType},
+    stats::{SkillType, StatType},
 };
+use serde::{Deserialize, Serialize};
 
 pub use super::choice::*;
 
@@ -22,7 +22,7 @@ pub use super::choice::*;
 pub struct Feature {
     // The name of the feature
     pub name: String,
-    /// The description, split by paragraph 
+    /// The description, split by paragraph
     pub description: Vec<String>,
     /// The mechanical effects that the feature causes.
     pub effects: Vec<FeatureEffect>,
@@ -49,7 +49,7 @@ pub enum AbilityScoreIncrease {
     ///
     /// Since there's no reasonable way for this library to hold every feature you can take, this
     /// an open ended option that you can fill with any feature you choose.
-    AddedFeature(Option<Feature>), 
+    AddedFeature(Option<Feature>),
     Unchosen,
 }
 
@@ -82,7 +82,6 @@ pub struct CustomAction {
     pub add_prof_to_damage: bool,
 }
 
-
 /// A CustomAction after its fields have been computed within a character.
 ///
 /// This struct has everything needed to make an attack.
@@ -91,7 +90,7 @@ pub struct ComputedCustomAction {
     pub name: String,
     pub attack_bonus: isize,
     pub damage_roll: DamageRoll,
-    pub damage_roll_bonus: isize
+    pub damage_roll_bonus: isize,
 }
 
 impl Action for ComputedCustomAction {
@@ -137,7 +136,7 @@ pub enum FeatureEffect {
     ACBonus(isize),
     /// An ability score increase
     AbilityScoreIncrease(AbilityScoreIncrease),
-    /// Grants unarmored defense. 
+    /// Grants unarmored defense.
     ///
     /// The first is the base, which an ability score modifier is added
     /// onto, and then optionally another ability score modifier is added on.

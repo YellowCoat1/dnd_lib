@@ -1,11 +1,10 @@
+use super::get_page::get_raw_json;
+use super::json_tools::{choice, parse_string, value_name, ValueExt};
+use crate::character::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
+use crate::character::stats::StatType;
+use crate::getter::CharacterDataError;
 use regex::Regex;
 use serde_json::Value;
-use crate::character::features::{PresentedOption, Feature, FeatureEffect, AbilityScoreIncrease};
-use crate::character::stats::StatType;
-use super::get_page::get_raw_json;
-use super::json_tools::{choice, parse_string, ValueExt, value_name};
-use crate::getter::CharacterDataError;
-
 
 pub async fn get_feature(name: &str) -> Result<Feature, CharacterDataError> {
     let index = parse_string(name);
@@ -19,13 +18,19 @@ pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDat
 
     let description_arr = item_json.get_array("desc")?;
 
-    let description: Vec<String> = description_arr.iter().map(|v| match v {
-        Value::String(s) => Ok(s.clone()),
-        o => Err(CharacterDataError::mismatch("description", "string", value_name(o)))
-    }).collect::<Result<Vec<String>, CharacterDataError>>()?;
+    let description: Vec<String> = description_arr
+        .iter()
+        .map(|v| match v {
+            Value::String(s) => Ok(s.clone()),
+            o => Err(CharacterDataError::mismatch(
+                "description",
+                "string",
+                value_name(o),
+            )),
+        })
+        .collect::<Result<Vec<String>, CharacterDataError>>()?;
 
     let effects = feature_effects(&index_name);
-
 
     let feature = Feature {
         name,
@@ -33,17 +38,17 @@ pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDat
         effects,
     };
 
-
     Ok(feature)
 }
 
-pub async fn get_feature_from_trait(index_name: &str) -> Result<PresentedOption<Feature>, CharacterDataError> {
-
+pub async fn get_feature_from_trait(
+    index_name: &str,
+) -> Result<PresentedOption<Feature>, CharacterDataError> {
     let trait_json = get_raw_json(format!("traits/{index_name}")).await?;
-    
+
     // draconic ancestry is another beast, and it deserves it's own function.
     if index_name.to_lowercase() == "draconic-ancestry" {
-        return get_draconic_ancestry(trait_json).await
+        return get_draconic_ancestry(trait_json).await;
     }
 
     let name = trait_json.get_str("name")?;
@@ -53,7 +58,7 @@ pub async fn get_feature_from_trait(index_name: &str) -> Result<PresentedOption<
         .iter()
         .map(|v| v.as_string("description"))
         .collect::<Result<Vec<String>, CharacterDataError>>()?;
- 
+
     let feature = Feature {
         name,
         description,
@@ -63,81 +68,103 @@ pub async fn get_feature_from_trait(index_name: &str) -> Result<PresentedOption<
     Ok(PresentedOption::Base(feature))
 }
 
-
-async fn get_draconic_ancestry(json: Value) -> Result<PresentedOption<Feature>, CharacterDataError> {
+async fn get_draconic_ancestry(
+    json: Value,
+) -> Result<PresentedOption<Feature>, CharacterDataError> {
     let trait_specific = json.get_map("trait_specific")?;
 
-    let subtrait_options = trait_specific.get("subtrait_options")
+    let subtrait_options = trait_specific
+        .get("subtrait_options")
         .ok_or_else(|| CharacterDataError::not_found("Object", "subtrait_options"))?;
 
-    let trait_option = choice(subtrait_options)
-        .map_err(|v| v.prepend("subtrait_options "))?;
+    let trait_option = choice(subtrait_options).map_err(|v| v.prepend("subtrait_options "))?;
 
-    trait_option.map_async(|(_, m)| async {
-        let item_map = m.get("item")
-            .ok_or_else(|| CharacterDataError::not_found("Object", "item"))?;
+    trait_option
+        .map_async(|(_, m)| async {
+            let item_map = m
+                .get("item")
+                .ok_or_else(|| CharacterDataError::not_found("Object", "item"))?;
 
-        let index = item_map.get_str("index")?;
+            let index = item_map.get_str("index")?;
 
-        let json = get_raw_json(format!("traits/{index}")).await?;
+            let json = get_raw_json(format!("traits/{index}")).await?;
 
-        let name = json.get_str("name")?;
+            let name = json.get_str("name")?;
 
-        let mut desc: Vec<String> = json.get_array("desc")?
-            .iter()
-            .map(|v| v.as_string("description"))
-            .collect::<Result<Vec<String>, CharacterDataError>>()?;
-        
-        let trait_specific_map = json.get_map("trait_specific")?;
+            let mut desc: Vec<String> = json
+                .get_array("desc")?
+                .iter()
+                .map(|v| v.as_string("description"))
+                .collect::<Result<Vec<String>, CharacterDataError>>()?;
 
-        let breath_weapon_map = trait_specific_map.get_map("breath_weapon")?;
-        let breath_weapon_desc = breath_weapon_map.get_str("desc")?;
+            let trait_specific_map = json.get_map("trait_specific")?;
 
-        let breath_weapon_aoe_map = breath_weapon_map.get_map("area_of_effect")?;
-        let breath_weapon_size = breath_weapon_aoe_map.get_usize("size")?;
-        let breath_weapon_type = breath_weapon_aoe_map.get_str("type")?;
+            let breath_weapon_map = trait_specific_map.get_map("breath_weapon")?;
+            let breath_weapon_desc = breath_weapon_map.get_str("desc")?;
 
-        desc.push(breath_weapon_desc);
-        desc.push(format!("type {breath_weapon_type} of size {breath_weapon_size}"));
+            let breath_weapon_aoe_map = breath_weapon_map.get_map("area_of_effect")?;
+            let breath_weapon_size = breath_weapon_aoe_map.get_usize("size")?;
+            let breath_weapon_type = breath_weapon_aoe_map.get_str("type")?;
 
-        Ok(Feature {
-            name,
-            description: desc,
-            effects: vec![],
+            desc.push(breath_weapon_desc);
+            desc.push(format!(
+                "type {breath_weapon_type} of size {breath_weapon_size}"
+            ));
+
+            Ok(Feature {
+                name,
+                description: desc,
+                effects: vec![],
+            })
         })
-    }).await.collect_result()
+        .await
+        .collect_result()
 }
 
 fn feature_effects(index_name: &str) -> Vec<FeatureEffect> {
-
     if matches_ability_score_increase(index_name) {
-        return vec![FeatureEffect::AbilityScoreIncrease(AbilityScoreIncrease::Unchosen)]
+        return vec![FeatureEffect::AbilityScoreIncrease(
+            AbilityScoreIncrease::Unchosen,
+        )];
     } else if matches_expertise(index_name) {
         return vec![FeatureEffect::Expertise([None, None])];
-    } 
-    
-    match index_name {
-        "barbarian-unarmored-defense" => vec![FeatureEffect::UnarmoredDefense(10, StatType::Dexterity, Some(StatType::Constitution))],
-        "monk-unarmored-defense" => vec![FeatureEffect::UnarmoredDefense(10, StatType::Dexterity, Some(StatType::Wisdom))],
-        "draconic-resilience" => vec![FeatureEffect::LeveledHpIncrease, FeatureEffect::UnarmoredDefense(13, StatType::Dexterity, None)],
-        "dwarven-toughness" => vec![FeatureEffect::LeveledHpIncrease],
-        _ => vec![]
     }
 
+    match index_name {
+        "barbarian-unarmored-defense" => vec![FeatureEffect::UnarmoredDefense(
+            10,
+            StatType::Dexterity,
+            Some(StatType::Constitution),
+        )],
+        "monk-unarmored-defense" => vec![FeatureEffect::UnarmoredDefense(
+            10,
+            StatType::Dexterity,
+            Some(StatType::Wisdom),
+        )],
+        "draconic-resilience" => vec![
+            FeatureEffect::LeveledHpIncrease,
+            FeatureEffect::UnarmoredDefense(13, StatType::Dexterity, None),
+        ],
+        "dwarven-toughness" => vec![FeatureEffect::LeveledHpIncrease],
+        _ => vec![],
+    }
 }
 
 fn matches_ability_score_increase(string: &str) -> bool {
-    Regex::new(r"^(.*)-ability-score-improvement-(\d+)$").unwrap().is_match(string)
+    Regex::new(r"^(.*)-ability-score-improvement-(\d+)$")
+        .unwrap()
+        .is_match(string)
 }
 
 fn matches_expertise(string: &str) -> bool {
-    Regex::new(r"^(.*)-expertise-(\d+)$").unwrap().is_match(string)
+    Regex::new(r"^(.*)-expertise-(\d+)$")
+        .unwrap()
+        .is_match(string)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     #[tokio::test]
     async fn test_trait() {

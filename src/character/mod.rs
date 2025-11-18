@@ -2,20 +2,20 @@
 //!
 //! Every struct here implements serde serialize and deserialize, allowing for easy sending or
 //! saving.
-pub mod stats;
+mod background;
 mod choice;
 pub mod features;
 pub mod items;
 pub mod spells;
-mod background;
+pub mod stats;
 pub use background::Background;
 mod race;
 pub use race::{Race, Subrace};
-pub mod class;
 mod character_etc;
-pub use character_etc::{CharacterStory, CharacterDescriptors};
+pub mod class;
+pub use character_etc::{CharacterDescriptors, CharacterStory};
 mod player_character;
-pub use player_character::{Character, SpeccedClass, Castable};
+pub use player_character::{Castable, Character, SpeccedClass};
 mod character_builder;
 pub use character_builder::CharacterBuilder;
 

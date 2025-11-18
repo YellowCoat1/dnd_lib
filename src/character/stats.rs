@@ -1,18 +1,17 @@
 //! Defines stats, saving throws, skills, and proficieny.
 
 use std::{
-        collections::HashSet, 
-        fmt::Display, 
-        ops::{Add, AddAssign, Deref, DerefMut, Sub}
+    collections::HashSet,
+    fmt::Display,
+    ops::{Add, AddAssign, Deref, DerefMut, Sub},
 };
 use strum::{EnumIter, IntoEnumIterator};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 // proficiency bonus values for each level
-pub const PROFICIENCY_BY_LEVEL: [isize; 20] = 
+pub const PROFICIENCY_BY_LEVEL: [isize; 20] =
     [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6];
-
 
 /// Base ability scores.
 /// These are total scores, not modifiers.
@@ -29,19 +28,26 @@ pub struct Stats {
 impl From<&[isize; 6]> for Stats {
     fn from(arr: &[isize; 6]) -> Self {
         Self {
-            strength:       arr[0],
-            dexterity:      arr[1],
-            constitution:   arr[2],
-            intelligence:   arr[3],
-            wisdom:         arr[4],
-            charisma:       arr[5],
+            strength: arr[0],
+            dexterity: arr[1],
+            constitution: arr[2],
+            intelligence: arr[3],
+            wisdom: arr[4],
+            charisma: arr[5],
         }
     }
 }
 
 impl From<Stats> for Vec<isize> {
     fn from(value: Stats) -> Self {
-        vec![value.strength, value.dexterity, value.constitution, value.intelligence, value.wisdom, value.charisma]
+        vec![
+            value.strength,
+            value.dexterity,
+            value.constitution,
+            value.intelligence,
+            value.wisdom,
+            value.charisma,
+        ]
     }
 }
 
@@ -50,30 +56,31 @@ impl Stats {
     ///
     /// Modifiers are computed as floor((score - 10) / 2)
     pub fn modifiers(&self) -> Modifiers {
-
         fn calc_mod(stat: isize) -> isize {
-            ( ((stat as f64)-10.0)/2.0 ).floor() as isize
+            (((stat as f64) - 10.0) / 2.0).floor() as isize
         }
 
-        Modifiers{ stats: Stats {
-            strength: calc_mod(self.strength),
-            dexterity: calc_mod(self.dexterity),
-            constitution: calc_mod(self.constitution),
-            wisdom: calc_mod(self.wisdom),
-            intelligence: calc_mod(self.intelligence),
-            charisma: calc_mod(self.charisma),
-        }}
+        Modifiers {
+            stats: Stats {
+                strength: calc_mod(self.strength),
+                dexterity: calc_mod(self.dexterity),
+                constitution: calc_mod(self.constitution),
+                wisdom: calc_mod(self.wisdom),
+                intelligence: calc_mod(self.intelligence),
+                charisma: calc_mod(self.charisma),
+            },
+        }
     }
-    
+
     /// Returns a mutable refrence to the value of the given stat type.
-    pub fn get_stat_type_mut (&mut self, stat_type: &StatType) -> &mut isize {
+    pub fn get_stat_type_mut(&mut self, stat_type: &StatType) -> &mut isize {
         match stat_type {
-           StatType::Strength => &mut self.strength,
-           StatType::Dexterity => &mut self.dexterity,
-           StatType::Constitution => &mut self.constitution,
-           StatType::Intelligence => &mut self.intelligence,
-           StatType::Wisdom => &mut self.wisdom,
-           StatType::Charisma => &mut self.charisma,
+            StatType::Strength => &mut self.strength,
+            StatType::Dexterity => &mut self.dexterity,
+            StatType::Constitution => &mut self.constitution,
+            StatType::Intelligence => &mut self.intelligence,
+            StatType::Wisdom => &mut self.wisdom,
+            StatType::Charisma => &mut self.charisma,
         }
     }
 
@@ -88,7 +95,6 @@ impl Stats {
             StatType::Charisma => &self.charisma,
         }
     }
-
 }
 
 impl Add for Stats {
@@ -148,14 +154,16 @@ impl Default for Stats {
             constitution: 10,
             wisdom: 10,
             intelligence: 10,
-            charisma: 10
+            charisma: 10,
         }
     }
 }
 
 // A wrapper for [Stats] where each field is a modifier instead of a base score.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Modifiers {pub stats: Stats}
+pub struct Modifiers {
+    pub stats: Stats,
+}
 
 impl Deref for Modifiers {
     type Target = Stats;
@@ -171,18 +179,20 @@ impl DerefMut for Modifiers {
 
 impl Default for Modifiers {
     fn default() -> Self {
-        Self { stats: Stats { 
-            strength: 0, 
-            dexterity: 0, 
-            constitution: 0, 
-            wisdom: 0, 
-            intelligence: 0, 
-            charisma: 0 
-        }}
+        Self {
+            stats: Stats {
+                strength: 0,
+                dexterity: 0,
+                constitution: 0,
+                wisdom: 0,
+                intelligence: 0,
+                charisma: 0,
+            },
+        }
     }
 }
 
-/// Enumerates all six core ability score types. 
+/// Enumerates all six core ability score types.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Serialize, Deserialize)]
 pub enum StatType {
     Strength,
@@ -193,7 +203,7 @@ pub enum StatType {
     Charisma,
 }
 
-impl <'a>StatType {
+impl<'a> StatType {
     /// Getting a StatType from it's shorthand (e.g. "dex")
     /// if you want to get a StatType from it's full name, just take the first three characters.
     ///
@@ -206,7 +216,7 @@ impl <'a>StatType {
             "int" => Some(StatType::Intelligence),
             "wis" => Some(StatType::Wisdom),
             "cha" => Some(StatType::Charisma),
-            _ => None
+            _ => None,
         }
     }
 
@@ -218,7 +228,7 @@ impl <'a>StatType {
             "intelligence" => Some(StatType::Intelligence),
             "wisdom" => Some(StatType::Wisdom),
             "charisma" => Some(StatType::Charisma),
-            _ => None
+            _ => None,
         }
     }
 
@@ -268,38 +278,37 @@ impl Saves {
     /// Returns the total saving throw modifiers, combining ability modifiers and any proficieny
     /// bonuses.
     pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> Modifiers {
-
         // essentially just takes the base stats, converts it to the modfiers, then adds
         // proficiency to the fields that are proficient.
 
+        let calc_bonus = |b| if b { proficiency_bonus } else { 0 };
 
-        let calc_bonus = |b| if b {proficiency_bonus} else {0};
-            
         let base_modifiers = stats.modifiers();
 
-        Modifiers{ stats: Stats { 
-            strength: base_modifiers.strength + calc_bonus(self.strength),
-            dexterity: base_modifiers.dexterity + calc_bonus(self.dexterity),
-            constitution: base_modifiers.constitution + calc_bonus(self.constitution),
-            intelligence: base_modifiers.intelligence + calc_bonus(self.intelligence),
-            wisdom: base_modifiers.wisdom + calc_bonus(self.wisdom),
-            charisma: base_modifiers.charisma + calc_bonus(self.charisma),
-        }}
+        Modifiers {
+            stats: Stats {
+                strength: base_modifiers.strength + calc_bonus(self.strength),
+                dexterity: base_modifiers.dexterity + calc_bonus(self.dexterity),
+                constitution: base_modifiers.constitution + calc_bonus(self.constitution),
+                intelligence: base_modifiers.intelligence + calc_bonus(self.intelligence),
+                wisdom: base_modifiers.wisdom + calc_bonus(self.wisdom),
+                charisma: base_modifiers.charisma + calc_bonus(self.charisma),
+            },
+        }
     }
 
     /// Add a saving throw proficiency from an ability score type
     pub fn add_proficiency_from_type(&mut self, stat_type: StatType) {
-       match stat_type {
-           StatType::Strength => self.strength = true,
-           StatType::Dexterity => self.dexterity = true,
-           StatType::Constitution => self.constitution = true,
-           StatType::Intelligence => self.intelligence = true,
-           StatType::Wisdom => self.wisdom = true,
-           StatType::Charisma => self.charisma = true,
-       }
+        match stat_type {
+            StatType::Strength => self.strength = true,
+            StatType::Dexterity => self.dexterity = true,
+            StatType::Constitution => self.constitution = true,
+            StatType::Intelligence => self.intelligence = true,
+            StatType::Wisdom => self.wisdom = true,
+            StatType::Charisma => self.charisma = true,
+        }
     }
 }
-
 
 /// Tracks proficiency and expertise for every skill.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -323,13 +332,9 @@ pub struct SkillProficiencies {
     pub stealth: Skill,
     pub survival: Skill,
 }
- 
+
 /// Enumerates the different skills a character has. (e.g. Deception, Religion, Medicine)
-#[derive(Serialize, Deserialize)]
-#[derive(PartialEq, Eq)]
-#[derive(EnumIter)]
-#[derive(Debug)]
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, EnumIter, Debug, Clone, Copy)]
 pub enum SkillType {
     /// Uses dexterity
     Acrobatics,
@@ -369,7 +374,6 @@ pub enum SkillType {
     Survival,
 }
 
-
 impl SkillType {
     // converts from string name to skill type. non case sensitive.
     pub fn from_name(name: &str) -> Option<SkillType> {
@@ -399,29 +403,32 @@ impl SkillType {
 
 impl Display for SkillType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            SkillType::Acrobatics => "Acrobatics",
-            SkillType::AnimalHandling => "Animal Handling",
-            SkillType::Arcana => "Arcana",
-            SkillType::Athletics => "Athletics",
-            SkillType::Deception => "Deception",
-            SkillType::History => "History",
-            SkillType::Insight => "Insight",
-            SkillType::Intimidation => "Intimidation",
-            SkillType::Investigation => "Investigation",
-            SkillType::Medicine => "Medicine",
-            SkillType::Nature => "Nature",
-            SkillType::Perception => "Perception",
-            SkillType::Performance => "Performance",
-            SkillType::Persuasion => "Persuasion",
-            SkillType::Religion => "Religion",
-            SkillType::SleightOfHand => "Sleight of Hand",
-            SkillType::Stealth => "Stealth",
-            SkillType::Survival => "Survival",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                SkillType::Acrobatics => "Acrobatics",
+                SkillType::AnimalHandling => "Animal Handling",
+                SkillType::Arcana => "Arcana",
+                SkillType::Athletics => "Athletics",
+                SkillType::Deception => "Deception",
+                SkillType::History => "History",
+                SkillType::Insight => "Insight",
+                SkillType::Intimidation => "Intimidation",
+                SkillType::Investigation => "Investigation",
+                SkillType::Medicine => "Medicine",
+                SkillType::Nature => "Nature",
+                SkillType::Perception => "Perception",
+                SkillType::Performance => "Performance",
+                SkillType::Persuasion => "Persuasion",
+                SkillType::Religion => "Religion",
+                SkillType::SleightOfHand => "Sleight of Hand",
+                SkillType::Stealth => "Stealth",
+                SkillType::Survival => "Survival",
+            }
+        )
     }
 }
-
 
 /// Stores the proficiency/mastery of a single skill type.
 #[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
@@ -429,7 +436,6 @@ pub struct Skill {
     pub proficiency: bool,
     pub expertise: bool,
 }
-
 
 /// Calculated modifiers for skills
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -499,14 +505,13 @@ impl SkillModifiers {
             SkillType::Survival => &mut self.survival,
         }
     }
-
 }
 
 impl SkillProficiencies {
     /// Computes total modifiers for all skills based on ability modifiers and proficiency bonuses.
     ///
     /// Proficency in a skill adds proficiency once. Expertise adds the proficency bonus again.
-    pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> SkillModifiers{
+    pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> SkillModifiers {
         // stat modifiers. Shorthanded name since it's a very short lived and highly used var.
         let sm = stats.modifiers();
         // proficiency modifier
@@ -534,7 +539,6 @@ impl SkillProficiencies {
             survival: sm.wisdom + pm(&self.survival),
         }
     }
-
 
     /// Gets a reference to the skill data for the specified skill type
     pub fn get_from_type(&self, stat_type: SkillType) -> &Skill {
@@ -597,12 +601,13 @@ impl SkillProficiencies {
         let mut v = vec![];
         for t in SkillType::iter() {
             let x = self.get_from_type(t);
-            if x.proficiency {v.push((t,x))}
+            if x.proficiency {
+                v.push((t, x))
+            }
         }
         v
     }
 }
-
 
 /// Proficiencies in armor and weapons.
 ///
@@ -617,7 +622,6 @@ pub struct EquipmentProficiencies {
     pub shields: bool,
     pub other: HashSet<String>,
 }
-
 
 impl Add for EquipmentProficiencies {
     type Output = Self;
@@ -650,7 +654,7 @@ impl AddAssign for EquipmentProficiencies {
 
 /// Represents the different types of speed any creature can have. E.g. hovering, climbing,
 /// swimming
-/// 
+///
 /// Most of these are only used in rare cases. The walking speed is almost always a given.
 #[derive(Debug, Clone)]
 pub struct Speeds {
@@ -688,14 +692,18 @@ pub enum Size {
 
 impl Display for Size {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Size::Tiny => "Tiny",
-            Size::Small => "Small",
-            Size::Medium => "Medium",
-            Size::Large => "Large",
-            Size::Huge => "Huge",
-            Size::Gargantuan => "Gargantuan",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Size::Tiny => "Tiny",
+                Size::Small => "Small",
+                Size::Medium => "Medium",
+                Size::Large => "Large",
+                Size::Huge => "Huge",
+                Size::Gargantuan => "Gargantuan",
+            }
+        )
     }
 }
 
@@ -714,16 +722,20 @@ pub enum Alignment {
 
 impl Display for Alignment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Alignment::LawfulGood => "Lawful Good",
-            Alignment::NeutralGood => "Neutral Good",
-            Alignment::ChaoticGood => "Chaotic Good",
-            Alignment::LawfulNeutral => "Lawful Neutral",
-            Alignment::TrueNeutral => "True Neutral",
-            Alignment::ChaoticNeutral => "Chaotic Neutral",
-            Alignment::LawfulEvil => "Lawful Evil",
-            Alignment::NeutralEvil => "Neutral Evil",
-            Alignment::ChaoticEvil => "Chaotic Evil",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Alignment::LawfulGood => "Lawful Good",
+                Alignment::NeutralGood => "Neutral Good",
+                Alignment::ChaoticGood => "Chaotic Good",
+                Alignment::LawfulNeutral => "Lawful Neutral",
+                Alignment::TrueNeutral => "True Neutral",
+                Alignment::ChaoticNeutral => "Chaotic Neutral",
+                Alignment::LawfulEvil => "Lawful Evil",
+                Alignment::NeutralEvil => "Neutral Evil",
+                Alignment::ChaoticEvil => "Chaotic Evil",
+            }
+        )
     }
 }

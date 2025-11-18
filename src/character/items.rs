@@ -1,14 +1,24 @@
 //! D&D items, item types, and damage types.
 use std::{cmp::PartialEq, fmt::Display, str::FromStr};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use super::{features::Feature, stats::EquipmentProficiencies};
 
-/// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately. 
+/// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately.
 ///
-/// If you want stats, you need to use a get function. 
-pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = ["club", "dagger", "greatclub", "handaxe", "javelin", "mace", "quarterstaff", "sickle", "spear"];
+/// If you want stats, you need to use a get function.
+pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
+    "club",
+    "dagger",
+    "greatclub",
+    "handaxe",
+    "javelin",
+    "mace",
+    "quarterstaff",
+    "sickle",
+    "spear",
+];
 /// Lists the names of all regular D&D  ranged simple weapons. See [SIMPLE_WEAPONS_MELEE].
 ///
 /// Note that with Dnd5eapigetter, "light crossbow" is "crossbow light"
@@ -16,14 +26,38 @@ pub const SIMPLE_WEAPONS_RANGED: [&str; 4] = ["light crossbow", "dart", "shortbo
 
 /// Lists the names of all regular D&D melee martial weapons. Ranged weapons are listed seperately.
 ///
-/// If you want stats, you need to use a get function. 
-pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = ["battleaxe", "flail", "glaive", "greataxe", "greatsword", "halberd", "lance", "longsword", "maul", "morningstar", "pike", "rapier", "scimitar", "shortsword", "trident", "war pick", "warhammer", "whip"];
+/// If you want stats, you need to use a get function.
+pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
+    "battleaxe",
+    "flail",
+    "glaive",
+    "greataxe",
+    "greatsword",
+    "halberd",
+    "lance",
+    "longsword",
+    "maul",
+    "morningstar",
+    "pike",
+    "rapier",
+    "scimitar",
+    "shortsword",
+    "trident",
+    "war pick",
+    "warhammer",
+    "whip",
+];
 /// Lists the names of all regular D&D ranged martial weapons. See [MARTIAL_WEAPONS_MELEE].
 ///
 /// Note that with Dnd5eapigetter, "hand crossbow" is "crossbow hand", and "heavy crossbow" is
 /// "crossbow heavy"
-pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = ["blowgun", "hand crossbow", "heavy crossbow", "longbow", "net"];
-
+pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
+    "blowgun",
+    "hand crossbow",
+    "heavy crossbow",
+    "longbow",
+    "net",
+];
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum DamageType {
@@ -80,7 +114,7 @@ impl FromStr for DamageType {
             "radiant" => Ok(DamageType::Radiant),
             "slashing" => Ok(DamageType::Slashing),
             "thunder" => Ok(DamageType::Thunder),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
@@ -97,7 +131,7 @@ pub enum ItemType {
     Misc,
 }
 
-/// A single item. 
+/// A single item.
 ///
 /// Often, items with counts are stored as a (Item, usize) tuple.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -125,11 +159,12 @@ pub struct Armor {
 impl Armor {
     /// Get the ac of the armor in the context of a character using it.
     pub fn total_ac(&self, dex: isize) -> isize {
-        self.ac + match self.category {
-            ArmorCategory::Light => dex,
-            ArmorCategory::Medium => dex.min(2),
-            ArmorCategory::Heavy => 0,
-        }
+        self.ac
+            + match self.category {
+                ArmorCategory::Light => dex,
+                ArmorCategory::Medium => dex.min(2),
+                ArmorCategory::Heavy => 0,
+            }
     }
 }
 
@@ -148,11 +183,15 @@ pub enum ArmorCategory {
 impl Display for ArmorCategory {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use ArmorCategory::*;
-        write!(f, "{}", match self {
-            Light => "Light",
-            Medium => "Medium",
-            Heavy => "Heavy",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Light => "Light",
+                Medium => "Medium",
+                Heavy => "Heavy",
+            }
+        )
     }
 }
 
@@ -166,7 +205,6 @@ pub struct Weapon {
     pub weapon_type: WeaponType,
     pub properties: WeaponProperties,
 }
-
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct WeaponProperties {
@@ -193,15 +231,18 @@ pub enum WeaponType {
 }
 
 impl Display for WeaponType {
-
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use WeaponType::*;
-        write!(f, "{}", match self {
-            Simple => "Simple",
-            SimpleRanged => "Simple Ranged",
-            Martial => "Martial",
-            MartialRanged => "Martial Ranged",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Simple => "Simple",
+                SimpleRanged => "Simple Ranged",
+                Martial => "Martial",
+                MartialRanged => "Martial Ranged",
+            }
+        )
     }
 }
 
@@ -209,28 +250,31 @@ impl Display for WeaponType {
 /// type.
 pub fn is_proficient_with(weapon: &WeaponType, proficiencies: &EquipmentProficiencies) -> bool {
     matches!(
-        (proficiencies.simple_weapons, proficiencies.martial_weapons, weapon), 
-        (_, true, WeaponType::Martial) | 
-        (_, true, WeaponType::MartialRanged) | 
-        (true, _, WeaponType::Simple) | 
-        (true, _, WeaponType::SimpleRanged)
+        (
+            proficiencies.simple_weapons,
+            proficiencies.martial_weapons,
+            weapon
+        ),
+        (_, true, WeaponType::Martial)
+            | (_, true, WeaponType::MartialRanged)
+            | (true, _, WeaponType::Simple)
+            | (true, _, WeaponType::SimpleRanged)
     )
 }
 
-
-/// A damage roll in the format XdY (type) damage, 
+/// A damage roll in the format XdY (type) damage,
 /// e.g. 1d6 piercing.
 ///
-/// This doesn't also store added damage, e.g. 1d6+2. If you want to store that, use a (DamageRoll, 
+/// This doesn't also store added damage, e.g. 1d6+2. If you want to store that, use a (DamageRoll,
 ///  isize)
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct DamageRoll {
     /// The number of dice rolled
-    pub number: usize, 
+    pub number: usize,
     /// The numer of faces in the die (e.g. 4, 8, 20)
-    pub dice: usize, 
+    pub dice: usize,
     /// The type of damage the roll causes.
-    pub damage_type: DamageType
+    pub damage_type: DamageType,
 }
 
 impl std::fmt::Display for DamageRoll {
@@ -281,19 +325,19 @@ impl Action for WeaponAction {
 
 impl DamageRoll {
     pub fn new(number: usize, dice: usize, damage_type: DamageType) -> DamageRoll {
-        DamageRoll { 
-            number, 
-            dice, 
+        DamageRoll {
+            number,
+            dice,
             damage_type,
         }
     }
 
     /// Parses a string of the form "XdY" into a DamageRoll.
-    /// 
+    ///
     /// For example, "2d10" would be turned into a DamageRoll with 2 dice and 10 faces.
     pub fn from_str(s: &str, damage_type: DamageType) -> Option<DamageRoll> {
         let (a, b) = s.split_once('d')?;
-        Some(Self{
+        Some(Self {
             number: a.parse().ok()?,
             dice: b.parse().ok()?,
             damage_type,

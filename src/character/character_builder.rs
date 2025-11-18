@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-
-
 /// Builds a character from parts.
 ///
 /// ```ignore
@@ -25,12 +23,12 @@ pub struct CharacterBuilder<'a, 'b, 'c> {
 
 impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
     pub fn new(name: &str) -> Self {
-        CharacterBuilder { 
-            name: name.to_string(), 
-            iclass: None, 
-            ibackground: None, 
+        CharacterBuilder {
+            name: name.to_string(),
+            iclass: None,
+            ibackground: None,
             irace: None,
-            istats: None 
+            istats: None,
         }
     }
 
@@ -64,4 +62,3 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         Ok(Character::new(self.name, class, background, race, stats))
     }
 }
-

@@ -1,15 +1,8 @@
 //! Traits and errors for retrieving D&D Character data.
-use thiserror::Error;
 use async_trait::async_trait;
+use thiserror::Error;
 
-use crate::character::{
-    Race,
-    Background,
-    items::Item,
-    class::Class,
-    spells::Spell,
-};
-
+use crate::character::{class::Class, items::Item, spells::Spell, Background, Race};
 
 /// A trait representing a source capable of retrieving D&D data, e.g. from an api.
 ///
@@ -20,12 +13,12 @@ use crate::character::{
 /// ```rust,ignore
 /// use async_trait::async_trait;
 /// use dnd_lib::getter::DataProvider;
-/// use dnd_lib::character::items::{Item, ItemType} 
+/// use dnd_lib::character::items::{Item, ItemType}
 /// use dnd_lib::character::Background;
 ///
 /// struct Retrievier;
 ///
-/// #[async_trait] 
+/// #[async_trait]
 /// impl DataProvider for Retrievier {
 ///     async fn get_item(&self, name: &str) -> Result<Item, CharacterDataError> {
 ///         Ok(Item {
@@ -46,7 +39,6 @@ use crate::character::{
 /// requested that the name field is always the same, being capitalized like a title. e.g. "Wizard"
 /// or "Flag Bearer"
 
-
 #[async_trait]
 pub trait DataProvider: Send + Sync {
     async fn get_race(&self, name: &str) -> Result<Race, CharacterDataError>;
@@ -65,7 +57,6 @@ pub enum CharacterDataError {
     // Could not properly deserialize the returned data
     #[error("failed to parse: {0}")]
     Parse(#[from] serde_json::Error),
-    
 
     /// The api didn't have a required field
     #[error("Value not found: expected {val_type} named {name}")]
@@ -87,15 +78,23 @@ impl CharacterDataError {
     /// Adds context by prefixing the `ValueMismatch` message.
     pub fn prepend(self, s: &str) -> CharacterDataError {
         match self {
-            CharacterDataError::NotFound {val_type, name} => {
+            CharacterDataError::NotFound { val_type, name } => {
                 let mut s = s.to_string();
                 s.push_str(&name);
-                CharacterDataError::NotFound {val_type, name: s}
-            },
-            CharacterDataError::TypeMismatch { field , expected, found } => {
+                CharacterDataError::NotFound { val_type, name: s }
+            }
+            CharacterDataError::TypeMismatch {
+                field,
+                expected,
+                found,
+            } => {
                 let mut s = s.to_string();
                 s.push_str(&field);
-                CharacterDataError::TypeMismatch { field: s, expected, found }
+                CharacterDataError::TypeMismatch {
+                    field: s,
+                    expected,
+                    found,
+                }
             }
             o => o,
         }
@@ -104,10 +103,10 @@ impl CharacterDataError {
     /// Adds trailing context to a `ValueMismatch` message.
     pub fn append(mut self, s: &str) -> CharacterDataError {
         match &mut self {
-            CharacterDataError::NotFound {name, ..} => {
+            CharacterDataError::NotFound { name, .. } => {
                 name.push_str(s);
             }
-            CharacterDataError::TypeMismatch {field, ..} => {
+            CharacterDataError::TypeMismatch { field, .. } => {
                 field.push_str(s);
             }
             _ => (),
@@ -118,10 +117,17 @@ impl CharacterDataError {
 
     /// Constructs a `ValueMismatch` with the given string.
     pub fn mismatch(field: &str, expected: &'static str, found: &str) -> CharacterDataError {
-        CharacterDataError::TypeMismatch { field: field.to_string(), expected, found: found.to_string() }
+        CharacterDataError::TypeMismatch {
+            field: field.to_string(),
+            expected,
+            found: found.to_string(),
+        }
     }
-    
+
     pub fn not_found(val_type: &'static str, name: &str) -> CharacterDataError {
-        CharacterDataError::NotFound { val_type, name: name.to_string() }
+        CharacterDataError::NotFound {
+            val_type,
+            name: name.to_string(),
+        }
     }
 }

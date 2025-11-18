@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::future::Future;
-use serde::{Serialize, Deserialize};
 
 /// Represents a list of possible options that can be *presented* as options that a character can
 /// select.
@@ -18,7 +18,6 @@ pub enum PresentedOption<T> {
 }
 
 impl<T> PresentedOption<T> {
-
     /// Returns the value at `index`.
     /// - If this is a `Base`, returns a `Some` of the contained value.
     /// - If this is a `Choice`, returns the child at `index`, or `None` if out of bounds.
@@ -43,8 +42,8 @@ impl<T> PresentedOption<T> {
     /// use dnd_lib::character::features::PresentedOption;
     ///
     /// let mut choice = PresentedOption::Choice(vec![
-    ///     "Apples", 
-    ///     "Bananas", 
+    ///     "Apples",
+    ///     "Bananas",
     ///     "Oranges"
     /// ]);
     /// choice.choose_in_place(1);
@@ -78,10 +77,10 @@ impl<T> PresentedOption<T> {
     pub fn as_base_mut(&mut self) -> Option<&mut T> {
         match self {
             PresentedOption::Choice(_) => None,
-            PresentedOption::Base(t) => Some(t)
+            PresentedOption::Base(t) => Some(t),
         }
     }
-    
+
     /// Returns the list of sub-options if this is a `Choice`, otherwise returns [None].
     pub fn choices(&self) -> Option<&[T]> {
         match self {
@@ -91,18 +90,15 @@ impl<T> PresentedOption<T> {
     }
 
     /// Maps a `PresentedOption<T>` to a `PresentedOption<U>`.
-    pub fn map<U, F>(self, mut map_closure: F) -> PresentedOption<U> 
+    pub fn map<U, F>(self, mut map_closure: F) -> PresentedOption<U>
     where
         F: FnMut(T) -> U,
     {
         match self {
             PresentedOption::Base(val) => PresentedOption::Base(map_closure(val)),
-            PresentedOption::Choice(children) => PresentedOption::Choice(
-                children
-                    .into_iter()
-                    .map(map_closure)
-                    .collect()
-            )
+            PresentedOption::Choice(children) => {
+                PresentedOption::Choice(children.into_iter().map(map_closure).collect())
+            }
         }
     }
 
@@ -124,12 +120,9 @@ impl<T> PresentedOption<T> {
                 }
                 PresentedOption::Choice(mapped_children)
             }
-
         }
     }
 }
-
-
 
 impl<T> PresentedOption<Option<T>> {
     /// Converts a `PresentedOption<Option<T>>` to a `Option<PresentedOption<T>>`, discarding
@@ -139,7 +132,7 @@ impl<T> PresentedOption<Option<T>> {
             PresentedOption::Base(Some(v)) => Some(PresentedOption::Base(v)),
             PresentedOption::Base(None) => None,
             PresentedOption::Choice(v) => {
-                let mut out =  Vec::with_capacity(v.len());
+                let mut out = Vec::with_capacity(v.len());
                 for val in v {
                     out.push(val?);
                 }
@@ -157,7 +150,7 @@ impl<T, U> PresentedOption<Result<T, U>> {
             PresentedOption::Base(Ok(v)) => Ok(PresentedOption::Base(v)),
             PresentedOption::Base(Err(v)) => Err(v),
             PresentedOption::Choice(v) => {
-                let mut out =  Vec::with_capacity(v.len());
+                let mut out = Vec::with_capacity(v.len());
                 for val in v {
                     out.push(val?);
                 }
@@ -182,8 +175,15 @@ impl<T, U> PresentedOption<Result<T, U>> {
 /// assert_eq!(chosen_options, vec![&1, &4]);
 /// ```
 pub fn chosen<T>(presented: &[PresentedOption<T>]) -> Vec<&T> {
-    presented.iter()
-        .filter_map(|p| if let PresentedOption::Base(ref f) = p {Some(f)} else {None})
+    presented
+        .iter()
+        .filter_map(|p| {
+            if let PresentedOption::Base(ref f) = p {
+                Some(f)
+            } else {
+                None
+            }
+        })
         .collect()
 }
 
@@ -197,7 +197,7 @@ pub fn split<T>(presented: &[PresentedOption<T>]) -> (Vec<&T>, Vec<&Vec<T>>) {
     for presented_val in presented {
         match presented_val {
             PresentedOption::Base(b) => chosen.push(b),
-            PresentedOption::Choice(c) => unchosen.push(c)
+            PresentedOption::Choice(c) => unchosen.push(c),
         }
     }
 

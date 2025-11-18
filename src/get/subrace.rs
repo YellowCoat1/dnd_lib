@@ -1,11 +1,11 @@
-use super::json_tools::ValueExt;
-use crate::getter::CharacterDataError;
-use super::get_page::get_raw_json;
-use serde_json::Value;
-use crate::character::Subrace;
-use crate::character::stats::StatType;
-use crate::get::json_tools::parse_string;
 use super::feature::get_feature_from_trait;
+use super::get_page::get_raw_json;
+use super::json_tools::ValueExt;
+use crate::character::stats::StatType;
+use crate::character::Subrace;
+use crate::get::json_tools::parse_string;
+use crate::getter::CharacterDataError;
+use serde_json::Value;
 
 pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
     let index = parse_string(name);
@@ -18,7 +18,6 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
     let ability_bonus_array = json.get_array("ability_bonuses")?;
     let ability_bonuses = process_ability_bonuses(ability_bonus_array)?;
 
-    
     let traits_arr = json.get_array("racial_traits")?;
     let mut traits = Vec::with_capacity(traits_arr.len());
     for traits_val in traits_arr.iter() {
@@ -35,17 +34,23 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
     })
 }
 
-pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
+pub fn process_ability_bonuses(
+    arr: &[Value],
+) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
     let mut ability_bonuses: Vec<(Option<StatType>, isize)> = vec![];
 
     for ability_bonus in arr.iter() {
-
         let ability_score_map = ability_bonus.get_map("ability_score")?;
         let ability_score_name = ability_score_map.get_str("name")?;
         let ability_score_bonus: isize = ability_bonus.get_usize("bonus")?.try_into().unwrap();
 
-        let stat_type = StatType::from_shorthand(ability_score_name.as_str())
-            .ok_or_else(|| CharacterDataError::mismatch("ability score name", "StatType string", "improper StatType string"))?;
+        let stat_type = StatType::from_shorthand(ability_score_name.as_str()).ok_or_else(|| {
+            CharacterDataError::mismatch(
+                "ability score name",
+                "StatType string",
+                "improper StatType string",
+            )
+        })?;
 
         ability_bonuses.push((Some(stat_type), ability_score_bonus));
     }
@@ -53,7 +58,9 @@ pub fn process_ability_bonuses(arr: &[Value]) -> Result<Vec<(Option<StatType>, i
     Ok(ability_bonuses)
 }
 
-pub fn ability_bonus_choice(val: &Value) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
+pub fn ability_bonus_choice(
+    val: &Value,
+) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
     let num = val.get_usize("choose")?;
     Ok(vec![(None, 1); num])
 }

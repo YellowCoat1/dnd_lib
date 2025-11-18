@@ -14,7 +14,7 @@
 //!
 //!     // first, we construct the api getter.
 //!     let provider = Dnd5eapigetter::new();
-//! 
+//!
 //!     // then, we get all the things we need to create a character.
 //!     let rogue = provider.get_class("rogue").await.unwrap();
 //!     let human = provider.get_race("human").await.unwrap();
@@ -64,12 +64,11 @@
 //! - `integration` Specifically for testing. Enables all tests.
 //! - `dnd5eapi` - *(enabled by default)* Enables retrieving through the dnd5eapi.co api.
 
-
 pub mod character;
-pub mod getter;
-pub mod save;
 #[cfg(feature = "dnd5eapi")]
 pub mod get;
+pub mod getter;
+pub mod save;
 
 #[cfg_attr(not(test), allow(dead_code))]
 #[cfg(feature = "dnd5eapi")]
@@ -82,16 +81,18 @@ static PROVIDER: OnceLock<Arc<get::Dnd5eapigetter>> = OnceLock::new();
 #[cfg(test)]
 #[cfg(feature = "dnd5eapi")]
 pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
-    PROVIDER.get_or_init(|| Arc::new(get::Dnd5eapigetter::new())).clone()
+    PROVIDER
+        .get_or_init(|| Arc::new(get::Dnd5eapigetter::new()))
+        .clone()
 }
 
 pub mod prelude {
-    pub use crate::{
-        getter::{DataProvider, CharacterDataError},
-        character::{Character, CharacterBuilder, Race, Background},
-        character::stats::Stats,
-        character::class::Class,
-    };
     #[cfg(feature = "dnd5eapi")]
     pub use crate::get::Dnd5eapigetter;
+    pub use crate::{
+        character::class::Class,
+        character::stats::Stats,
+        character::{Background, Character, CharacterBuilder, Race},
+        getter::{CharacterDataError, DataProvider},
+    };
 }

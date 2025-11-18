@@ -1,11 +1,10 @@
 use crate::character::{
-    features::{PresentedOption, Feature}, 
-    stats::StatType
+    features::{Feature, PresentedOption},
+    stats::StatType,
 };
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use super::stats::Size;
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Race {
@@ -25,11 +24,11 @@ pub struct Race {
 impl Race {
     pub fn add_subrace(&mut self, subrace: Subrace) {
         match &mut self.subraces {
-           PresentedOption::Base(b) => {
-               let old = std::mem::replace(b, subrace.clone());
-               self.subraces = PresentedOption::Choice(vec![old, subrace]);
-           },
-           PresentedOption::Choice(v) => v.push(subrace),
+            PresentedOption::Base(b) => {
+                let old = std::mem::replace(b, subrace.clone());
+                self.subraces = PresentedOption::Choice(vec![old, subrace]);
+            }
+            PresentedOption::Choice(v) => v.push(subrace),
         }
     }
 }

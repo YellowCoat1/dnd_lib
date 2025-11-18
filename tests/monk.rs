@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
+use dnd_lib::character::stats::{SkillModifiers, SkillType};
 use dnd_lib::prelude::*;
-use dnd_lib::character::stats::{SkillType, SkillModifiers};
 
 #[tokio::test]
 async fn level_3_elf_monk() {
@@ -8,7 +8,6 @@ async fn level_3_elf_monk() {
     let elf_future = provider.get_race("elf");
     let monk_future = provider.get_class("monk");
     let acolyte_future = provider.get_background("acolyte");
-
 
     let elf = elf_future.await.expect("couldn't get human");
     let monk = monk_future.await.expect("couldnt't get monk");
@@ -28,7 +27,11 @@ async fn level_3_elf_monk() {
     let mut georg = Character::new("gerog".to_string(), &monk, &acolyte, &elf, stats);
 
     // add class items
-    let class_items = &mut georg.classes.get_mut(0).expect("character should have a class").items;
+    let class_items = &mut georg
+        .classes
+        .get_mut(0)
+        .expect("character should have a class")
+        .items;
     class_items[0].choose_in_place(0);
     class_items[1].choose_in_place(0);
     georg.add_class_items();
@@ -39,7 +42,6 @@ async fn level_3_elf_monk() {
     assert_eq!(georg.items[3].0.name, "Shortsword");
     assert_eq!(georg.items[4].0.name, "Dungeoneer's Pack");
 
-
     // Choosing the skills we want
     georg.class_skill_proficiencies[0].choose_in_place(0);
     georg.class_skill_proficiencies[1].choose_in_place(1);
@@ -47,27 +49,57 @@ async fn level_3_elf_monk() {
     // double checking they have exactly the skills we select, and the skill proficiencies granted
     // by the background
     let skills = georg.skills();
-    let s_with_prof = skills.skills_with_proficiency().iter().map(|v| v.0).collect::<Vec<_>>();
-    assert!(s_with_prof.contains(&SkillType::Acrobatics), "Character did not have a proficiency in Acrobatics");
-    assert!(s_with_prof.contains(&SkillType::Athletics), "Character did not have a proficiency in Athletics");
-    assert!(s_with_prof.contains(&SkillType::Insight), "Character did not have a proficiency in Insight");
-    assert!(s_with_prof.contains(&SkillType::Religion), "Character did not ahve a proficiency in Religion");
+    let s_with_prof = skills
+        .skills_with_proficiency()
+        .iter()
+        .map(|v| v.0)
+        .collect::<Vec<_>>();
+    assert!(
+        s_with_prof.contains(&SkillType::Acrobatics),
+        "Character did not have a proficiency in Acrobatics"
+    );
+    assert!(
+        s_with_prof.contains(&SkillType::Athletics),
+        "Character did not have a proficiency in Athletics"
+    );
+    assert!(
+        s_with_prof.contains(&SkillType::Insight),
+        "Character did not have a proficiency in Insight"
+    );
+    assert!(
+        s_with_prof.contains(&SkillType::Religion),
+        "Character did not ahve a proficiency in Religion"
+    );
 
     // choosing the subrace
     // there's only one option, (high elf) so we just choose the one available
     georg.race.subraces.choose_in_place(0);
 
     // making sure the monk has zero ki points at level 1
-    assert_eq!(georg.classes[0].etc_fields.len(), 1, "monk should have 1 etc field at level 1");
-    assert_eq!(georg.classes[0].etc_fields[0].1, 0, "monk should have 0 ki points at level 1");
+    assert_eq!(
+        georg.classes[0].etc_fields.len(),
+        1,
+        "monk should have 1 etc field at level 1"
+    );
+    assert_eq!(
+        georg.classes[0].etc_fields[0].1, 0,
+        "monk should have 0 ki points at level 1"
+    );
 
     // level georg to level 3
     georg.level_up_to_level(&monk, 3);
     assert_eq!(georg.level(), 3);
 
     // monk should have 3 ki points at level 3
-    assert_eq!(georg.classes[0].etc_fields.len(), 1, "monk should have 1 etc field at level 3");
-    assert_eq!(georg.classes[0].etc_fields[0].1, 3, "monk should have 3 ki points at level 3");
+    assert_eq!(
+        georg.classes[0].etc_fields.len(),
+        1,
+        "monk should have 1 etc field at level 3"
+    );
+    assert_eq!(
+        georg.classes[0].etc_fields[0].1, 3,
+        "monk should have 3 ki points at level 3"
+    );
 
     // double checking stats
     let final_stats = Stats {
@@ -105,9 +137,6 @@ async fn level_3_elf_monk() {
 
     assert_eq!(skills, correct_skills);
 
-
     let ac = georg.ac();
     assert_eq!(ac, 15);
 }
-
-

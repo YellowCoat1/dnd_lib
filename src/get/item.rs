@@ -1,8 +1,13 @@
-use serde_json::Value;
-use super::{get_page::get_raw_json, json_tools::{parse_string, ValueExt}};
+use super::{
+    get_page::get_raw_json,
+    json_tools::{parse_string, ValueExt},
+};
+use crate::character::items::{
+    Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties,
+    WeaponType,
+};
 use crate::getter::CharacterDataError;
-use crate::character::items::{Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties, WeaponType};
-
+use serde_json::Value;
 
 pub async fn get_item(name: &str) -> Result<Item, CharacterDataError> {
     let index = parse_string(name);
@@ -30,29 +35,37 @@ async fn get_item_raw(index_name: String) -> Result<Item, CharacterDataError> {
         _ => ItemType::Misc,
     };
 
-
     let item = Item {
-        name, 
+        name,
         description: None,
         item_type,
-        features: vec![]
+        features: vec![],
     };
-            
-    Ok(item)
 
+    Ok(item)
 }
 
 fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
-
     let damage_map = map.get_map("damage")?;
 
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
-    let damage_type = damage_type.parse()
-        .map_err(|_| CharacterDataError::mismatch("damage_type", "DamageType", "irregular string for damage type"))?;
+    let damage_type = damage_type.parse().map_err(|_| {
+        CharacterDataError::mismatch(
+            "damage_type",
+            "DamageType",
+            "irregular string for damage type",
+        )
+    })?;
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
-        .ok_or_else(|| CharacterDataError::mismatch("damage roll", "Damage roll string", "irregular string for damage roll"))?;
+        .ok_or_else(|| {
+            CharacterDataError::mismatch(
+                "damage roll",
+                "Damage roll string",
+                "irregular string for damage roll",
+            )
+        })?;
 
     let category_string = map.get_str("category_range")?;
 
@@ -61,7 +74,13 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
         "Simple Ranged" => WeaponType::SimpleRanged,
         "Martial Melee" => WeaponType::Martial,
         "Martial Ranged" => WeaponType::MartialRanged,
-        _ => return Err(CharacterDataError::mismatch("weapon type", "weapon string", "irregular string")),
+        _ => {
+            return Err(CharacterDataError::mismatch(
+                "weapon type",
+                "weapon string",
+                "irregular string",
+            ))
+        }
     };
 
     let properties = properties(map, damage.damage_type)?;
@@ -76,28 +95,42 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
     Ok(weapon)
 }
 
-fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, CharacterDataError> {
+fn properties(
+    map: &Value,
+    damage_type: DamageType,
+) -> Result<WeaponProperties, CharacterDataError> {
     let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
     let mut properties = WeaponProperties::default();
     for v in arr.iter() {
         let index = v.get_str("index")?;
         match index.as_str() {
-            "ammunition" => {properties.ammunition = true},
-            "finesse" => {properties.finesse = true},
-            "heavy" => {properties.heavy = true},
-            "light" => {properties.light = true},
-            "loading" => {properties.loading = true},
-            "monk" => {properties.monk = true},
-            "reach" => {properties.reach = true},
-            "special" => {properties.special = true},
-            "thrown" => {properties.thrown = true},
-            "two_handed" => {properties.two_handed = true},
+            "ammunition" => properties.ammunition = true,
+            "finesse" => properties.finesse = true,
+            "heavy" => properties.heavy = true,
+            "light" => properties.light = true,
+            "loading" => properties.loading = true,
+            "monk" => properties.monk = true,
+            "reach" => properties.reach = true,
+            "special" => properties.special = true,
+            "thrown" => properties.thrown = true,
+            "two_handed" => properties.two_handed = true,
             "versitile" => {
-                let damage_val = two_handed_damage
-                    .ok_or_else(|| CharacterDataError::mismatch("versitile damage", "two_handed_damage", "no two handed damage"))?;
+                let damage_val = two_handed_damage.ok_or_else(|| {
+                    CharacterDataError::mismatch(
+                        "versitile damage",
+                        "two_handed_damage",
+                        "no two handed damage",
+                    )
+                })?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
-                    .ok_or_else(|| CharacterDataError::mismatch("versitile damage roll", "two handed damage string", "irregular damage string"))?;
+                    .ok_or_else(|| {
+                        CharacterDataError::mismatch(
+                            "versitile damage roll",
+                            "two handed damage string",
+                            "irregular damage string",
+                        )
+                    })?;
                 properties.versatile = Some(damage);
             }
             _ => (),
@@ -106,7 +139,6 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
     Ok(properties)
 }
 fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
-
     let armor_class_map = map.get_map("armor_class")?;
     let ac = armor_class_map.get_usize("base")? as isize;
 
@@ -114,7 +146,13 @@ fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
         "Light" => ArmorCategory::Light,
         "Medium" => ArmorCategory::Medium,
         "Heavy" => ArmorCategory::Heavy,
-        _ => return Err(CharacterDataError::mismatch("armor category", "armor category string", "irregular string"))
+        _ => {
+            return Err(CharacterDataError::mismatch(
+                "armor category",
+                "armor category string",
+                "irregular string",
+            ))
+        }
     };
 
     let strength_minimum = match map.get_usize("str_minimum")? {
@@ -133,8 +171,6 @@ fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
 
     Ok(armor)
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -157,9 +193,11 @@ mod tests {
 
     #[tokio::test]
     async fn studded_leather_retrieval() {
-        let v = get_item("studded leather armor").await.expect("Failed to get studded leather");
+        let v = get_item("studded leather armor")
+            .await
+            .expect("Failed to get studded leather");
         assert_eq!(v.name, "Studded Leather Armor");
-        
+
         let armor = match v.item_type {
             ItemType::Armor(a) => a,
             _ => panic!("Studded leather armor should be armor!"),
@@ -179,5 +217,4 @@ mod tests {
             _ => panic!("Shield shoud have the shield type"),
         }
     }
-
 }
