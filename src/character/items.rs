@@ -133,7 +133,7 @@ impl Armor {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 /// The different categories for armor.
 pub enum ArmorCategory {
     /// Light armor, e.g. leather. Dexterity bonus gets added to the ac.
@@ -184,7 +184,7 @@ pub struct WeaponProperties {
     pub versatile: Option<DamageRoll>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum WeaponType {
     Simple,
     SimpleRanged,
