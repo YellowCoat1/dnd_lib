@@ -308,6 +308,18 @@ impl Saves {
             StatType::Charisma => self.charisma = true,
         }
     }
+
+    /// Checks if the character is proficient in the given saving throw type.
+    pub fn is_proficient(&self, stat_type: StatType) -> bool {
+        match stat_type {
+            StatType::Strength => self.strength,
+            StatType::Dexterity => self.dexterity,
+            StatType::Constitution => self.constitution,
+            StatType::Intelligence => self.intelligence,
+            StatType::Wisdom => self.wisdom,
+            StatType::Charisma => self.charisma,
+        }
+    }
 }
 
 /// Tracks proficiency and expertise for every skill.

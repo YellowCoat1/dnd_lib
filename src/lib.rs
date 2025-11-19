@@ -1,6 +1,6 @@
 //! A library to assist in creating and managing D&D 5e characters.
 //!
-//! The main feature of this crate is the [Character](character::Character) struct. Most of the
+//! The main feature of this crate is the [Character] struct. Most of the
 //! other datastructures in this crate (found in the [character] module) are centered around it,
 //! building the foundations for a complete D&D character.
 //!
@@ -67,8 +67,13 @@
 pub mod character;
 #[cfg(feature = "dnd5eapi")]
 pub mod get;
-pub mod getter;
+mod getter;
 pub mod save;
+
+// re-exports
+pub use getter::*;
+pub use character::Character;
+pub use character::CharacterBuilder;
 
 #[cfg_attr(not(test), allow(dead_code))]
 #[cfg(feature = "dnd5eapi")]

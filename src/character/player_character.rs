@@ -39,7 +39,6 @@ use super::{CharacterDescriptors, CharacterStory};
 ///     use dnd_lib::prelude::*;
 ///
 ///     let provider = Dnd5eapigetter::new();
-///
 ///     let fighter = provider.get_class("fighter").await.unwrap();
 ///     let human = provider.get_race("human").await.unwrap();
 ///     let acolyte = provider.get_background("acolyte").await.unwrap();
@@ -232,6 +231,31 @@ impl Character {
     /// that list to avoid double-adding.
     ///
     /// For selecting options, see [PresentedOption::choose_in_place]
+    ///
+    /// ```
+    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # use dnd_lib::prelude::*;
+    /// # let provider = Dnd5eapigetter::new();
+    /// # let fighter = provider.get_class("fighter").await.unwrap();
+    /// # let human = provider.get_race("human").await.unwrap();
+    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
+    /// # let mut john = CharacterBuilder::new("john")
+    /// #   .class(&fighter)
+    /// #   .background(&acolyte)
+    /// #   .race(&human)
+    /// #   .stats(Stats::default())
+    /// #   .build().unwrap();
+    /// // select the first option for the first item choice
+    /// john.classes[0].items[0].choose_in_place(0);
+    /// // adds the selected item to john's inventory
+    /// john.add_class_items();
+    /// // now, john.classes[0].items[0] is what items[1] was before, since items[0] was removed.
+    /// // john.items now contains the item that was selected.
+    /// # }
+    /// # }
+    /// ```
     pub fn add_class_items(&mut self) {
         let mut items: Vec<(Item, usize)> = vec![];
         self.classes[0].items = self.classes[0]
@@ -364,6 +388,30 @@ impl Character {
     /// Returns the proficiencies the character has in each saving throw.
     ///
     /// This is not saving throw modifiers. For that, see [Character::save_mods].
+    /// 
+    /// ```
+    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # use dnd_lib::prelude::*;
+    /// # use dnd_lib::character::stats::StatType;
+    /// # let provider = Dnd5eapigetter::new();
+    /// # let fighter = provider.get_class("fighter").await.unwrap();
+    /// # let human = provider.get_race("human").await.unwrap();
+    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
+    /// let john = CharacterBuilder::new("john")
+    ///   .class(&fighter)
+    ///   .background(&acolyte)
+    ///   .race(&human)
+    ///   .stats(Stats::default())
+    ///   .build().unwrap();
+    /// // get the saving throw proficiencies
+    /// let saves = john.saves();
+    /// // fighter gives proficiency in str and con saves
+    /// assert!(saves.is_proficient(StatType::Strength));
+    /// assert!(saves.is_proficient(StatType::Constitution)); 
+    /// # }
+    /// # }
     pub fn saves(&self) -> Saves {
         let mut base = Saves::default();
 

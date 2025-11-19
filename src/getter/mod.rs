@@ -6,9 +6,12 @@ use crate::character::{class::Class, items::Item, spells::Spell, Background, Rac
 
 /// A trait representing a source capable of retrieving D&D data, e.g. from an api.
 ///
-/// The methods in this trait are asyncronous.
+/// This trait's definition looks imposing, but most of that is caused by the async implementation.
+/// If you're just using an existing getter struct, you can treat each method similarly to
+/// something like
+/// `get_race(&self, name: &str) -> Result<Race, CharacterDataError>`.
 ///
-/// If you're planning on implementing this trait, use the `async_trait` crate.
+/// All methods in this crate are asynchronous. If you're planning on implementing this trait, use the `async_trait` crate.
 ///
 /// ```rust,ignore
 /// use async_trait::async_trait;
@@ -38,7 +41,6 @@ use crate::character::{class::Class, items::Item, spells::Spell, Background, Rac
 /// There's no guarentee that different implementations return exactly the same values. It is
 /// requested that the name field is always the same, being capitalized like a title. e.g. "Wizard"
 /// or "Flag Bearer"
-
 #[async_trait]
 pub trait DataProvider: Send + Sync {
     async fn get_race(&self, name: &str) -> Result<Race, CharacterDataError>;
