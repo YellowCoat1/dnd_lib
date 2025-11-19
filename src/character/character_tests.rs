@@ -215,10 +215,10 @@ async fn barbarian_rage() {
     );
 
     boko.level_up_to_level(&barbarian, 11);
-    let rage = boko.classes[0].etc_fields.get(0).unwrap();
+    let rage = boko.classes[0].etc_fields.first().unwrap();
     assert_eq!(rage.1, 4);
 
     boko.level_up(&barbarian);
-    let rage = boko.classes[0].etc_fields.get(0).unwrap();
+    let rage = boko.classes[0].etc_fields.first().unwrap();
     assert_eq!(rage.1, 5);
 }
