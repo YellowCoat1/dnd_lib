@@ -52,7 +52,7 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         self
     }
 
-    /// Builds the character. Panics if one or all of the fields have not
+    /// Builds the character. Panics if one or all of the fields have not been set.
     pub fn build(self) -> Result<Character, &'static str> {
         let class = self.iclass.ok_or("Missing class")?;
         let background = self.ibackground.ok_or("Missing background")?;

@@ -9,7 +9,7 @@ use crate::character::spells::SpellCastingPreperation;
 
 use super::background::Background;
 use super::choice::chosen;
-use super::class::{Class, EtcClassField, Subclass, UNARMORED_MOVEMENT};
+use super::class::{Class, TrackedField, Subclass, UNARMORED_MOVEMENT};
 use super::features::{
     AbilityScoreIncrease, ComputedCustomAction, CustomAction, Feature, FeatureEffect,
     PresentedOption,
@@ -995,7 +995,7 @@ impl Character {
             let level_before = specced_class.level - 1;
             let level_after = specced_class.level;
             dbg!((&level_before, &level_after));
-            for etc_field in specced_class.etc_fields.iter_mut() {
+            for etc_field in specced_class.tracked_fields.iter_mut() {
                 let max_before = self::get_etc_field_max(
                     &etc_field.0,
                     &class.class_specific_leveled,
@@ -1405,7 +1405,7 @@ impl Character {
 
         // regain features
         for class in self.classes.iter_mut() {
-            let (specific_fields, etc_fields) = (&mut class.class_specific, &mut class.etc_fields);
+            let (specific_fields, etc_fields) = (&mut class.class_specific, &mut class.tracked_fields);
             for v in etc_fields {
                 if !v.0.long_rest {
                     continue;
@@ -1653,11 +1653,11 @@ pub struct SpeccedClass {
     /// The class's hit die. This is the number of faces, so an 8 is a 1d8.
     pub hit_die: usize,
 
-    /// A list of extra class fields that need to be actively tracked. See [EtcClassField].
+    /// A list of extra class fields that need to be actively tracked. See [TrackedField].
     ///
-    /// The first field in the tuple is the [EtcClassField], and the second field is the current
+    /// The first field in the tuple is the [TrackedField], and the second field is the current
     /// amount the character has.
-    pub etc_fields: Vec<(EtcClassField, usize)>,
+    pub tracked_fields: Vec<(TrackedField, usize)>,
 
     class_specific: HashMap<String, String>,
 }
@@ -1667,8 +1667,8 @@ impl SpeccedClass {
     fn from_class(class: &Class, level: usize) -> SpeccedClass {
         let subclass = PresentedOption::Choice(class.subclasses.to_vec());
 
-        let base_etc_fields = class.etc_fields.clone();
-        let etc_fields = base_etc_fields
+        let base_tracked_fields= class.tracked_fields.clone();
+        let tracked_fields = base_tracked_fields
             .into_iter()
             .map(|v| {
                 let base_max = v.get_base_max(class).unwrap_or(1);
@@ -1688,7 +1688,7 @@ impl SpeccedClass {
             subclass,
             spellcasting: class.spellcasting.clone().map(|v| (v, vec![])),
             hit_die: class.hit_die,
-            etc_fields,
+            tracked_fields,
             class_specific: class
                 .class_specific_leveled
                 .iter()
@@ -1758,7 +1758,7 @@ impl Castable for SpellAction {
 }
 
 fn get_etc_field_max(
-    etc_field: &EtcClassField,
+    etc_field: &TrackedField,
     class_specific: &HashMap<String, [String; 20]>,
     level: usize,
 ) -> Option<usize> {

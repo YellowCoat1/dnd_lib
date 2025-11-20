@@ -1,6 +1,6 @@
 use crate::{
     character::{
-        class::{Class, EtcClassField, ItemCategory, Subclass},
+        class::{Class, TrackedField, ItemCategory, Subclass},
         features::{Feature, PresentedOption},
         items::{Item, ItemType, WeaponType},
         spells::{SpellCasterType, SpellCastingPreperation, Spellcasting},
@@ -667,9 +667,9 @@ fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, C
     Ok(equipment_proficiencies_inner(proficiency_strings))
 }
 
-fn etc_class_field_option(name: &str) -> Option<EtcClassField> {
+fn etc_class_field_option(name: &str) -> Option<TrackedField> {
     match name {
-        "barbarian" => Some(EtcClassField {
+        "barbarian" => Some(TrackedField {
             name: "Rage".to_string(),
             long_rest: true,
             short_rest: false,
@@ -677,7 +677,7 @@ fn etc_class_field_option(name: &str) -> Option<EtcClassField> {
             class_specific_max: Some("rage count".to_string()),
             hard_max: None,
         }),
-        "druid" => Some(EtcClassField {
+        "druid" => Some(TrackedField {
             name: "Wildshape".to_string(),
             long_rest: true,
             short_rest: true,
@@ -685,7 +685,7 @@ fn etc_class_field_option(name: &str) -> Option<EtcClassField> {
             class_specific_max: None,
             hard_max: Some(2),
         }),
-        "sorcerer" => Some(EtcClassField {
+        "sorcerer" => Some(TrackedField {
             name: "Sorcery Points".to_string(),
             long_rest: true,
             short_rest: false,
@@ -693,7 +693,7 @@ fn etc_class_field_option(name: &str) -> Option<EtcClassField> {
             class_specific_max: Some("sorcery points".to_string()),
             hard_max: None,
         }),
-        "monk" => Some(EtcClassField {
+        "monk" => Some(TrackedField {
             name: "Ki Points".to_string(),
             long_rest: true,
             short_rest: false,
@@ -772,7 +772,7 @@ async fn json_to_class(
         multiclassing_prerequisites,
         multiclassing_prerequisites_or,
         multiclassing_proficiency_gain,
-        etc_fields,
+        tracked_fields: etc_fields,
     };
 
     Ok(class)

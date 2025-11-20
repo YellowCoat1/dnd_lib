@@ -1,7 +1,7 @@
 #![cfg(feature = "network-intensive-tests")]
 use super::player_character::Character;
 use super::stats::Stats;
-use crate::character::class::EtcClassField;
+use crate::character::class::TrackedField;
 use crate::character::features::{Feature, FeatureEffect};
 use crate::character::stats::StatType;
 use crate::getter::DataProvider;
@@ -166,7 +166,7 @@ async fn druid_wildshape() {
     assert_eq!(wildshape.1, 2);
     assert_eq!(
         wildshape.0,
-        EtcClassField {
+        TrackedField {
             name: "Wildshape".to_string(),
             long_rest: true,
             short_rest: true,
@@ -204,7 +204,7 @@ async fn barbarian_rage() {
     assert_eq!(rage.1, 2);
     assert_eq!(
         rage.0,
-        EtcClassField {
+        TrackedField {
             name: "Rage".to_string(),
             long_rest: true,
             short_rest: false,

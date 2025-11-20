@@ -135,6 +135,7 @@ impl CharacterDataError {
         }
     }
 
+    /// Constructs a `NotFound` with the given type and name.
     pub fn not_found(val_type: &'static str, name: &str) -> CharacterDataError {
         CharacterDataError::NotFound {
             val_type,

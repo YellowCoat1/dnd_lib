@@ -41,7 +41,8 @@ pub struct Class {
     /// The proficiencies a character would gain if they multiclassed into this class.
     pub multiclassing_proficiency_gain: EquipmentProficiencies,
 
-    pub etc_fields: Vec<EtcClassField>,
+    /// See [TrackedField] for more information.
+    pub tracked_fields: Vec<TrackedField>,
 }
 
 impl Class {
@@ -91,7 +92,7 @@ pub enum ItemCategory {
 /// This stores only the metadata about the field; the actual value for a character would be stored
 /// in that character's [SpeccedClass](crate::character::SpeccedClass).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct EtcClassField {
+pub struct TrackedField {
     pub name: String,
     /// restore on long rest
     pub long_rest: bool,
@@ -109,7 +110,7 @@ pub struct EtcClassField {
     pub hard_max: Option<usize>,
 }
 
-impl EtcClassField {
+impl TrackedField {
     /// Get the maximum at level 1. Useful for getting the beginning value
     pub fn get_base_max(&self, class: &Class) -> Option<usize> {
         let level_1_fields: HashMap<&String, &String> = class
