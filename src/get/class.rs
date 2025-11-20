@@ -21,7 +21,7 @@ use crate::get::{
 };
 use crate::getter::CharacterDataError;
 
-/// Get a class from the api
+/// Get a class from the api.
 ///
 /// Note that this function takes a large amount of time, anywhere from 2 to 15 seconds. Try to run
 /// it in the background when you can.

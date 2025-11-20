@@ -7,9 +7,6 @@ use crate::getter::CharacterDataError;
 use crate::getter::DataProvider;
 use serde_json::Value;
 
-/// Gets a background from the api.
-///
-/// There's only one background available through dnd5eapi: acolyte.
 pub async fn get_background(
     getter: &impl DataProvider,
     name: &str,

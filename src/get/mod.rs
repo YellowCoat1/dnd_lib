@@ -14,6 +14,24 @@ mod spell;
 mod subclass;
 mod subrace;
 
+pub mod raw_getters {
+    //! Raw getters for dnd5eapi.co data. 
+    //!
+    //! These are the individual functions used by the
+    //! [Dnd5eapigetter](super::Dnd5eapigetter) to get data. Regular users should prefer using the [Dnd5eapigetter](super::Dnd5eapigetter)
+    //! directly.
+    //!
+    //! These functions are exposed primarily for users who want to implement their own
+    //! [DataProvider](crate::DataProvider) trait, using dnd5eapi.co as one backend.
+
+    pub use super::feature::get_feature as get_feature_raw;
+    pub use super::background::get_background as get_background_raw;
+    pub use super::class::get_class as get_class_raw;
+    pub use super::item::get_item as get_item_raw;
+    pub use super::race::get_race as get_race_raw;
+    pub use super::spell::get_spell as get_spell_raw;
+}
+
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -57,6 +75,9 @@ use crate::{
 ///     assert_eq!(spell.range, "150 feet");
 /// }
 /// ```
+/// Do note that this getter can be quite slow, as it needs to make multiple network requests to
+/// get all the data.
+/// Caching is implemented for items, classes, and backgrounds to help with this.
 pub struct Dnd5eapigetter {
     item_cache: Mutex<HashMap<String, Item>>,
     class_cache: Mutex<HashMap<String, Class>>,
