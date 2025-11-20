@@ -64,8 +64,8 @@
 //! - `integration` Specifically for testing. Enables all tests.
 //! - `dnd5eapi` - *(enabled by default)* Enables retrieving through the dnd5eapi.co api.
 //! - `item_list` - *(enabled by default)* Enables the constant array of item names retrievable
-//! through the dnd5eapi.co api, seen at [get::ITEM_NAMES]. This is delegated to a features, as it is ~2.5 kb of data by
-//! itself.
+//!   through the dnd5eapi.co api, seen at [get::ITEM_NAMES]. This is delegated to a features, as it is ~2.5 kb of data by
+//!   itself.
 
 pub mod character;
 #[cfg(feature = "dnd5eapi")]
@@ -74,9 +74,9 @@ mod getter;
 pub mod save;
 
 // re-exports
-pub use getter::*;
 pub use character::Character;
 pub use character::CharacterBuilder;
+pub use getter::*;
 
 #[cfg_attr(not(test), allow(dead_code))]
 #[cfg(feature = "dnd5eapi")]

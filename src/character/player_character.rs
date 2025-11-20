@@ -9,7 +9,7 @@ use crate::character::spells::SpellCastingPreperation;
 
 use super::background::Background;
 use super::choice::chosen;
-use super::class::{Class, TrackedField, Subclass, UNARMORED_MOVEMENT};
+use super::class::{Class, Subclass, TrackedField, UNARMORED_MOVEMENT};
 use super::features::{
     AbilityScoreIncrease, ComputedCustomAction, CustomAction, Feature, FeatureEffect,
     PresentedOption,
@@ -388,7 +388,7 @@ impl Character {
     /// Returns the proficiencies the character has in each saving throw.
     ///
     /// This is not saving throw modifiers. For that, see [Character::save_mods].
-    /// 
+    ///
     /// ```
     /// # #[cfg(feature = "dnd5eapi")] {
     /// # #[tokio::main]
@@ -409,7 +409,7 @@ impl Character {
     /// let saves = john.saves();
     /// // fighter gives proficiency in str and con saves
     /// assert!(saves.is_proficient(StatType::Strength));
-    /// assert!(saves.is_proficient(StatType::Constitution)); 
+    /// assert!(saves.is_proficient(StatType::Constitution));
     /// # }
     /// # }
     pub fn saves(&self) -> Saves {
@@ -1405,7 +1405,8 @@ impl Character {
 
         // regain features
         for class in self.classes.iter_mut() {
-            let (specific_fields, etc_fields) = (&mut class.class_specific, &mut class.tracked_fields);
+            let (specific_fields, etc_fields) =
+                (&mut class.class_specific, &mut class.tracked_fields);
             for v in etc_fields {
                 if !v.0.long_rest {
                     continue;
@@ -1667,7 +1668,7 @@ impl SpeccedClass {
     fn from_class(class: &Class, level: usize) -> SpeccedClass {
         let subclass = PresentedOption::Choice(class.subclasses.to_vec());
 
-        let base_tracked_fields= class.tracked_fields.clone();
+        let base_tracked_fields = class.tracked_fields.clone();
         let tracked_fields = base_tracked_fields
             .into_iter()
             .map(|v| {

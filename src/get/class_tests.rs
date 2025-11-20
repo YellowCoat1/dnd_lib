@@ -1,8 +1,12 @@
-use crate::{CharacterDataError, character::{
-    class::{Class, ItemCategory},
-    features::PresentedOption,
-    stats::SkillType,
-}, get::Dnd5eapigetter};
+use crate::{
+    character::{
+        class::{Class, ItemCategory},
+        features::PresentedOption,
+        stats::SkillType,
+    },
+    get::Dnd5eapigetter,
+    CharacterDataError,
+};
 
 use crate::provider;
 
@@ -212,17 +216,24 @@ async fn fighter_items() {
     assert_eq!(n, 2);
 }
 
-
-async fn get_with_class_context(class_name: &str, provider: &Dnd5eapigetter) -> Result<Class, CharacterDataError> {
-    provider.get_class(class_name).await
+async fn get_with_class_context(
+    class_name: &str,
+    provider: &Dnd5eapigetter,
+) -> Result<Class, CharacterDataError> {
+    provider
+        .get_class(class_name)
+        .await
         .map_err(|e| e.prepend(format!("{} ", class_name).as_str()))
 }
 
 #[tokio::test]
 async fn fetch_all() {
     let provider = provider();
-    let classes = super::CLASS_NAMES.iter()
+    let classes = super::CLASS_NAMES
+        .iter()
         .map(|n| get_with_class_context(n, provider.as_ref()));
 
-    futures::future::try_join_all(classes).await.expect("failed to fetch all classes");
+    futures::future::try_join_all(classes)
+        .await
+        .expect("failed to fetch all classes");
 }

@@ -1,6 +1,6 @@
 use crate::{
     character::{
-        class::{Class, TrackedField, ItemCategory, Subclass},
+        class::{Class, ItemCategory, Subclass, TrackedField},
         features::{Feature, PresentedOption},
         items::{Item, ItemType, WeaponType},
         spells::{SpellCasterType, SpellCastingPreperation, Spellcasting},

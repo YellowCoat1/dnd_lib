@@ -17,7 +17,7 @@ mod subclass;
 mod subrace;
 
 pub mod raw_getters {
-    //! Raw getters for dnd5eapi.co data. 
+    //! Raw getters for dnd5eapi.co data.
     //!
     //! These are the individual functions used by the
     //! [Dnd5eapigetter](super::Dnd5eapigetter) to get data. Regular users should prefer using the [Dnd5eapigetter](super::Dnd5eapigetter)
@@ -26,9 +26,9 @@ pub mod raw_getters {
     //! These functions are exposed primarily for users who want to implement their own
     //! [DataProvider](crate::DataProvider) trait, using dnd5eapi.co as one backend.
 
-    pub use super::feature::get_feature as get_feature_raw;
     pub use super::background::get_background as get_background_raw;
     pub use super::class::get_class as get_class_raw;
+    pub use super::feature::get_feature as get_feature_raw;
     pub use super::item::get_item as get_item_raw;
     pub use super::race::get_race as get_race_raw;
     pub use super::spell::get_spell as get_spell_raw;
