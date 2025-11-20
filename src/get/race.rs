@@ -17,6 +17,18 @@ pub async fn get_race(name: &str) -> Result<Race, CharacterDataError> {
     get_race_raw(index).await
 }
 
+pub const RACE_NAMES: &[&str] = &[
+    "dragonborn",
+    "dwarf",
+    "elf",
+    "gnome",
+    "half elf",
+    "half orc",
+    "halfling",
+    "human",
+    "tiefling",
+];
+
 async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
     let race_json = get_raw_json(format!("races/{index_name}")).await?;
 

@@ -1,4 +1,5 @@
 use super::race::get_race;
+use crate::{prelude::*, provider};
 use crate::character::{
     features::PresentedOption,
     stats::{Size, StatType},
@@ -46,4 +47,26 @@ async fn get_dragonborn() {
         .expect("Dragonborn should have 2 languages")
         .clone();
     assert_eq!(draconic, "Draconic");
+}
+
+async fn get_with_race_context(
+    race_name: &str,
+    provider: &Dnd5eapigetter,
+) -> Result<Race, CharacterDataError> {
+    provider
+        .get_race(race_name)
+        .await
+        .map_err(|e| e.prepend(format!("{} ", race_name).as_str()))
+}
+
+#[tokio::test]
+async fn fetch_all() {
+    let provider = provider();
+    let races = super::RACE_NAMES
+        .iter()
+        .map(|n| get_with_race_context(n, provider.as_ref()));
+
+    futures::future::try_join_all(races)
+        .await
+        .expect("failed to fetch races");
 }

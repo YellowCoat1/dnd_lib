@@ -52,6 +52,7 @@ use crate::{
 
 pub use background::BACKGROUND_NAMES;
 pub use class::CLASS_NAMES;
+pub use race::RACE_NAMES;
 mod item_list;
 pub use item_list::ITEM_NAMES;
 
