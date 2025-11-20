@@ -2,6 +2,8 @@
 //!
 //! The main feature of this module is the [Dnd5eapigetter], which implements [DataProvider](crate::getter::DataProvider)
 //! trait.
+//!
+//! There's also utility consts availible that lists the names of availiable data.
 
 mod background;
 mod class;
@@ -47,6 +49,11 @@ use crate::{
     character::{class::Class, features::Feature, items::Item, Background},
     getter::CharacterDataError,
 };
+
+pub use background::BACKGROUND_NAMES;
+pub use class::CLASS_NAMES;
+mod item_list;
+pub use item_list::ITEM_NAMES;
 
 /// Gets D&D data from dnd5eapi.co
 ///

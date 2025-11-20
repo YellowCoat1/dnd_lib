@@ -7,6 +7,10 @@ use crate::getter::CharacterDataError;
 use crate::getter::DataProvider;
 use serde_json::Value;
 
+pub const BACKGROUND_NAMES: [&str; 1] = [
+    "acolyte",
+];
+
 pub async fn get_background(
     getter: &impl DataProvider,
     name: &str,

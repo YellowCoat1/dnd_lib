@@ -14,9 +14,11 @@ serde_json = "1.0.140"
 strum = { version = "0.27.2", features = ["derive"] }
 thiserror = "2.0.17"
 tokio = { version = "1.45.0", optional = true, features = ["macros", "rt-multi-thread"] }
+
 [features]
 dnd5eapi = ["tokio"]
-default = ["dnd5eapi"]
+item_list = ["dnd5eapi"]
+default = ["dnd5eapi", "item_list"]
 disk-tests = []
 network-intensive-tests = ["dnd5eapi"]
 integration = ["disk-tests", "network-intensive-tests"]

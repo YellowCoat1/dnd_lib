@@ -21,6 +21,22 @@ use crate::get::{
 };
 use crate::getter::CharacterDataError;
 
+/// All class names available in the api.
+pub const CLASS_NAMES: [&str; 12] = [
+    "barbarian",
+    "bard",
+    "cleric",
+    "druid",
+    "fighter",
+    "monk",
+    "paladin",
+    "ranger",
+    "rogue",
+    "sorcerer",
+    "warlock",
+    "wizard",
+];
+
 /// Get a class from the api.
 ///
 /// Note that this function takes a large amount of time, anywhere from 2 to 15 seconds. Try to run
