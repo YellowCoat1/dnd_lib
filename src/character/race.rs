@@ -21,6 +21,12 @@ pub struct Race {
     pub languages: Vec<String>,
 }
 
+impl PartialEq for Race {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
 impl Race {
     pub fn add_subrace(&mut self, subrace: Subrace) {
         match &mut self.subraces {
@@ -41,4 +47,10 @@ pub struct Subrace {
     /// See [Race::ability_bonuses]
     pub ability_bonuses: Vec<(Option<StatType>, isize)>,
     pub traits: Vec<PresentedOption<Feature>>,
+}
+
+impl PartialEq for Subrace {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
 }

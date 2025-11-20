@@ -5,17 +5,24 @@ use super::stats::SkillType;
 use serde::{Deserialize, Serialize};
 
 /// A D&D Character background.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Background {
     pub name: String,
     /// Skill proficiencies granted by the background.
     ///
-    /// This is a `Vec<PresentedOption<SkillType>>` instead of a `(usize,
-    /// PresentedOption<SkillType>)` like [Class](crate::character::class::Class), as this field can have base proficiencies. A background might
-    /// make you choose 2 from a list, or provide 2 static proficiencies.
+    /// ## Proficiency Representation
+    /// [Classes](crate::character::class::Class), which you may be more familiar with, represent
+    /// skill proficiencies as a tuple of `(usize, PresentedOption<SkillType>)`, where the `usize`
+    /// indicates how many skills you may choose from the presented options. This is because
+    /// classes have a list to choose n skills from, but do not provide any base proficiencies.
+    ///
+    /// This is a `Vec<PresentedOption<SkillType>>` instead, as backgrounds can provide a fixed set
+    /// or a choice of skill proficiencies. For example, the "Acolyte" background provides
+    /// proficiency in two specific skills (Insight and Religion), while the "Charlatan" background
+    /// allows you to choose two skills from a list of options.
     pub proficiencies: Vec<PresentedOption<SkillType>>,
     //pub languages: Vec<String>,
-    /// Starting equipment. Each item is paired with its count.
+    /// A static list of starting equipment. Each item is paired with its count.
     pub equipment: Vec<(Item, usize)>,
     /// Features granted by this background.
     pub features: Vec<Feature>,
@@ -24,4 +31,10 @@ pub struct Background {
     pub ideals: Vec<String>,
     pub bonds: Vec<String>,
     pub flaws: Vec<String>,
+}
+
+impl PartialEq for Background {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
 }

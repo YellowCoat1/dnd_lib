@@ -6,12 +6,12 @@ use super::{
 };
 use serde::{Deserialize, Serialize};
 
-/// A spell definition, either manually created or loaded from the API.
+/// A spell definition, either manually created or loaded from an API.
 ///
 /// `damage` represents spell damage scaling by level:
 /// - Outer index = spell level (starting from base level)
-/// - Inner index = multiple damage rolls per level (e.g., multi-damage spells like Chromatic Orb)// so spell.damage.unwrap()\[0\] returns it's regular damage.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// - Inner index = multiple damage rolls per level (e.g., multi-damage spells like Chromatic Orb)// so spell.damage.unwrap()\[0\] returns its regular damage.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Spell {
     /// The name of the spell, e.g. "Fireball"
     pub name: String,
@@ -53,12 +53,25 @@ pub struct Spell {
 ///
 /// This is used when the attack roll/damage roll are already decided, and the spell is ready to
 /// attack with.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// It implements [Action] so it can be used in the same way as weapon attacks.
+///
+/// PartialEq compares name and spell level, since when this is confined to one character, those
+/// should always be the same for identical spells. If the character that constructed this spell
+/// action levels up or changes anyways, all spell actions (and actions in general) should be
+/// reconstructed.
+#[derive(Debug, Clone, Eq, Serialize, Deserialize)]
 pub struct SpellAction {
     pub name: String,
     pub spell_level: isize,
     pub damage_roll: DamageRoll,
     pub spell_attack_mod: isize,
+}
+
+impl PartialEq for SpellAction {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.spell_level == other.spell_level
+    }
 }
 
 impl Action for SpellAction {
@@ -79,7 +92,7 @@ impl Action for SpellAction {
 /// A school of magic.
 ///
 /// Doc comments are just copy-pasted from the official descriptions.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum School {
     ///Abjuration spells are protective in nature, though some of them have aggressive uses. They create magical barriers, negate harmful effects, harm trespassers, or banish creatures to other planes of existence.
     Abjuration,
@@ -116,20 +129,55 @@ impl FromStr for School {
     }
 }
 
+impl std::fmt::Display for School {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            School::Abjuration => "Abjuration",
+            School::Conjuration => "Conjuration",
+            School::Divination => "Divination",
+            School::Enchantment => "Enchantment",
+            School::Evocation => "Evocation",
+            School::Illusion => "Illusion",
+            School::Necromancy => "Necromancy",
+            School::Transmutation => "Transmutation",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 /// Represents the spell slots for levels 0-9.
 ///
 /// 0th levels is cantrips, so instead of spell slots, it's cantrips know.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SpellSlots(pub [usize; 9]);
+
+impl PartialOrd for SpellSlots {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        for i in 0..9 {
+            if self.0[i] < other.0[i] {
+                return Some(std::cmp::Ordering::Less);
+            } else if self.0[i] > other.0[i] {
+                return Some(std::cmp::Ordering::Greater);
+            }
+        }
+        Some(std::cmp::Ordering::Equal)
+    }
+}
 
 /// Represents pact magic spell slots.
 ///
 /// In D&D, a warlock's pact magic behaves differently than typical spell slots, and when
 /// multiclassing they are counted differently. For typical spell slots, see [SpellSlots]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct PactSlots {
     pub num: usize,
     pub level: usize,
+}
+
+impl Default for PactSlots {
+    fn default() -> Self {
+        PactSlots { num: 1, level: 1 }
+    }
 }
 
 impl From<(usize, usize)> for PactSlots {
@@ -145,7 +193,7 @@ impl From<(usize, usize)> for PactSlots {
 ///
 /// Cantrips but not spell slots are included, since cantrips are class-wide and spell slots are
 /// charachter-wide.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Spellcasting {
     /// How many cantrips for every level
     pub cantrips_per_level: [usize; 20],
@@ -160,7 +208,7 @@ pub struct Spellcasting {
 }
 
 /// Type of spellcaster (full caster, half caster, quarter-caster)
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SpellCasterType {
     Full,
     Half,
@@ -170,7 +218,7 @@ pub enum SpellCasterType {
 }
 
 /// How the spellcaster prepares their spell list.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum SpellCastingPreperation {
     /// Spells are prepared after every long rest from the spell list. Wizards are included in
     /// this, and just prepare spells from their spell book instead of spell list.

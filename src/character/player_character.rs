@@ -1458,7 +1458,9 @@ impl Character {
 
             let cantrips_num = casting.0.cantrips_per_level[class_level - 1];
 
-            let ability = *modifiers.stats.get_stat_type(&casting.0.spellcasting_ability);
+            let ability = *modifiers
+                .stats
+                .get_stat_type(&casting.0.spellcasting_ability);
             let spells_num = (class.level as isize + ability).max(0) as usize;
             return_vector.push((n, &mut casting.1, spells_num, cantrips_num));
         }

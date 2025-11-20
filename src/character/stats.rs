@@ -15,7 +15,7 @@ pub const PROFICIENCY_BY_LEVEL: [isize; 20] =
 
 /// Base ability scores.
 /// These are total scores, not modifiers.
-#[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub strength: isize,
     pub dexterity: isize,
@@ -160,7 +160,7 @@ impl Default for Stats {
 }
 
 // A wrapper for [Stats] where each field is a modifier instead of a base score.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Modifiers {
     pub stats: Stats,
 }
@@ -264,7 +264,7 @@ impl Display for StatType {
 /// A "true" field means the character is proficient in that save.
 ///
 /// If you need the numeric modfier of a save, use [modifiers](Saves::modifiers).
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Saves {
     pub strength: bool,
     pub dexterity: bool,
@@ -323,7 +323,7 @@ impl Saves {
 }
 
 /// Tracks proficiency and expertise for every skill.
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SkillProficiencies {
     pub acrobatics: Skill,
     pub animal_handling: Skill,
@@ -346,7 +346,7 @@ pub struct SkillProficiencies {
 }
 
 /// Enumerates the different skills a character has. (e.g. Deception, Religion, Medicine)
-#[derive(Serialize, Deserialize, PartialEq, Eq, EnumIter, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, EnumIter, Debug, Clone, Copy)]
 pub enum SkillType {
     /// Uses dexterity
     Acrobatics,
@@ -443,14 +443,14 @@ impl Display for SkillType {
 }
 
 /// Stores the proficiency/mastery of a single skill type.
-#[derive(Default, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Skill {
     pub proficiency: bool,
     pub expertise: bool,
 }
 
 /// Calculated modifiers for skills
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SkillModifiers {
     pub acrobatics: isize,
     pub animal_handling: isize,
@@ -624,7 +624,7 @@ impl SkillProficiencies {
 /// Proficiencies in armor and weapons.
 ///
 /// The other field holds other etc proficiencies, like shortswords and land vehicles.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EquipmentProficiencies {
     pub simple_weapons: bool,
     pub martial_weapons: bool,
@@ -668,7 +668,7 @@ impl AddAssign for EquipmentProficiencies {
 /// swimming
 ///
 /// Most of these are only used in rare cases. The walking speed is almost always a given.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Speeds {
     pub walking: Option<usize>,
     pub flying: Option<usize>,
@@ -691,7 +691,20 @@ impl Default for Speeds {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, EnumIter, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    EnumIter,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
 pub enum Size {
     Tiny,
     Small,
@@ -719,12 +732,26 @@ impl Display for Size {
     }
 }
 
-#[derive(Clone, Copy, Debug, EnumIter, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    EnumIter,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+)]
 pub enum Alignment {
     LawfulGood,
     NeutralGood,
     ChaoticGood,
     LawfulNeutral,
+    #[default]
     TrueNeutral,
     ChaoticNeutral,
     LawfulEvil,

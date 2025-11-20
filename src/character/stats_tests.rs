@@ -20,7 +20,10 @@ fn modifiers() {
         modifiers.stats.strength, 5,
         "Incorrect calculated strength modifier"
     );
-    assert_eq!(modifiers.stats.wisdom, 1, "Incorrect calculated wisdom modifier");
+    assert_eq!(
+        modifiers.stats.wisdom, 1,
+        "Incorrect calculated wisdom modifier"
+    );
     assert_eq!(
         modifiers.stats.charisma, 2,
         "Incorrect calculated charisma modifier"

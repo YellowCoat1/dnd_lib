@@ -18,7 +18,7 @@ pub use super::choice::*;
 /// A feature represents a general effect/trait. Any extra effect from a race, class, etc is a feature.
 ///
 /// e.g. Darkvision, extra attack, ability score increase
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Feature {
     // The name of the feature
     pub name: String,
@@ -28,20 +28,13 @@ pub struct Feature {
     pub effects: Vec<FeatureEffect>,
 }
 
-// features are keyed by name, so equal features have equal names
-impl PartialEq for Feature {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-    }
-}
-
 /// An ability score increase for a character, usually granted at certain class levels.
 ///
 /// Players can choose to:
 /// - Increase two ability scores by +1 each
 /// - Increase one ability score by +2
 /// - Optionally, take a bonus feature.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AbilityScoreIncrease {
     /// Increase ability scores. A `None` variant means that it's still unchosen.
     StatIncrease(Option<StatType>, Option<StatType>),
@@ -82,10 +75,16 @@ pub struct CustomAction {
     pub add_prof_to_damage: bool,
 }
 
+impl PartialEq for CustomAction {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.damage_roll == other.damage_roll
+    }
+}
+
 /// A CustomAction after its fields have been computed within a character.
 ///
 /// This struct has everything needed to make an attack.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ComputedCustomAction {
     pub name: String,
     pub attack_bonus: isize,
@@ -112,7 +111,7 @@ impl Action for ComputedCustomAction {
 /// Different effects a feature can have.
 ///
 /// This list will grow as the crate is developed.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FeatureEffect {
     /// Grants proficiency in a saving throw
     AddSaveProficiency(StatType),

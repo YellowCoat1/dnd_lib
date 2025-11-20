@@ -59,7 +59,7 @@ pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
     "net",
 ];
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DamageType {
     Acid,
     Bludgeoning,
@@ -123,7 +123,7 @@ impl FromStr for DamageType {
 ///
 /// Shields are distinct from Armor, since they're calculated differently, and you may only receive
 /// the bonus of one armor piece at a time.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ItemType {
     Weapon(Weapon),
     Armor(Armor),
@@ -148,7 +148,7 @@ pub struct Item {
 /// A character's armor.
 ///
 /// Note that this doesn't include shields.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Armor {
     pub ac: isize,
     pub category: ArmorCategory,
@@ -168,7 +168,7 @@ impl Armor {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 /// The different categories for armor.
 pub enum ArmorCategory {
     /// Light armor, e.g. leather. Dexterity bonus gets added to the ac.
@@ -195,7 +195,7 @@ impl Display for ArmorCategory {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Weapon {
     /// The damage the weapon causes on hit.
     pub damage: DamageRoll,
@@ -206,7 +206,7 @@ pub struct Weapon {
     pub properties: WeaponProperties,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct WeaponProperties {
     pub ammunition: bool,
     pub finesse: bool,
@@ -222,7 +222,7 @@ pub struct WeaponProperties {
     pub versatile: Option<DamageRoll>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum WeaponType {
     Simple,
     SimpleRanged,
@@ -267,7 +267,7 @@ pub fn is_proficient_with(weapon: &WeaponType, proficiencies: &EquipmentProficie
 ///
 /// This doesn't also store added damage, e.g. 1d6+2. If you want to store that, use a (DamageRoll,
 ///  isize)
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct DamageRoll {
     /// The number of dice rolled
     pub number: usize,
@@ -298,7 +298,7 @@ pub trait Action {
 ///
 /// This is after calculations, so a WeaponAction has a static attack roll bonus and damage roll
 /// type that each include the extra bonuses from ability scores.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct WeaponAction {
     pub name: String,
     pub attack_bonus: isize,

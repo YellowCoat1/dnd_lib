@@ -11,7 +11,7 @@ use std::future::Future;
 /// This is used widely throughout the crate. For example, for a class's equipment options
 /// or an ability score increase.
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PresentedOption<T> {
     Base(T),
     Choice(Vec<T>),
