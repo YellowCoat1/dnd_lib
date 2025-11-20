@@ -444,7 +444,7 @@ impl Character {
             .flat_map(|t| t.effects.iter())
         {
             if let FeatureEffect::AddSaveModifier(t, m) = effect {
-                *modifiers.get_stat_type_mut(t) += m;
+                *modifiers.stats.get_stat_type_mut(t) += m;
             }
         }
 
@@ -541,7 +541,7 @@ impl Character {
     ///     john.race.subraces.choose_in_place(0);
     ///
     ///     // An int of 14 is a modifier of 2.
-    ///     assert_eq!(john.stats().modifiers().intelligence, 2);
+    ///     assert_eq!(john.stats().modifiers().as_ref().intelligence, 2);
     ///
     ///     // john should have a spell save dc of 12, and a spell attack modifier of 4.
     ///     let (spell_save, spell_mod) = john.spellcasting_scores(0)
@@ -568,7 +568,7 @@ impl Character {
             .as_ref()?
             .0
             .spellcasting_ability;
-        let spellcasting_mod = *modifiers.get_stat_type(spellcasting_ability);
+        let spellcasting_mod = *modifiers.stats.get_stat_type(spellcasting_ability);
 
         let spell_save_dc = 8 + self.proficiency_bonus() + spellcasting_mod;
         let spell_attack_mod = self.proficiency_bonus() + spellcasting_mod;
@@ -809,7 +809,7 @@ impl Character {
 
     /// Getting the ac, with inputted modifiers. This is intended to be a more efficient version of
     /// [Character::ac] if you already have the stats on-hand.
-    pub fn ac_with_modifiers(&self, stats: &Modifiers) -> isize {
+    pub fn ac_with_modifiers(&self, mods: &Modifiers) -> isize {
         let equipped_items = self.equipped_items();
 
         let feature_effects = self
@@ -834,12 +834,12 @@ impl Character {
         });
 
         let mut ac: isize = match (armor, unarmored_defense) {
-            (Some(a), _) => a.total_ac(stats.dexterity),
+            (Some(a), _) => a.total_ac(mods.stats.dexterity),
             (None, Some((base, stat1, Some(stat2)))) => {
-                *base + stats.get_stat_type(stat1) + stats.get_stat_type(stat2)
+                *base + mods.stats.get_stat_type(stat1) + mods.stats.get_stat_type(stat2)
             }
-            (None, Some((base, stat, None))) => *base + stats.get_stat_type(stat),
-            (None, None) => 10 + stats.dexterity,
+            (None, Some((base, stat, None))) => *base + mods.stats.get_stat_type(stat),
+            (None, None) => 10 + mods.stats.dexterity,
         };
 
         for effect in feature_effects {
@@ -871,7 +871,7 @@ impl Character {
             .expect("Character should have a class")
             .hit_die;
         let hit_die_avg = (((hit_die as f32) + 1.0) / 2.0).ceil() as usize;
-        let con = self.stats().modifiers().constitution.max(1) as usize;
+        let con = self.stats().modifiers().stats.constitution.max(1) as usize;
 
         let mut hp = hit_die + con + (level - 1) * (hit_die_avg + con);
 
@@ -1222,7 +1222,7 @@ impl Character {
             name: "Unarmed Strike".to_string(),
             attack_bonus: self.proficiency_bonus(),
             damage_roll: DamageRoll::new(0, 4, DamageType::Bludgeoning),
-            damage_roll_bonus: modifiers.strength + self.proficiency_bonus(),
+            damage_roll_bonus: modifiers.stats.strength + self.proficiency_bonus(),
             two_handed: false,
             second_attack: false,
         });
@@ -1315,14 +1315,14 @@ impl Character {
         let stats_attack_bonus = c
             .attack_bonus_stats
             .iter()
-            .map(|v| modifiers.get_stat_type(v))
+            .map(|v| modifiers.stats.get_stat_type(v))
             .sum::<isize>();
         let attack_bonus = (c.static_attack_bonus as isize + stats_attack_bonus).max(0);
 
         let stats_damage_bonus = c
             .damage_bonus_stats
             .iter()
-            .map(|v| modifiers.get_stat_type(v))
+            .map(|v| modifiers.stats.get_stat_type(v))
             .sum::<isize>();
         let damage_roll_bonus = (c.static_damage_bonus as isize + stats_damage_bonus).max(0);
 
@@ -1357,7 +1357,7 @@ impl Character {
         let con_mod = if die_amount == 0 {
             0
         } else {
-            self.stats().modifiers().constitution.max(0) as usize
+            self.stats().modifiers().stats.constitution.max(0) as usize
         };
 
         let hit_die_rolls = match manual_hit_die {
@@ -1458,7 +1458,7 @@ impl Character {
 
             let cantrips_num = casting.0.cantrips_per_level[class_level - 1];
 
-            let ability = *modifiers.get_stat_type(&casting.0.spellcasting_ability);
+            let ability = *modifiers.stats.get_stat_type(&casting.0.spellcasting_ability);
             let spells_num = (class.level as isize + ability).max(0) as usize;
             return_vector.push((n, &mut casting.1, spells_num, cantrips_num));
         }
@@ -1479,6 +1479,7 @@ impl Character {
         let modifier = *self
             .stats()
             .modifiers()
+            .stats
             .get_stat_type(&spellcasting_ability);
         let cantrips_num = casting.cantrips_per_level[class_level - 1];
         let spells_num = (class_level as isize + modifier).max(0) as usize;
@@ -1557,10 +1558,10 @@ fn weapon_actions(
     let two_handed = w.properties.two_handed;
     let light = w.properties.light;
 
-    let modifier = if finesse && m.dexterity > m.strength {
-        m.dexterity
+    let modifier = if finesse && m.stats.dexterity > m.stats.strength {
+        m.stats.dexterity
     } else {
-        m.strength
+        m.stats.strength
     };
 
     let proficient = is_proficient_with(&w.weapon_type, p) || p.other.contains(name);

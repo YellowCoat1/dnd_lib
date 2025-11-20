@@ -17,16 +17,16 @@ fn modifiers() {
 
     // making sure the base modifier calculation is correct.
     assert_eq!(
-        modifiers.strength, 5,
+        modifiers.stats.strength, 5,
         "Incorrect calculated strength modifier"
     );
-    assert_eq!(modifiers.wisdom, 1, "Incorrect calculated wisdom modifier");
+    assert_eq!(modifiers.stats.wisdom, 1, "Incorrect calculated wisdom modifier");
     assert_eq!(
-        modifiers.charisma, 2,
+        modifiers.stats.charisma, 2,
         "Incorrect calculated charisma modifier"
     );
     assert_eq!(
-        modifiers.dexterity, 0,
+        modifiers.stats.dexterity, 0,
         "Incorrect calculated dexterity modifier"
     );
 
@@ -46,7 +46,7 @@ fn modifiers() {
     let save_modifiers = saves.modifiers(&stats, proficiency_bonus);
 
     assert_eq!(
-        save_modifiers.charisma, 4,
+        save_modifiers.stats.charisma, 4,
         "Incorrect calculated charisma saving throw"
     );
 }

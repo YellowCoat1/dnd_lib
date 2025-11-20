@@ -3,7 +3,7 @@
 use std::{
     collections::HashSet,
     fmt::Display,
-    ops::{Add, AddAssign, Deref, DerefMut, Sub},
+    ops::{Add, AddAssign, Sub},
 };
 use strum::{EnumIter, IntoEnumIterator};
 
@@ -165,14 +165,14 @@ pub struct Modifiers {
     pub stats: Stats,
 }
 
-impl Deref for Modifiers {
-    type Target = Stats;
-    fn deref(&self) -> &Self::Target {
+impl AsRef<Stats> for Modifiers {
+    fn as_ref(&self) -> &Stats {
         &self.stats
     }
 }
-impl DerefMut for Modifiers {
-    fn deref_mut(&mut self) -> &mut Self::Target {
+
+impl AsMut<Stats> for Modifiers {
+    fn as_mut(&mut self) -> &mut Stats {
         &mut self.stats
     }
 }
@@ -287,12 +287,12 @@ impl Saves {
 
         Modifiers {
             stats: Stats {
-                strength: base_modifiers.strength + calc_bonus(self.strength),
-                dexterity: base_modifiers.dexterity + calc_bonus(self.dexterity),
-                constitution: base_modifiers.constitution + calc_bonus(self.constitution),
-                intelligence: base_modifiers.intelligence + calc_bonus(self.intelligence),
-                wisdom: base_modifiers.wisdom + calc_bonus(self.wisdom),
-                charisma: base_modifiers.charisma + calc_bonus(self.charisma),
+                strength: base_modifiers.stats.strength + calc_bonus(self.strength),
+                dexterity: base_modifiers.stats.dexterity + calc_bonus(self.dexterity),
+                constitution: base_modifiers.stats.constitution + calc_bonus(self.constitution),
+                intelligence: base_modifiers.stats.intelligence + calc_bonus(self.intelligence),
+                wisdom: base_modifiers.stats.wisdom + calc_bonus(self.wisdom),
+                charisma: base_modifiers.stats.charisma + calc_bonus(self.charisma),
             },
         }
     }
@@ -531,24 +531,24 @@ impl SkillProficiencies {
         let pm = |s: &Skill| proficiency_bonus * (s.proficiency as isize + s.expertise as isize);
 
         SkillModifiers {
-            acrobatics: sm.dexterity + pm(&self.acrobatics),
-            animal_handling: sm.wisdom + pm(&self.animal_handling),
-            arcana: sm.intelligence + pm(&self.arcana),
-            athletics: sm.strength + pm(&self.athletics),
-            deception: sm.charisma + pm(&self.deception),
-            history: sm.intelligence + pm(&self.history),
-            insight: sm.wisdom + pm(&self.insight),
-            intimidation: sm.charisma + pm(&self.intimidation),
-            investigation: sm.intelligence + pm(&self.investigation),
-            medicine: sm.wisdom + pm(&self.medicine),
-            nature: sm.intelligence + pm(&self.nature),
-            perception: sm.wisdom + pm(&self.perception),
-            performance: sm.charisma + pm(&self.performance),
-            persuasion: sm.charisma + pm(&self.persuasion),
-            religion: sm.intelligence + pm(&self.religion),
-            sleight_of_hand: sm.dexterity + pm(&self.sleight_of_hand),
-            stealth: sm.dexterity + pm(&self.stealth),
-            survival: sm.wisdom + pm(&self.survival),
+            acrobatics: sm.stats.dexterity + pm(&self.acrobatics),
+            animal_handling: sm.stats.wisdom + pm(&self.animal_handling),
+            arcana: sm.stats.intelligence + pm(&self.arcana),
+            athletics: sm.stats.strength + pm(&self.athletics),
+            deception: sm.stats.charisma + pm(&self.deception),
+            history: sm.stats.intelligence + pm(&self.history),
+            insight: sm.stats.wisdom + pm(&self.insight),
+            intimidation: sm.stats.charisma + pm(&self.intimidation),
+            investigation: sm.stats.intelligence + pm(&self.investigation),
+            medicine: sm.stats.wisdom + pm(&self.medicine),
+            nature: sm.stats.intelligence + pm(&self.nature),
+            perception: sm.stats.wisdom + pm(&self.perception),
+            performance: sm.stats.charisma + pm(&self.performance),
+            persuasion: sm.stats.charisma + pm(&self.persuasion),
+            religion: sm.stats.intelligence + pm(&self.religion),
+            sleight_of_hand: sm.stats.dexterity + pm(&self.sleight_of_hand),
+            stealth: sm.stats.dexterity + pm(&self.stealth),
+            survival: sm.stats.wisdom + pm(&self.survival),
         }
     }
 

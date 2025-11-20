@@ -67,7 +67,7 @@ async fn char_spells() {
     john.race.subraces.choose_in_place(0);
 
     // An int of 14 is a modifier of 2.
-    assert_eq!(john.stats().modifiers().intelligence, 2);
+    assert_eq!(john.stats().modifiers().stats.intelligence, 2);
 
     // john should have a spell save dc of 12, and a spell attack modifier of 4.
     let (spell_save, spell_mod) = john
