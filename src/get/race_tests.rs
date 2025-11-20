@@ -1,4 +1,3 @@
-use super::race::get_race;
 use crate::{prelude::*, provider};
 use crate::character::{
     features::PresentedOption,
@@ -7,7 +6,8 @@ use crate::character::{
 
 #[tokio::test]
 async fn get_elf() {
-    let elf = get_race("elf").await.expect("failed to get elf!");
+    let provider = provider();
+    let elf = provider.get_race("elf").await.expect("failed to get elf!");
     assert_eq!(
         (elf.name, elf.speed, elf.size),
         ("Elf".to_string(), 30, Size::Medium)
@@ -34,7 +34,8 @@ async fn get_elf() {
 
 #[tokio::test]
 async fn get_dragonborn() {
-    let dragonborn = get_race("dragonborn")
+    let provider = provider();
+    let dragonborn = provider.get_race("dragonborn")
         .await
         .expect("failed to get dragonborn!");
     assert_eq!(
