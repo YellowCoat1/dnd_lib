@@ -1,8 +1,8 @@
-use crate::{prelude::*, provider};
 use crate::character::{
     features::PresentedOption,
     stats::{Size, StatType},
 };
+use crate::{prelude::*, provider};
 
 #[tokio::test]
 async fn get_elf() {
@@ -35,7 +35,8 @@ async fn get_elf() {
 #[tokio::test]
 async fn get_dragonborn() {
     let provider = provider();
-    let dragonborn = provider.get_race("dragonborn")
+    let dragonborn = provider
+        .get_race("dragonborn")
         .await
         .expect("failed to get dragonborn!");
     assert_eq!(
