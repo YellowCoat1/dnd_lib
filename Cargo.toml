@@ -1,7 +1,14 @@
 [package]
 name = "dnd_lib"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+license = "MIT"
+authors =  ["YellowCoat1 <jasond3663@gmail.com>"]
+description = "Dungeons & Dragons character building and management library"
+repository = "https://github.com/YellowCoat1/dnd_lib"
+readme = "README.md"
+keywords = ["dnd", "d&d", "dnd 5e", "dungeons and dragons",  "dnd5eapi", "character sheet"]
+categories = ["libraries", "data-structures", "game-development", "api-bindings"]
 
 [dependencies]
 async-trait = "0.1.89"
