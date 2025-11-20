@@ -162,7 +162,7 @@ mod tests {
             multiclassing_prerequisites: HashMap::new(),
             multiclassing_prerequisites_or: false,
             multiclassing_proficiency_gain: EquipmentProficiencies::default(),
-            etc_fields: vec![],
+            tracked_fields: vec![],
         };
 
         let error_msg: &str = "failed to get correct class features";

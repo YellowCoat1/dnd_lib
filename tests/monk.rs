@@ -77,12 +77,12 @@ async fn level_3_elf_monk() {
 
     // making sure the monk has zero ki points at level 1
     assert_eq!(
-        georg.classes[0].etc_fields.len(),
+        georg.classes[0].tracked_fields.len(),
         1,
         "monk should have 1 etc field at level 1"
     );
     assert_eq!(
-        georg.classes[0].etc_fields[0].1, 0,
+        georg.classes[0].tracked_fields[0].1, 0,
         "monk should have 0 ki points at level 1"
     );
 
@@ -92,12 +92,12 @@ async fn level_3_elf_monk() {
 
     // monk should have 3 ki points at level 3
     assert_eq!(
-        georg.classes[0].etc_fields.len(),
+        georg.classes[0].tracked_fields.len(),
         1,
         "monk should have 1 etc field at level 3"
     );
     assert_eq!(
-        georg.classes[0].etc_fields[0].1, 3,
+        georg.classes[0].tracked_fields[0].1, 3,
         "monk should have 3 ki points at level 3"
     );
 

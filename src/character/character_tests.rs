@@ -160,7 +160,7 @@ async fn druid_wildshape() {
     );
     assert_eq!(bingus.classes[0].class, "Druid");
     assert_eq!(bingus.classes[0].level, 1);
-    let etc_fields = &bingus.classes[0].etc_fields;
+    let etc_fields = &bingus.classes[0].tracked_fields;
     assert_eq!(etc_fields.len(), 1);
     let wildshape = &etc_fields[0];
     assert_eq!(wildshape.1, 2);
@@ -198,7 +198,7 @@ async fn barbarian_rage() {
     assert_eq!(boko.classes[0].class, "Barbarian");
     assert_eq!(boko.classes[0].level, 1);
 
-    let etc_fields = &boko.classes[0].etc_fields;
+    let etc_fields = &boko.classes[0].tracked_fields;
     assert_eq!(etc_fields.len(), 1);
     let rage = &etc_fields[0];
     assert_eq!(rage.1, 2);
@@ -215,10 +215,10 @@ async fn barbarian_rage() {
     );
 
     boko.level_up_to_level(&barbarian, 11);
-    let rage = boko.classes[0].etc_fields.first().unwrap();
+    let rage = boko.classes[0].tracked_fields.first().unwrap();
     assert_eq!(rage.1, 4);
 
     boko.level_up(&barbarian);
-    let rage = boko.classes[0].etc_fields.first().unwrap();
+    let rage = boko.classes[0].tracked_fields.first().unwrap();
     assert_eq!(rage.1, 5);
 }

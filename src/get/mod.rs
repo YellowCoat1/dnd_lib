@@ -47,7 +47,7 @@ use spell::get_spell as get_spell_inner;
 
 use crate::{
     character::{class::Class, features::Feature, items::Item, Background},
-    getter::CharacterDataError,
+    CharacterDataError,
 };
 
 pub use background::BACKGROUND_NAMES;
@@ -65,7 +65,7 @@ pub use item_list::ITEM_NAMES;
 ///
 /// ```rust
 /// use dnd_lib::get::Dnd5eapigetter;
-/// use dnd_lib::getter::DataProvider;
+/// use dnd_lib::DataProvider;
 /// use dnd_lib::character::{items::Item, spells::Spell};
 ///
 /// #[tokio::main]
