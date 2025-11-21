@@ -1,4 +1,5 @@
 #![cfg(feature = "network-intensive-tests")]
+use dnd_lib::character::LanguageOption;
 use dnd_lib::character::stats::{SkillModifiers, SkillType};
 use dnd_lib::prelude::*;
 
@@ -22,6 +23,7 @@ async fn level_3_elf_monk() {
         wisdom: 15,
         charisma: 8,
     };
+
 
     // georg is level 1
     let mut georg = Character::new("gerog".to_string(), &monk, &acolyte, &elf, stats);
@@ -70,6 +72,21 @@ async fn level_3_elf_monk() {
         s_with_prof.contains(&SkillType::Religion),
         "Character did not ahve a proficiency in Religion"
     );
+
+
+    // choosing the languages
+    let lang_options = &mut georg
+        .background_languages;
+    assert_eq!(lang_options.len(), 2, "Acolyte should have 2 language options");
+    lang_options[0] = LanguageOption::Fixed(String::from("Dwarvish"));
+    lang_options[1] = LanguageOption::Fixed(String::from("Draconic"));
+
+
+    let langs = georg.languages();
+    assert!(langs.contains("Common"));
+    assert!(langs.contains("Elvish"));
+    assert!(langs.contains("Dwarvish"));
+    assert!(langs.contains("Draconic"));
 
     // choosing the subrace
     // there's only one option, (high elf) so we just choose the one available

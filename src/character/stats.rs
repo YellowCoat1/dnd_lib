@@ -59,7 +59,7 @@ impl Stats {
     pub fn modifiers(&self) -> Modifiers {
         #[inline]
         const fn calc_mod(score: isize) -> isize {
-            (score - 10) / 2
+            ((score - 10) as f32 / 2.0).floor() as isize
         }
 
         Modifiers {

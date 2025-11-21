@@ -65,21 +65,26 @@ async fn level_5_halfling_rogue() {
     bingus.items[2].2 = true;
 
     // choose skill proficiencies granted by the class
+
+    // Acrobatics
     bingus
         .class_skill_proficiencies
         .get_mut(0)
         .expect("rogue should have skill proficiencies")
         .choose_in_place(8);
+    // Stealth
     bingus
         .class_skill_proficiencies
         .get_mut(1)
         .expect("rogue should have a 2nd skill proficiency")
         .choose_in_place(10);
+    // Deception
     bingus
         .class_skill_proficiencies
         .get_mut(2)
         .expect("rogue should have a 3rd skill proficiency")
         .choose_in_place(2);
+    // Intimidation
     bingus
         .class_skill_proficiencies
         .get_mut(3)
