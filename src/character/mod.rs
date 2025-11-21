@@ -2,13 +2,12 @@
 //!
 //! Every struct here implements serde serialize and deserialize, allowing for easy sending or
 //! saving.
-mod background;
+pub mod background;
 mod choice;
 pub mod features;
 pub mod items;
 pub mod spells;
 pub mod stats;
-pub use background::*;
 mod race;
 pub use race::*;
 mod character_etc;

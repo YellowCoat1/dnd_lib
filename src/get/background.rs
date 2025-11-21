@@ -1,8 +1,8 @@
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
 use crate::character::features::Feature;
-use crate::character::LanguageOption;
-use crate::character::{features::PresentedOption, stats::SkillType, Background};
+use crate::character::background::LanguageOption;
+use crate::character::{features::PresentedOption, stats::SkillType, background::Background};
 use crate::get::json_tools::{parse_skilltype, parse_string};
 use crate::getter::CharacterDataError;
 use crate::getter::DataProvider;

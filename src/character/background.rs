@@ -63,10 +63,11 @@ pub enum BackgroundBuildError {
 }
 
 /// Builds a [Background] with a builder pattern.
+///
 /// ```rust
 /// use dnd_lib::character::{
-///     BackgroundBuilder,
-///     LanguageOption,
+///     background::BackgroundBuilder,
+///     background::LanguageOption,
 ///     stats::SkillType,
 ///     features::PresentedOption,
 /// };
@@ -91,7 +92,6 @@ pub enum BackgroundBuildError {
 /// 
 /// assert!(bg_result.is_ok());
 /// ```
- 
 pub struct BackgroundBuilder {
     background: Background,
 }
