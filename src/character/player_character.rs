@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::character::background::LanguageOption;
 use crate::character::class::ItemCategory;
-use crate::character::items::{is_proficient_with, ArmorCategory};
+use crate::character::items::{ArmorCategory, HeldEquipment, is_proficient_with};
 use crate::character::spells::SpellCastingPreperation;
 
 use super::background::Background;
@@ -15,7 +15,7 @@ use super::features::{
     AbilityScoreIncrease, ComputedCustomAction, CustomAction, Feature, FeatureEffect,
     PresentedOption,
 };
-use super::items::{DamageRoll, DamageType, Item, ItemType, Weapon, WeaponAction, WeaponType};
+use super::items::{DamageRoll, DamageType, ItemType, ItemCount, Weapon, WeaponAction, WeaponType};
 use super::race::Race;
 use super::spells::{
     PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS,
@@ -123,8 +123,9 @@ pub struct Character {
     /// Extra features from etc sources that aren't listed otherwise. Feel free to append on any
     /// extra feature you want your character to have.
     pub bonus_features: Vec<Feature>,
-    /// The first field is the item, second is count, and 3rd is if it's equipped or not.
-    pub items: Vec<(Item, usize, bool)>,
+    /// The items the character has. This also stores whether or not the item is currently
+    /// held/equipped.
+    pub items: Vec<HeldEquipment>,
     equipment_proficiencies: EquipmentProficiencies,
     pub class_skill_proficiencies: Vec<PresentedOption<SkillType>>,
     class_saving_throw_proficiencies: Vec<StatType>,
@@ -221,9 +222,10 @@ impl Character {
         new_character
     }
 
-    fn add_item_list(&mut self, item_list: Vec<(Item, usize)>) {
-        let mut new_item_list = item_list.into_iter().map(|(i, c)| (i, c, false)).collect();
-        self.items.append(&mut new_item_list)
+    fn add_item_list(&mut self, item_list: Vec<ItemCount>) {
+        for v in item_list {
+            self.items.push(v.into());
+        }
     }
 
     /// Adds the class's items to the character, and removes those items from their [SpeccedClass] entry.
@@ -261,7 +263,7 @@ impl Character {
     /// # }
     /// ```
     pub fn add_class_items(&mut self) {
-        let mut items: Vec<(Item, usize)> = vec![];
+        let mut items: Vec<ItemCount> = vec![];
         self.classes[0].items = self.classes[0]
             .items
             .iter()
@@ -278,12 +280,12 @@ impl Character {
         self.add_item_list(items);
     }
 
-    fn selected_items(items: &[(ItemCategory, usize)]) -> Vec<(Item, usize)> {
+    fn selected_items(items: &[(ItemCategory, usize)]) -> Vec<ItemCount> {
         items
             .iter()
             .filter_map(|v| {
                 if let ItemCategory::Item(i) = &v.0 {
-                    Some((i.clone(), v.1))
+                    Some((i.clone(), v.1).into())
                 } else {
                     None
                 }
@@ -507,11 +509,11 @@ impl Character {
     ///
     /// Just like for [Character::items], the first field in the tuple is the item, and the second
     /// field is the count of the item. (How many.)
-    pub fn equipped_items(&self) -> Vec<(&Item, &usize)> {
+    pub fn equipped_items(&self) -> Vec<ItemCount> {
         // gets the items that are selected as held
         self.items
             .iter()
-            .filter_map(|(i, c, h)| if *h { Some((i, c)) } else { None })
+            .filter_map(|h| h.equipped.then_some(h.clone().into()))
             .collect()
     }
 
@@ -725,8 +727,8 @@ impl Character {
     pub fn item_features(&self) -> Vec<&Feature> {
         self.items
             .iter()
-            .filter_map(|v| if v.2 { Some(v.0.features.iter()) } else { None })
-            .flatten()
+            .filter_map(|v| v.equipped.then_some(&v.item))
+            .flat_map(|item_count| item_count.features.iter())
             .collect()
     }
 
@@ -830,7 +832,7 @@ impl Character {
 
         // finds the first armor equipped. We're assuming there's only one.
         let armor = equipped_items.iter().find_map(|i| {
-            if let ItemType::Armor(armor) = &i.0.item_type {
+            if let ItemType::Armor(armor) = &i.item.item_type {
                 Some(armor)
             } else {
                 None
@@ -855,7 +857,7 @@ impl Character {
         // If there's a shield equipped, add 2, otherwise add 0
         let shield_bonus = equipped_items
             .iter()
-            .find_map(|i| match &i.0.item_type {
+            .find_map(|i| match &i.item.item_type {
                 ItemType::Shield => Some(2),
                 _ => None,
             })
@@ -1237,27 +1239,21 @@ impl Character {
         let modifiers = self.stats().modifiers();
         let equipment_proficiencies = self.equipment_proficiencies();
         let proficiency_modifier = self.proficiency_bonus();
-        let mut weapon_actions: Vec<_> = self
-            .equipped_items()
-            .into_iter()
-            .filter_map(|v| match &v.0.item_type {
-                ItemType::Weapon(w) => Some((&v.0.name, w)),
-                _ => None,
-            })
-            .flat_map(|(name, weapon)| {
-                weapon_actions(
-                    name,
+        let mut weapon_actions_vec: Vec<WeaponAction> = vec![];
+        for v in self.equipped_items() {
+            if let ItemType::Weapon(weapon) = &v.item.item_type {
+                let mut actions = weapon_actions_inner(
+                    &v.item.name,
                     weapon,
                     &modifiers,
                     &equipment_proficiencies,
                     proficiency_modifier,
-                )
-                .into_iter()
-            })
-            .collect();
-
+                );
+                weapon_actions_vec.append(&mut actions);
+            }
+        }
         // Unarmed Strike
-        weapon_actions.push(WeaponAction {
+        weapon_actions_vec.push(WeaponAction {
             name: "Unarmed Strike".to_string(),
             attack_bonus: self.proficiency_bonus(),
             damage_roll: DamageRoll::new(0, 4, DamageType::Bludgeoning),
@@ -1266,7 +1262,7 @@ impl Character {
             second_attack: false,
         });
 
-        weapon_actions
+        weapon_actions_vec
     }
 
     /// Gets the attacks possible from all spells prepared in any class. The resulting
@@ -1587,7 +1583,7 @@ fn spell_action_cantrip(
     })
 }
 
-fn weapon_actions(
+fn weapon_actions_inner(
     name: &String,
     w: &Weapon,
     m: &Modifiers,

@@ -29,7 +29,7 @@
 //!         .build().unwrap();
 //!     
 //!     // john sees an upcoming fight, and equips his dagger.
-//!     john.items[3].2 = true;
+//!     john.items[3].equip();
 //!
 //!     // Uh-Oh! John is about to get hit! What's his AC?
 //!     let ac = john.ac();

@@ -53,16 +53,16 @@ async fn level_5_halfling_rogue() {
 
     // 6th item should be a Rapier
     assert_eq!(
-        bingus.items.get(5).map(|v| v.0.name.clone()),
+        bingus.items.get(5).map(|v| v.item.name.clone()),
         Some("Rapier".to_string())
     );
     // 7th item should be a shortbow
     assert_eq!(
-        bingus.items.get(6).map(|v| v.0.name.clone()),
+        bingus.items.get(6).map(|v| v.item.name.clone()),
         Some("Shortbow".to_string())
     );
 
-    bingus.items[2].2 = true;
+    bingus.items[2].equip();
 
     // choose skill proficiencies granted by the class
 

@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::character::stats::{SkillModifiers, SkillType};
-use dnd_lib::character::LanguageOption;
+use dnd_lib::character::background::LanguageOption;
 use dnd_lib::prelude::*;
 
 #[tokio::test]
@@ -37,11 +37,11 @@ async fn level_3_elf_monk() {
     class_items[1].choose_in_place(0);
     georg.add_class_items();
     // equip the shortsword
-    georg.items[3].2 = true;
+    georg.items[3].equip();
 
-    assert_eq!(georg.items[0].0.name, "Clothes, common");
-    assert_eq!(georg.items[3].0.name, "Shortsword");
-    assert_eq!(georg.items[4].0.name, "Dungeoneer's Pack");
+    assert_eq!(georg.items[0].item.name, "Clothes, common");
+    assert_eq!(georg.items[3].item.name, "Shortsword");
+    assert_eq!(georg.items[4].item.name, "Dungeoneer's Pack");
 
     // Choosing the skills we want
     georg.class_skill_proficiencies[0].choose_in_place(0);

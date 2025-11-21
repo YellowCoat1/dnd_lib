@@ -94,7 +94,7 @@ pub enum ItemType {
 
 /// A single item.
 ///
-/// Often, items with counts are stored as a (Item, usize) tuple.
+/// If you want to be able to store multiple of the same item, use [ItemCount].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Item {
     pub name: String,
@@ -104,6 +104,25 @@ pub struct Item {
     pub item_type: ItemType,
     /// Any extra features/effects this item grants
     pub features: Vec<Feature>,
+}
+
+/// An item along with a count of how many of that item there are.
+/// For example, 20 arrows, or 1 potion of healing.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ItemCount {
+    pub item: Item,
+    pub count: usize,
+}
+
+impl From<Item> for ItemCount {
+    fn from(item: Item) -> Self {
+        ItemCount { item, count: 1 }
+    }
+}
+impl From<(Item, usize)> for ItemCount {
+    fn from((item, count): (Item, usize)) -> Self {
+        ItemCount { item, count }
+    }
 }
 
 /// A character's armor.
@@ -300,5 +319,78 @@ impl DamageRoll {
             dice: b.parse().ok()?,
             damage_type,
         })
+    }
+}
+
+/// An item that a character is holding, along with whether or not it's equipped.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HeldEquipment {
+    pub item: Item,
+    pub quantity: usize,
+    pub equipped: bool,
+}
+
+impl HeldEquipment {
+    pub fn new(item: Item, quantity: usize, equipped: bool) -> HeldEquipment {
+        HeldEquipment {
+            item,
+            quantity,
+            equipped,
+        }
+    }
+
+    pub fn equip(&mut self) {
+        self.equipped = true;
+    }
+
+    pub fn unequip(&mut self) {
+        self.equipped = false;
+    }
+}
+
+impl From<Item> for HeldEquipment {
+    fn from(item: Item) -> Self {
+        HeldEquipment {
+            item,
+            quantity: 1,
+            equipped: false,
+        }
+    }
+}
+
+impl From<ItemCount> for HeldEquipment {
+    fn from(item_count: ItemCount) -> Self {
+        HeldEquipment {
+            item: item_count.item,
+            quantity: item_count.count,
+            equipped: false,
+        }
+    }
+}
+
+impl From<(Item, usize)> for HeldEquipment {
+    fn from((item, quantity): (Item, usize)) -> Self {
+        HeldEquipment {
+            item,
+            quantity,
+            equipped: false,
+        }
+    }
+}
+impl From<(Item, usize, bool)> for HeldEquipment {
+    fn from((item, quantity, equipped): (Item, usize, bool)) -> Self {
+        HeldEquipment {
+            item,
+            quantity,
+            equipped,
+        }
+    }
+}
+impl From<HeldEquipment> for ItemCount {
+    fn from(held: HeldEquipment) -> Self {
+        ItemCount {
+            item: held.item,
+            count: held.quantity,
+        }
     }
 }

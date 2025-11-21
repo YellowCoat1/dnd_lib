@@ -1,8 +1,11 @@
+use crate::character::items::Item;
+
 use super::choice::PresentedOption;
 use super::features::Feature;
-use super::items::Item;
+use super::items::ItemCount;
 use super::stats::SkillType;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 /// A D&D Character background.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,7 +26,7 @@ pub struct Background {
     pub proficiencies: Vec<PresentedOption<SkillType>>,
     //pub languages: Vec<String>,
     /// A static list of starting equipment. Each item is paired with its count.
-    pub equipment: Vec<(Item, usize)>,
+    pub equipment: Vec<ItemCount>,
     /// Features granted by this background.
     pub features: Vec<Feature>,
     /// Language options granted by this background.
@@ -94,12 +97,17 @@ impl PartialEq for Background {
 }
 
 /// An error in building a [Background] with a [BackgroundBuilder].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Error)]
 pub enum BackgroundBuildError {
+    #[error("Background must have at least one proficiency")]
     EmptyProficiencies,
+    #[error("Background must have at least one ideal")]
     EmptyIdeals,
+    #[error("Background must have at least one bond")]
     EmptyBonds,
+    #[error("Background must have at least one flaw")]
     EmptyFlaws,
+    #[error("Background must have at least two personality traits")]
     NotEnoughPersonalityTraits,
 }
 
@@ -159,8 +167,17 @@ impl BackgroundBuilder {
         self
     }
 
+    /// Adds equipment to the background's starting equipment.
     pub fn add_equipment(mut self, item: Item, count: usize) -> Self {
-        self.background.equipment.push((item, count));
+        self.background.equipment.push(ItemCount { item, count });
+        self
+    }
+    
+    /// Adds equipment to the background's starting equipment. Taking an [ItemCount].
+    ///
+    /// See also: [BackgroundBuilder::add_equipment]
+    pub fn add_equipment_count(mut self, item_count: ItemCount) -> Self {
+        self.background.equipment.push(item_count);
         self
     }
 

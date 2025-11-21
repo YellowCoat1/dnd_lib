@@ -35,7 +35,7 @@ pub async fn get_background(
         let equipment_index = equipment_val.get_map("equipment")?.get_str("index")?;
         let item_val = getter.get_item(&equipment_index).await?;
         let equipment_num = equipment_val.get_usize("quantity")?;
-        equipment.push((item_val, equipment_num));
+        equipment.push((item_val, equipment_num).into());
     }
 
     let feature_map = json.get_map("feature")?;
