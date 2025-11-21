@@ -36,14 +36,55 @@ pub struct Background {
 }
 
 /// Represents a single option between languages for a background.
+///
+///
+/// ```
+/// use dnd_lib::character::{
+///     background::LanguageOption,
+/// };
+///
+/// let choices = vec![
+///   "Elvish".to_string(),
+///   "Dwarvish".to_string(),
+///   "Halfling".to_string(),
+/// ];
+///
+/// // initially, a choice between languages is contructed, usually inside a Background.
+/// let mut lang_option = LanguageOption::NamedChoice(choices.clone());
+///
+/// // A player makes their choice of which language to select.
+/// // In a real application, the choice would be displayed, read from user input, and applied.
+/// let choice: &str = match &lang_option {
+///     LanguageOption::Fixed(s) => s,
+///     LanguageOption::NamedChoice(c) => c.first().expect("empty :("),
+///     LanguageOption::UnnamedChoice => "Elvish",
+/// };
+///
+/// lang_option.set_to(choice.to_string());
+///
+/// ///
+///
+///
+/// ```
+ 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum LanguageOption {
-    /// A fixed, given language for the background. One chosen LanguageOption collapses into this.
+    /// A fixed, given language for the background.
     Fixed(String),
     /// A choice between multiple presented language options, e.g. "Choose one of: Common, Elvish, Dwarvish".
-    NamedChoice(PresentedOption<String>),
+    NamedChoice(Vec<String>),
     /// A choice of languages without a specific name, e.g. "Choose two languages".
     UnnamedChoice,
+}
+
+impl LanguageOption {
+    /// Sets the language option to a fixed language.
+    ///
+    /// This is useful for converting a choice option into a fixed option after the player has made
+    /// their selection.
+   pub fn set_to(&mut self, s: String) {
+        *self = LanguageOption::Fixed(s);
+    }
 }
 
 impl PartialEq for Background {
