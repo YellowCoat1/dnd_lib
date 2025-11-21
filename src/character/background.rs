@@ -26,11 +26,24 @@ pub struct Background {
     pub equipment: Vec<(Item, usize)>,
     /// Features granted by this background.
     pub features: Vec<Feature>,
+    /// Language options granted by this background.
+    pub language_options: Vec<LanguageOption>,
 
     pub personality_traits: Vec<String>,
     pub ideals: Vec<String>,
     pub bonds: Vec<String>,
     pub flaws: Vec<String>,
+}
+
+/// Represents a single option between languages for a background.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum LanguageOption {
+    /// A fixed, given language for the background. One chosen LanguageOption collapses into this.
+    Fixed(String),
+    /// A choice between multiple presented language options, e.g. "Choose one of: Common, Elvish, Dwarvish".
+    NamedChoice(PresentedOption<String>),
+    /// A choice of languages without a specific name, e.g. "Choose two languages".
+    UnnamedChoice,
 }
 
 impl PartialEq for Background {

@@ -19,6 +19,7 @@ pub struct Race {
     pub traits: Vec<PresentedOption<Feature>>,
     pub subraces: PresentedOption<Subrace>,
     pub languages: Vec<String>,
+    pub wildcard_languages: Vec<Option<String>>,
 }
 
 impl PartialEq for Race {

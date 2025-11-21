@@ -54,6 +54,17 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
     let languages_array = race_json.get_array("languages")?;
     let languages = process_languages(languages_array)?;
 
+    let wildcard_language_count = race_json
+        .get_map("language_options")
+        .ok()
+        .map(|v| v.get_usize("choose"))
+        .transpose()?;
+
+    let wildcard_languages = match wildcard_language_count {
+        Some(count) => vec![None; count],
+        None => vec![],
+    };
+
     let traits_arr = race_json.get_array("traits")?;
     let mut traits = Vec::with_capacity(traits_arr.len());
 
@@ -73,6 +84,7 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
         ability_bonuses,
         traits,
         languages,
+        wildcard_languages,
         subraces,
     })
 }

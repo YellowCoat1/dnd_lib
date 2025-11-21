@@ -1,6 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
 use crate::character::features::Feature;
+use crate::character::LanguageOption;
 use crate::character::{features::PresentedOption, stats::SkillType, Background};
 use crate::get::json_tools::{parse_skilltype, parse_string};
 use crate::getter::CharacterDataError;
@@ -23,8 +24,7 @@ pub async fn get_background(
         .iter()
         .map(|v| {
             let name = &v.get_str("name")?[7..];
-            parse_skilltype("Background proficiencies", name)
-                .map(PresentedOption::Base)
+            parse_skilltype("Background proficiencies", name).map(PresentedOption::Base)
         })
         .collect::<Result<Vec<PresentedOption<SkillType>>, CharacterDataError>>()?;
 
@@ -62,12 +62,17 @@ pub async fn get_background(
         .map(|v| v.get_str("desc"))
         .collect::<Result<Vec<String>, CharacterDataError>>()?;
 
+    // hardcoding languages. Acolyte background gives two languages of choice.
+    let language_options: Vec<LanguageOption> =
+        vec![LanguageOption::UnnamedChoice, LanguageOption::UnnamedChoice];
+
     Ok(Background {
         name,
         proficiencies,
         equipment,
         features: vec![feature],
         personality_traits,
+        language_options,
         ideals,
         bonds,
         flaws,

@@ -248,14 +248,9 @@ impl ClassBuilder {
         self.spellcasting = Some(spellcasting);
         self
     }
-    
-    pub fn add_class_specific_field(
-        mut self,
-        name: String,
-        values: [String; 20],
-    ) -> Self {
-        self.class_specific_leveled
-            .insert(name, values);
+
+    pub fn add_class_specific_field(mut self, name: String, values: [String; 20]) -> Self {
+        self.class_specific_leveled.insert(name, values);
         self
     }
 
@@ -267,18 +262,14 @@ impl ClassBuilder {
         self
     }
 
-    pub fn add_multiclassing_prerequisite(
-        mut self,
-        stat: StatType,
-        value: usize,
-    ) -> Self {
+    pub fn add_multiclassing_prerequisite(mut self, stat: StatType, value: usize) -> Self {
         self.multiclassing_prerequisites.insert(stat, value);
         self
     }
 
     /// Sets whether the multiclassing prerequisites are "or"ed together, instead of "and"ed as
     /// usual.
-    /// 
+    ///
     /// e.g. "either Strength 13 or Dexterity 13" instead of "Strength 13 and Dexterity 13".
     pub fn set_multiclassing_prerequisites_or(mut self, or: bool) -> Self {
         self.multiclassing_prerequisites_or = or;
@@ -286,10 +277,7 @@ impl ClassBuilder {
     }
 
     /// Adds proficiencies gained when multiclassing into this class.
-    pub fn add_multiclassing_proficiency(
-        mut self,
-        proficiencies: EquipmentProficiencies,
-    ) -> Self {
+    pub fn add_multiclassing_proficiency(mut self, proficiencies: EquipmentProficiencies) -> Self {
         self.multiclassing_proficiency_gain = self.multiclassing_proficiency_gain + proficiencies;
         self
     }
@@ -310,21 +298,16 @@ impl ClassBuilder {
             skill_proficiency_choices: self
                 .skill_proficiency_choices
                 .ok_or("Class skill proficiency choices are required")?,
-            equipment_proficiencies: self
-                .equipment_proficiencies,
+            equipment_proficiencies: self.equipment_proficiencies,
             spellcasting: self.spellcasting,
-            class_specific_leveled: self
-                .class_specific_leveled,
-            multiclassing_prerequisites: self
-                .multiclassing_prerequisites,
+            class_specific_leveled: self.class_specific_leveled,
+            multiclassing_prerequisites: self.multiclassing_prerequisites,
             multiclassing_prerequisites_or: self.multiclassing_prerequisites_or,
-            multiclassing_proficiency_gain: self
-                .multiclassing_proficiency_gain,
+            multiclassing_proficiency_gain: self.multiclassing_proficiency_gain,
             tracked_fields: self.tracked_fields,
         })
     }
 }
-
 
 #[cfg(test)]
 mod tests {

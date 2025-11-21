@@ -7,6 +7,8 @@
 //! Another major part of this module is the [PresentedOption] enum, which is used throughout the
 //! crate to describe a choice between options that the character can pick.
 
+use crate::character::background::LanguageOption;
+
 use super::{
     items::{Action, ArmorCategory, DamageRoll, WeaponType},
     stats::{SkillType, StatType},
@@ -148,11 +150,10 @@ pub enum FeatureEffect {
     LeveledHpIncrease,
 
     /// Implements monk unarmored movement
-    /// Shouldn't be added outside of monk.
+    /// Shouldn't be added outside of monk, as it depends on monk level.
     UnarmoredMovement,
     /// Adds a flat bonus to your speed
     SpeedBonus(usize),
-
     /// Adds a flying speed to the character
     FlyingSpeed(usize),
     /// Adds a hovering speed to the character
@@ -167,4 +168,7 @@ pub enum FeatureEffect {
     /// An extra damage roll added by a feature. It doesn't need to be a damage roll, it can just
     /// be an extra damage (e.g. bonus 1d6 poison damage on melee attack)
     CustomAction(CustomAction),
+
+    /// Grants an extra language
+    AddedLanguage(LanguageOption),
 }

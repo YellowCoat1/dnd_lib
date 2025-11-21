@@ -3,8 +3,8 @@ use std::cmp::PartialEq;
 
 use serde::{Deserialize, Serialize};
 
-use strum::{Display as StrumDisplay, EnumString};
 use super::{features::Feature, stats::EquipmentProficiencies};
+use strum::{Display as StrumDisplay, EnumString};
 
 /// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately.
 ///
@@ -60,8 +60,9 @@ pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
     "net",
 ];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize,
-    EnumString, StrumDisplay)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, StrumDisplay,
+)]
 #[strum(ascii_case_insensitive)]
 pub enum DamageType {
     Acid,
@@ -128,8 +129,20 @@ impl Armor {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize
-    , StrumDisplay, EnumString)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    StrumDisplay,
+    EnumString,
+)]
 /// The different categories for armor.
 #[strum(ascii_case_insensitive)]
 pub enum ArmorCategory {
@@ -169,8 +182,20 @@ pub struct WeaponProperties {
     pub versatile: Option<DamageRoll>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize
-    , StrumDisplay, EnumString)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    StrumDisplay,
+    EnumString,
+)]
 #[strum(serialize_all = "lowercase")]
 pub enum WeaponType {
     Simple,

@@ -1,8 +1,9 @@
 #![cfg_attr(doc, feature(doc_auto_cfg))]
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
+use crate::character::background::LanguageOption;
 use crate::character::class::ItemCategory;
 use crate::character::items::{is_proficient_with, ArmorCategory};
 use crate::character::spells::SpellCastingPreperation;
@@ -134,6 +135,8 @@ pub struct Character {
     pub background: String,
     /// The proficiencies granted by the background
     pub background_proficiencies: Vec<PresentedOption<SkillType>>,
+    /// The languages granted by the background
+    pub background_languages: Vec<LanguageOption>,
 
     /// The character can choose 2 personality traits.
     pub personality_traits: (PresentedOption<String>, PresentedOption<String>),
@@ -183,6 +186,7 @@ impl Character {
 
             background: background.name.clone(),
             background_proficiencies: background.proficiencies.clone(),
+            background_languages: background.language_options.clone(),
             personality_traits: (
                 PresentedOption::Choice(background.personality_traits.clone()),
                 PresentedOption::Choice(background.personality_traits.clone()),
@@ -882,6 +886,41 @@ impl Character {
             }
         }
         hp
+    }
+
+    pub fn languages(&self) -> HashSet<&str> {
+        let mut languages: HashSet<&str> = HashSet::new();
+
+        // feature granted languages
+        // e.g. druidic, or extra language from high elf subrace
+        let features = self
+            .bonus_features
+            .iter()
+            .chain(self.item_features())
+            .chain(self.class_features())
+            .flat_map(|v| v.effects.iter());
+        for feature in features {
+            if let FeatureEffect::AddedLanguage(LanguageOption::Fixed(l)) = feature {
+                languages.insert(l.as_str());
+            }
+        }
+
+        // race languages
+        for lang in self.race.languages.iter() {
+            languages.insert(lang.as_str());
+        }
+        for lang in self.race.wildcard_languages.iter().flatten() {
+            languages.insert(lang.as_str());
+        }
+
+        // background languages
+        for lang in self.background_languages.iter() {
+            if let LanguageOption::Fixed(l) = lang {
+                languages.insert(l.as_str());
+            }
+        }
+
+        languages
     }
 
     /// Processes the character taking damage.

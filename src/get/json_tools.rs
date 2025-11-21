@@ -26,10 +26,10 @@ pub fn value_name(v: &Value) -> &str {
 }
 
 pub fn parse_skilltype(f: &str, s: &str) -> Result<SkillType, CharacterDataError> {
-    SkillType::from_str(&s)
-        .map_err(|_| CharacterDataError::mismatch( f, "Valid SkillType", &format!("Invalid SkillType: {}", s)))
+    SkillType::from_str(&s).map_err(|_| {
+        CharacterDataError::mismatch(f, "Valid SkillType", &format!("Invalid SkillType: {}", s))
+    })
 }
-
 
 impl ValueExt for Value {
     fn as_string(&self, name: &str) -> Result<String, CharacterDataError> {

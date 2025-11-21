@@ -3,9 +3,10 @@
 use std::{
     collections::HashSet,
     fmt::Display,
-    ops::{Add, AddAssign, Index, IndexMut, Sub}, str::FromStr,
+    ops::{Add, AddAssign, Index, IndexMut, Sub},
+    str::FromStr,
 };
-use strum::{EnumIter, IntoEnumIterator, Display as StrumDisplay, EnumString};
+use strum::{Display as StrumDisplay, EnumIter, EnumString, IntoEnumIterator};
 
 use serde::{Deserialize, Serialize};
 
@@ -106,7 +107,7 @@ impl Index<StatType> for Stats {
             StatType::Wisdom => &self.wisdom,
             StatType::Intelligence => &self.intelligence,
             StatType::Dexterity => &self.dexterity,
-            StatType::Charisma => &self.charisma
+            StatType::Charisma => &self.charisma,
         }
     }
 }
@@ -119,7 +120,7 @@ impl IndexMut<StatType> for Stats {
             StatType::Wisdom => &mut self.wisdom,
             StatType::Intelligence => &mut self.intelligence,
             StatType::Dexterity => &mut self.dexterity,
-            StatType::Charisma => &mut self.charisma
+            StatType::Charisma => &mut self.charisma,
         }
     }
 }
@@ -220,8 +221,19 @@ impl Default for Modifiers {
 }
 
 /// Enumerates all six core ability score types.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Serialize, Deserialize,
-    StrumDisplay, EnumString)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIter,
+    Serialize,
+    Deserialize,
+    StrumDisplay,
+    EnumString,
+)]
 #[strum(ascii_case_insensitive)]
 pub enum StatType {
     Strength,
@@ -357,7 +369,19 @@ pub struct SkillProficiencies {
 }
 
 /// Enumerates the different skills a character has. (e.g. Deception, Religion, Medicine)
-#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, EnumIter, Debug, Clone, Copy, StrumDisplay, EnumString)]
+#[derive(
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIter,
+    Debug,
+    Clone,
+    Copy,
+    StrumDisplay,
+    EnumString,
+)]
 #[strum(ascii_case_insensitive)]
 pub enum SkillType {
     /// Uses dexterity
