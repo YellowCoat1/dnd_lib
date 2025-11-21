@@ -46,7 +46,11 @@ use race::get_race as get_race_inner;
 use spell::get_spell as get_spell_inner;
 
 use crate::{
-    CharacterDataError, character::{background::Background, class::Class, features::Feature, items::Item, spells::Spell}, prelude::Race
+    character::{
+        background::Background, class::Class, features::Feature, items::Item, spells::Spell,
+    },
+    prelude::Race,
+    CharacterDataError,
 };
 
 pub use background::BACKGROUND_NAMES;
@@ -93,10 +97,7 @@ pub struct Dnd5eapigetter {
 
 #[async_trait]
 impl crate::getter::DataProvider for Dnd5eapigetter {
-    async fn get_race(
-        &self,
-        name: &str,
-    ) -> Result<Race, crate::getter::CharacterDataError> {
+    async fn get_race(&self, name: &str) -> Result<Race, crate::getter::CharacterDataError> {
         let mut c = get_race_inner(name).await?;
         capitalize(&mut c.name);
         Ok(c)
@@ -116,10 +117,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
             .insert(name.to_string(), background.clone());
         Ok(background)
     }
-    async fn get_class(
-        &self,
-        name: &str,
-    ) -> Result<Class, crate::getter::CharacterDataError> {
+    async fn get_class(&self, name: &str) -> Result<Class, crate::getter::CharacterDataError> {
         if let Some(cached) = self.class_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
@@ -131,10 +129,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
             .insert(name.to_string(), class.clone());
         Ok(class)
     }
-    async fn get_item(
-        &self,
-        name: &str,
-    ) -> Result<Item, crate::getter::CharacterDataError> {
+    async fn get_item(&self, name: &str) -> Result<Item, crate::getter::CharacterDataError> {
         if let Some(cached) = self.item_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
@@ -146,10 +141,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
             .insert(name.to_string(), item.clone());
         Ok(item)
     }
-    async fn get_spell(
-        &self,
-        name: &str,
-    ) -> Result<Spell, crate::getter::CharacterDataError> {
+    async fn get_spell(&self, name: &str) -> Result<Spell, crate::getter::CharacterDataError> {
         let mut s = get_spell_inner(name).await?;
         capitalize(&mut s.name);
         Ok(s)

@@ -69,7 +69,7 @@ pub struct Background {
 ///
 ///
 /// ```
- 
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum LanguageOption {
     /// A fixed, given language for the background.
@@ -85,7 +85,7 @@ impl LanguageOption {
     ///
     /// This is useful for converting a choice option into a fixed option after the player has made
     /// their selection.
-   pub fn set_to(&mut self, s: String) {
+    pub fn set_to(&mut self, s: String) {
         *self = LanguageOption::Fixed(s);
     }
 }
@@ -138,7 +138,7 @@ pub enum BackgroundBuildError {
 ///     .add_bond("I owe my life to the priest who saved me.".to_string())
 ///     .add_flaw("I have a quick temper.".to_string())
 ///     .build();
-/// 
+///
 /// assert!(bg_result.is_ok());
 /// ```
 pub struct BackgroundBuilder {
@@ -172,7 +172,7 @@ impl BackgroundBuilder {
         self.background.equipment.push(ItemCount { item, count });
         self
     }
-    
+
     /// Adds equipment to the background's starting equipment. Taking an [ItemCount].
     ///
     /// See also: [BackgroundBuilder::add_equipment]
@@ -219,7 +219,7 @@ impl BackgroundBuilder {
     ///  - At least 1 flaw.
     ///  - At least 2 personality traits.
     ///
-   pub fn build(self) -> Result<Background, BackgroundBuildError> {
+    pub fn build(self) -> Result<Background, BackgroundBuildError> {
         use BackgroundBuildError::*;
         let bg = &self.background;
 
@@ -227,16 +227,16 @@ impl BackgroundBuilder {
             return Err(EmptyProficiencies);
         }
         if bg.flaws.is_empty() {
-            return Err(EmptyFlaws)
+            return Err(EmptyFlaws);
         }
         if bg.bonds.is_empty() {
-            return Err(EmptyBonds)
+            return Err(EmptyBonds);
         }
         if bg.ideals.is_empty() {
             return Err(EmptyIdeals);
         }
         if bg.personality_traits.len() < 2 {
-            return Err(NotEnoughPersonalityTraits)
+            return Err(NotEnoughPersonalityTraits);
         }
 
         Ok(self.background)

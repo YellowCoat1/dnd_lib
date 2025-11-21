@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
-use dnd_lib::character::stats::{SkillModifiers, SkillType};
 use dnd_lib::character::background::LanguageOption;
+use dnd_lib::character::stats::{SkillModifiers, SkillType};
 use dnd_lib::prelude::*;
 
 #[tokio::test]

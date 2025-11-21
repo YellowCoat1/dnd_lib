@@ -2,7 +2,7 @@
 use async_trait::async_trait;
 use thiserror::Error;
 
-use crate::character::{class::Class, items::Item, spells::Spell, background::Background, Race};
+use crate::character::{background::Background, class::Class, items::Item, spells::Spell, Race};
 
 /// A trait representing a source capable of retrieving D&D data, e.g. from an api.
 ///

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::character::background::LanguageOption;
 use crate::character::class::ItemCategory;
-use crate::character::items::{ArmorCategory, HeldEquipment, is_proficient_with};
+use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment};
 use crate::character::spells::SpellCastingPreperation;
 
 use super::background::Background;
@@ -15,7 +15,7 @@ use super::features::{
     AbilityScoreIncrease, ComputedCustomAction, CustomAction, Feature, FeatureEffect,
     PresentedOption,
 };
-use super::items::{DamageRoll, DamageType, ItemType, ItemCount, Weapon, WeaponAction, WeaponType};
+use super::items::{DamageRoll, DamageType, ItemCount, ItemType, Weapon, WeaponAction, WeaponType};
 use super::race::Race;
 use super::spells::{
     PactSlots, Spell, SpellAction, SpellCasterType, SpellSlots, Spellcasting, CASTER_SLOTS,
