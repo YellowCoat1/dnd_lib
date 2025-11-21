@@ -110,6 +110,12 @@ impl RaceBuilder {
     }
 }
 
+impl Default for RaceBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Subrace {
     pub name: String,
