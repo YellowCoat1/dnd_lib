@@ -244,7 +244,7 @@ pub enum StatType {
     Charisma,
 }
 
-impl<'a> StatType {
+impl StatType {
     /// Getting a StatType from it's shorthand (e.g. "dex")
     /// if you want to get a StatType from it's full name, just take the first three characters.
     ///

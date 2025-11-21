@@ -226,7 +226,7 @@ impl ClassBuilder {
         options: Vec<SkillType>,
     ) -> Self {
         let choices = if options.len() == 1 {
-            PresentedOption::Base(options[0].clone())
+            PresentedOption::Base(options[0])
         } else {
             PresentedOption::Choice(options)
         };
@@ -240,7 +240,7 @@ impl ClassBuilder {
     }
 
     pub fn add_equipment_proficiencies(mut self, proficiencies: EquipmentProficiencies) -> Self {
-        self.equipment_proficiencies = self.equipment_proficiencies + proficiencies;
+        self.equipment_proficiencies += proficiencies;
         self
     }
 
@@ -278,7 +278,7 @@ impl ClassBuilder {
 
     /// Adds proficiencies gained when multiclassing into this class.
     pub fn add_multiclassing_proficiency(mut self, proficiencies: EquipmentProficiencies) -> Self {
-        self.multiclassing_proficiency_gain = self.multiclassing_proficiency_gain + proficiencies;
+        self.multiclassing_proficiency_gain += proficiencies;
         self
     }
 
@@ -306,6 +306,12 @@ impl ClassBuilder {
             multiclassing_proficiency_gain: self.multiclassing_proficiency_gain,
             tracked_fields: self.tracked_fields,
         })
+    }
+}
+
+impl Default for ClassBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
