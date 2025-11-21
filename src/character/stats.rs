@@ -3,9 +3,9 @@
 use std::{
     collections::HashSet,
     fmt::Display,
-    ops::{Add, AddAssign, Sub},
+    ops::{Add, AddAssign, Index, IndexMut, Sub}, str::FromStr,
 };
-use strum::{EnumIter, IntoEnumIterator};
+use strum::{EnumIter, IntoEnumIterator, Display as StrumDisplay, EnumString};
 
 use serde::{Deserialize, Serialize};
 
@@ -93,6 +93,33 @@ impl Stats {
             StatType::Intelligence => &self.intelligence,
             StatType::Wisdom => &self.wisdom,
             StatType::Charisma => &self.charisma,
+        }
+    }
+}
+
+impl Index<StatType> for Stats {
+    type Output = isize;
+    fn index(&self, index: StatType) -> &Self::Output {
+        match index {
+            StatType::Strength => &self.strength,
+            StatType::Constitution => &self.constitution,
+            StatType::Wisdom => &self.wisdom,
+            StatType::Intelligence => &self.intelligence,
+            StatType::Dexterity => &self.dexterity,
+            StatType::Charisma => &self.charisma
+        }
+    }
+}
+
+impl IndexMut<StatType> for Stats {
+    fn index_mut(&mut self, index: StatType) -> &mut Self::Output {
+        match index {
+            StatType::Strength => &mut self.strength,
+            StatType::Constitution => &mut self.constitution,
+            StatType::Wisdom => &mut self.wisdom,
+            StatType::Intelligence => &mut self.intelligence,
+            StatType::Dexterity => &mut self.dexterity,
+            StatType::Charisma => &mut self.charisma
         }
     }
 }
@@ -193,7 +220,9 @@ impl Default for Modifiers {
 }
 
 /// Enumerates all six core ability score types.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Serialize, Deserialize,
+    StrumDisplay, EnumString)]
+#[strum(ascii_case_insensitive)]
 pub enum StatType {
     Strength,
     Dexterity,
@@ -232,30 +261,12 @@ impl<'a> StatType {
         }
     }
 
-    /// Get the string name of a stat type.
-    pub fn get_name(&'a self) -> &'a str {
-        match self {
-            StatType::Strength => "Strength",
-            StatType::Dexterity => "Dexterity",
-            StatType::Constitution => "Constitution",
-            StatType::Intelligence => "Intelligence",
-            StatType::Wisdom => "Wisdom",
-            StatType::Charisma => "Charisma",
-        }
-    }
-
     /// Get the shorthand of a stat type.
     ///
     /// this is equivalent to `get_name()[..3]`, and can be used as a deterministic name for the
     /// stat.
-    pub fn get_shorthand(&'a self) -> &'a str {
-        &self.get_name()[..3]
-    }
-}
-
-impl Display for StatType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.get_name())
+    pub fn get_shorthand(&self) -> String {
+        self.to_string()[..3].to_lowercase()
     }
 }
 
@@ -346,11 +357,13 @@ pub struct SkillProficiencies {
 }
 
 /// Enumerates the different skills a character has. (e.g. Deception, Religion, Medicine)
-#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, EnumIter, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, EnumIter, Debug, Clone, Copy, StrumDisplay, EnumString)]
+#[strum(ascii_case_insensitive)]
 pub enum SkillType {
     /// Uses dexterity
     Acrobatics,
     /// Uses wisdom
+    #[strum(serialize = "Animal Handling")]
     AnimalHandling,
     /// Uses intelligence
     Arcana,
@@ -379,6 +392,7 @@ pub enum SkillType {
     /// Uses intelligence
     Religion,
     /// Uses dexterity
+    #[strum(serialize = "Sleight of Hand")]
     SleightOfHand,
     /// Uses dexterity
     Stealth,
@@ -389,56 +403,7 @@ pub enum SkillType {
 impl SkillType {
     // converts from string name to skill type. non case sensitive.
     pub fn from_name(name: &str) -> Option<SkillType> {
-        match name.to_lowercase().as_str() {
-            "acrobatics" => Some(SkillType::Acrobatics),
-            "animal handling" => Some(SkillType::AnimalHandling),
-            "arcana" => Some(SkillType::Arcana),
-            "athletics" => Some(SkillType::Athletics),
-            "deception" => Some(SkillType::Deception),
-            "history" => Some(SkillType::History),
-            "insight" => Some(SkillType::Insight),
-            "intimidation" => Some(SkillType::Intimidation),
-            "investigation" => Some(SkillType::Investigation),
-            "medicine" => Some(SkillType::Medicine),
-            "nature" => Some(SkillType::Nature),
-            "perception" => Some(SkillType::Perception),
-            "performance" => Some(SkillType::Performance),
-            "persuasion" => Some(SkillType::Persuasion),
-            "religion" => Some(SkillType::Religion),
-            "sleight of hand" => Some(SkillType::SleightOfHand),
-            "stealth" => Some(SkillType::Stealth),
-            "survival" => Some(SkillType::Survival),
-            _ => None,
-        }
-    }
-}
-
-impl Display for SkillType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                SkillType::Acrobatics => "Acrobatics",
-                SkillType::AnimalHandling => "Animal Handling",
-                SkillType::Arcana => "Arcana",
-                SkillType::Athletics => "Athletics",
-                SkillType::Deception => "Deception",
-                SkillType::History => "History",
-                SkillType::Insight => "Insight",
-                SkillType::Intimidation => "Intimidation",
-                SkillType::Investigation => "Investigation",
-                SkillType::Medicine => "Medicine",
-                SkillType::Nature => "Nature",
-                SkillType::Perception => "Perception",
-                SkillType::Performance => "Performance",
-                SkillType::Persuasion => "Persuasion",
-                SkillType::Religion => "Religion",
-                SkillType::SleightOfHand => "Sleight of Hand",
-                SkillType::Stealth => "Stealth",
-                SkillType::Survival => "Survival",
-            }
-        )
+        Self::from_str(&name.to_lowercase()).ok()
     }
 }
 
@@ -776,5 +741,23 @@ impl Display for Alignment {
                 Alignment::ChaoticEvil => "Chaotic Evil",
             }
         )
+    }
+}
+
+impl FromStr for Alignment {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "lawful good" => Ok(Alignment::LawfulGood),
+            "neutral good" => Ok(Alignment::NeutralGood),
+            "chaotic good" => Ok(Alignment::ChaoticGood),
+            "lawful neutral" => Ok(Alignment::LawfulNeutral),
+            "true neutral" => Ok(Alignment::TrueNeutral),
+            "chaotic neutral" => Ok(Alignment::ChaoticNeutral),
+            "lawful evil" => Ok(Alignment::LawfulEvil),
+            "neutral evil" => Ok(Alignment::NeutralEvil),
+            "chaotic evil" => Ok(Alignment::ChaoticEvil),
+            _ => Err(()),
+        }
     }
 }

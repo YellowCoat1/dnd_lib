@@ -125,6 +125,207 @@ impl TrackedField {
     }
 }
 
+/// A builder for [Class](Class).
+///
+/// The following fields are required before building:
+/// - name
+/// - features
+/// - hit_die
+/// - skill_proficiency_choices
+///  
+pub struct ClassBuilder {
+    name: Option<String>,
+    subclasses: Vec<Subclass>,
+    features: Option<[Vec<PresentedOption<Feature>>; 20]>,
+    beginning_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
+    saving_throw_proficiencies: Vec<StatType>,
+    hit_die: Option<usize>,
+    skill_proficiency_choices: Option<(usize, PresentedOption<SkillType>)>,
+    equipment_proficiencies: EquipmentProficiencies,
+    spellcasting: Option<Spellcasting>,
+    class_specific_leveled: HashMap<String, [String; 20]>,
+    multiclassing_prerequisites: HashMap<StatType, usize>,
+    multiclassing_prerequisites_or: bool,
+    multiclassing_proficiency_gain: EquipmentProficiencies,
+    tracked_fields: Vec<TrackedField>,
+}
+
+impl ClassBuilder {
+    pub fn new() -> Self {
+        Self {
+            name: None,
+            subclasses: vec![],
+            features: None,
+            beginning_items: vec![],
+            saving_throw_proficiencies: vec![],
+            hit_die: None,
+            skill_proficiency_choices: None,
+            equipment_proficiencies: EquipmentProficiencies::default(),
+            spellcasting: None,
+            class_specific_leveled: HashMap::new(),
+            multiclassing_prerequisites: HashMap::new(),
+            multiclassing_prerequisites_or: false,
+            multiclassing_proficiency_gain: EquipmentProficiencies::default(),
+            tracked_fields: vec![],
+        }
+    }
+
+    pub fn name(mut self, name: String) -> Self {
+        self.name = Some(name);
+        self
+    }
+
+    /// Adds a subclass to the list of subclasses.
+    pub fn push_subclass(mut self, subclass: Subclass) -> Self {
+        self.subclasses.push(subclass);
+        self
+    }
+
+    /// Sets the subclasses to the provided list.
+    pub fn set_subclasses(mut self, subclasses: Vec<Subclass>) -> Self {
+        self.subclasses = subclasses;
+        self
+    }
+
+    pub fn features(mut self, features: [Vec<PresentedOption<Feature>>; 20]) -> Self {
+        self.features = Some(features);
+        self
+    }
+
+    /// Adds a beginning item to the list of beginning items.
+    pub fn push_beginning_item(
+        mut self,
+        item: PresentedOption<Vec<(ItemCategory, usize)>>,
+    ) -> Self {
+        self.beginning_items.push(item);
+        self
+    }
+
+    /// Sets the beginning items to the provided list.
+    pub fn set_beginning_items(
+        mut self,
+        items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
+    ) -> Self {
+        self.beginning_items = items;
+        self
+    }
+
+    pub fn add_saving_throw_proficiency(mut self, stat: StatType) -> Self {
+        self.saving_throw_proficiencies.push(stat);
+        self
+    }
+
+    pub fn hit_die(mut self, hit_die: usize) -> Self {
+        self.hit_die = Some(hit_die);
+        self
+    }
+
+    pub fn skill_proficiency_choices(
+        mut self,
+        num_choices: usize,
+        options: Vec<SkillType>,
+    ) -> Self {
+        let choices = if options.len() == 1 {
+            PresentedOption::Base(options[0].clone())
+        } else {
+            PresentedOption::Choice(options)
+        };
+        self.skill_proficiency_choices = Some((num_choices, choices));
+        self
+    }
+
+    pub fn set_equipment_proficiencies(mut self, proficiencies: EquipmentProficiencies) -> Self {
+        self.equipment_proficiencies = proficiencies;
+        self
+    }
+
+    pub fn add_equipment_proficiencies(mut self, proficiencies: EquipmentProficiencies) -> Self {
+        self.equipment_proficiencies = self.equipment_proficiencies + proficiencies;
+        self
+    }
+
+    pub fn spellcasting(mut self, spellcasting: Spellcasting) -> Self {
+        self.spellcasting = Some(spellcasting);
+        self
+    }
+    
+    pub fn add_class_specific_field(
+        mut self,
+        name: String,
+        values: [String; 20],
+    ) -> Self {
+        self.class_specific_leveled
+            .insert(name, values);
+        self
+    }
+
+    pub fn set_multiclassing_prerequisites(
+        mut self,
+        prerequisites: HashMap<StatType, usize>,
+    ) -> Self {
+        self.multiclassing_prerequisites = prerequisites;
+        self
+    }
+
+    pub fn add_multiclassing_prerequisite(
+        mut self,
+        stat: StatType,
+        value: usize,
+    ) -> Self {
+        self.multiclassing_prerequisites.insert(stat, value);
+        self
+    }
+
+    /// Sets whether the multiclassing prerequisites are "or"ed together, instead of "and"ed as
+    /// usual.
+    /// 
+    /// e.g. "either Strength 13 or Dexterity 13" instead of "Strength 13 and Dexterity 13".
+    pub fn set_multiclassing_prerequisites_or(mut self, or: bool) -> Self {
+        self.multiclassing_prerequisites_or = or;
+        self
+    }
+
+    /// Adds proficiencies gained when multiclassing into this class.
+    pub fn add_multiclassing_proficiency(
+        mut self,
+        proficiencies: EquipmentProficiencies,
+    ) -> Self {
+        self.multiclassing_proficiency_gain = self.multiclassing_proficiency_gain + proficiencies;
+        self
+    }
+
+    pub fn add_tracked_field(mut self, field: TrackedField) -> Self {
+        self.tracked_fields.push(field);
+        self
+    }
+
+    pub fn build(self) -> Result<Class, String> {
+        Ok(Class {
+            name: self.name.ok_or("Class name is required")?,
+            subclasses: self.subclasses,
+            features: self.features.ok_or("Class features are required")?,
+            beginning_items: self.beginning_items,
+            saving_throw_proficiencies: self.saving_throw_proficiencies,
+            hit_die: self.hit_die.ok_or("Class hit die is required")?,
+            skill_proficiency_choices: self
+                .skill_proficiency_choices
+                .ok_or("Class skill proficiency choices are required")?,
+            equipment_proficiencies: self
+                .equipment_proficiencies,
+            spellcasting: self.spellcasting,
+            class_specific_leveled: self
+                .class_specific_leveled,
+            multiclassing_prerequisites: self
+                .multiclassing_prerequisites,
+            multiclassing_prerequisites_or: self.multiclassing_prerequisites_or,
+            multiclassing_proficiency_gain: self
+                .multiclassing_proficiency_gain,
+            tracked_fields: self.tracked_fields,
+        })
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;

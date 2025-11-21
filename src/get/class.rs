@@ -5,8 +5,7 @@ use crate::{
         items::{Item, ItemType, WeaponType},
         spells::{SpellCasterType, SpellCastingPreperation, Spellcasting},
         stats::{EquipmentProficiencies, SkillType, StatType},
-    },
-    getter::DataProvider,
+    }, get::json_tools::parse_skilltype, getter::DataProvider
 };
 use serde_json::{Map, Value};
 use std::collections::HashMap;
@@ -158,15 +157,14 @@ fn proficiency_choices(
             let val_obj = Value::Object(val_map.1.clone());
             let val = val_obj.get_map("item")?;
 
-            let name = val.get_str("name")?;
+            let name_full = val.get_str("name")?;
 
-            name.get(7..).and_then(SkillType::from_name).ok_or_else(|| {
-                CharacterDataError::mismatch(
-                    "proficiency name",
-                    "Valid SkillType string",
-                    "Invalid SkillType string",
-                )
-            })
+            let name = name_full.get(7..)
+                .ok_or_else(|| {
+                    CharacterDataError::not_found("Proficiency name", "skill name after 'Skill: '")
+                })?;
+
+            parse_skilltype("Proficiency choice", name)
         })
         .collect_result()?;
 

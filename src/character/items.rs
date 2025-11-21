@@ -1,8 +1,9 @@
 //! D&D items, item types, and damage types.
-use std::{cmp::PartialEq, fmt::Display, str::FromStr};
+use std::cmp::PartialEq;
 
 use serde::{Deserialize, Serialize};
 
+use strum::{Display as StrumDisplay, EnumString};
 use super::{features::Feature, stats::EquipmentProficiencies};
 
 /// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately.
@@ -59,7 +60,9 @@ pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
     "net",
 ];
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize,
+    EnumString, StrumDisplay)]
+#[strum(ascii_case_insensitive)]
 pub enum DamageType {
     Acid,
     Bludgeoning,
@@ -74,49 +77,6 @@ pub enum DamageType {
     Radiant,
     Slashing,
     Thunder,
-}
-
-impl std::fmt::Display for DamageType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            DamageType::Acid => "Acid",
-            DamageType::Bludgeoning => "Bludgeoning",
-            DamageType::Cold => "Cold",
-            DamageType::Fire => "Fire",
-            DamageType::Force => "Force",
-            DamageType::Lightning => "Lightning",
-            DamageType::Necrotic => "Necrotic",
-            DamageType::Piercing => "Piercing",
-            DamageType::Poison => "Poison",
-            DamageType::Psychic => "Psychic",
-            DamageType::Radiant => "Radiant",
-            DamageType::Slashing => "Slashing",
-            DamageType::Thunder => "Thunder",
-        };
-        write!(f, "{}", s)
-    }
-}
-
-impl FromStr for DamageType {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "acid" => Ok(DamageType::Acid),
-            "bludgeoning" => Ok(DamageType::Bludgeoning),
-            "cold" => Ok(DamageType::Cold),
-            "fire" => Ok(DamageType::Fire),
-            "force" => Ok(DamageType::Force),
-            "lightning" => Ok(DamageType::Lightning),
-            "necrotic" => Ok(DamageType::Necrotic),
-            "piercing" => Ok(DamageType::Piercing),
-            "poison" => Ok(DamageType::Poison),
-            "psychic" => Ok(DamageType::Psychic),
-            "radiant" => Ok(DamageType::Radiant),
-            "slashing" => Ok(DamageType::Slashing),
-            "thunder" => Ok(DamageType::Thunder),
-            _ => Err(()),
-        }
-    }
 }
 
 /// A general type an item could be.
@@ -168,8 +128,10 @@ impl Armor {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize
+    , StrumDisplay, EnumString)]
 /// The different categories for armor.
+#[strum(ascii_case_insensitive)]
 pub enum ArmorCategory {
     /// Light armor, e.g. leather. Dexterity bonus gets added to the ac.
     Light,
@@ -178,21 +140,6 @@ pub enum ArmorCategory {
     // Heavy armor, e.g. Plate. Dexterity bonus does not get added to the ac, though they have the
     // highest base ACs.
     Heavy,
-}
-
-impl Display for ArmorCategory {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use ArmorCategory::*;
-        write!(
-            f,
-            "{}",
-            match self {
-                Light => "Light",
-                Medium => "Medium",
-                Heavy => "Heavy",
-            }
-        )
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -222,30 +169,16 @@ pub struct WeaponProperties {
     pub versatile: Option<DamageRoll>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize
+    , StrumDisplay, EnumString)]
+#[strum(serialize_all = "lowercase")]
 pub enum WeaponType {
     Simple,
     SimpleRanged,
     Martial,
     MartialRanged,
 }
-
-impl Display for WeaponType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use WeaponType::*;
-        write!(
-            f,
-            "{}",
-            match self {
-                Simple => "Simple",
-                SimpleRanged => "Simple Ranged",
-                Martial => "Martial",
-                MartialRanged => "Martial Ranged",
-            }
-        )
-    }
-}
-
+///
 /// Takes equipment proficiencies and a weapon type, returns if the proficiencies has that weapon
 /// type.
 pub fn is_proficient_with(weapon: &WeaponType, proficiencies: &EquipmentProficiencies) -> bool {

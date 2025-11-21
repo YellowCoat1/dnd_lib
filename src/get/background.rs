@@ -2,7 +2,7 @@ use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
 use crate::character::features::Feature;
 use crate::character::{features::PresentedOption, stats::SkillType, Background};
-use crate::get::json_tools::parse_string;
+use crate::get::json_tools::{parse_skilltype, parse_string};
 use crate::getter::CharacterDataError;
 use crate::getter::DataProvider;
 use serde_json::Value;
@@ -22,14 +22,8 @@ pub async fn get_background(
         .get_array("starting_proficiencies")?
         .iter()
         .map(|v| {
-            SkillType::from_name(&v.get_str("name")?[7..])
-                .ok_or_else(|| {
-                    CharacterDataError::mismatch(
-                        "starting proficiencies",
-                        "Valid SkillType string",
-                        "Invalid SkillType string",
-                    )
-                })
+            let name = &v.get_str("name")?[7..];
+            parse_skilltype("Background proficiencies", name)
                 .map(PresentedOption::Base)
         })
         .collect::<Result<Vec<PresentedOption<SkillType>>, CharacterDataError>>()?;
