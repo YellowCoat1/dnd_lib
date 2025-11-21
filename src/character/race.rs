@@ -131,3 +131,22 @@ impl PartialEq for Subrace {
         self.name == other.name
     }
 }
+
+impl Subrace {
+    pub fn new(name: String, description: String) -> Self {
+        Self {
+            name,
+            description,
+            ability_bonuses: Vec::new(),
+            traits: Vec::new(),
+        }
+    }
+
+    pub fn push_ability_bonus(&mut self, stat: Option<StatType>, bonus: isize) {
+        self.ability_bonuses.push((stat, bonus));
+    }
+
+    pub fn push_trait(&mut self, race_trait: PresentedOption<Feature>) {
+        self.traits.push(race_trait);
+    }
+}
