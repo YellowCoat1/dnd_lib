@@ -57,8 +57,9 @@ impl Stats {
     ///
     /// Modifiers are computed as floor((score - 10) / 2)
     pub fn modifiers(&self) -> Modifiers {
-        fn calc_mod(stat: isize) -> isize {
-            (((stat as f64) - 10.0) / 2.0).floor() as isize
+        #[inline]
+        const fn calc_mod(score: isize) -> isize {
+            (score - 10) / 2
         }
 
         Modifiers {
@@ -75,26 +76,12 @@ impl Stats {
 
     /// Returns a mutable refrence to the value of the given stat type.
     pub fn get_stat_type_mut(&mut self, stat_type: &StatType) -> &mut isize {
-        match stat_type {
-            StatType::Strength => &mut self.strength,
-            StatType::Dexterity => &mut self.dexterity,
-            StatType::Constitution => &mut self.constitution,
-            StatType::Intelligence => &mut self.intelligence,
-            StatType::Wisdom => &mut self.wisdom,
-            StatType::Charisma => &mut self.charisma,
-        }
+        &mut self[*stat_type]
     }
 
     /// Returns a refrence to the value of the given stat type.
     pub fn get_stat_type(&self, stat_type: &StatType) -> &isize {
-        match stat_type {
-            StatType::Strength => &self.strength,
-            StatType::Dexterity => &self.dexterity,
-            StatType::Constitution => &self.constitution,
-            StatType::Intelligence => &self.intelligence,
-            StatType::Wisdom => &self.wisdom,
-            StatType::Charisma => &self.charisma,
-        }
+        &self[*stat_type]
     }
 }
 
@@ -461,6 +448,19 @@ pub struct SkillModifiers {
     pub survival: isize,
 }
 
+impl Index<SkillType> for SkillModifiers {
+    type Output = isize;
+    fn index(&self, index: SkillType) -> &Self::Output {
+        self.get_skill_type(index)
+    }
+}
+
+impl IndexMut<SkillType> for SkillModifiers {
+    fn index_mut(&mut self, index: SkillType) -> &mut Self::Output {
+        self.get_skill_type_mut(index)
+    }
+}
+
 impl SkillModifiers {
     pub fn get_skill_type(&self, skill_type: SkillType) -> &isize {
         match skill_type {
@@ -505,6 +505,18 @@ impl SkillModifiers {
             SkillType::Stealth => &mut self.stealth,
             SkillType::Survival => &mut self.survival,
         }
+    }
+}
+
+impl Index<SkillType> for SkillProficiencies {
+    type Output = Skill;
+    fn index(&self, index: SkillType) -> &Self::Output {
+        self.get_from_type(index)
+    }
+}
+impl IndexMut<SkillType> for SkillProficiencies {
+    fn index_mut(&mut self, index: SkillType) -> &mut Self::Output {
+        self.get_mut_from_type(index)
     }
 }
 
