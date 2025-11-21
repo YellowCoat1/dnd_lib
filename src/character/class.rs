@@ -125,7 +125,7 @@ impl TrackedField {
     }
 }
 
-/// A builder for [Class](Class).
+/// A builder for [Class].
 ///
 /// The following fields are required before building:
 /// - name
