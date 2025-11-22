@@ -173,17 +173,17 @@ impl Character {
             name,
             classes: vec![SpeccedClass::from_class(class, 1)],
             items: vec![],
-            equipment_proficiencies: class.equipment_proficiencies.clone(),
+            equipment_proficiencies: class.equipment_proficiencies().clone(),
             race: race.clone(),
             base_stats,
             bonus_features: vec![],
             available_spell_slots: None,
             available_pact_slots: None,
             class_skill_proficiencies: vec![
-                class.skill_proficiency_choices.1.clone();
-                class.skill_proficiency_choices.0
+                class.skill_proficiency_choices().1.clone();
+                class.skill_proficiency_choices().0
             ],
-            class_saving_throw_proficiencies: class.saving_throw_proficiencies.clone(),
+            class_saving_throw_proficiencies: class.saving_throw_proficiencies().clone(),
 
             background: background.name.clone(),
             background_proficiencies: background.proficiencies.clone(),
@@ -1068,12 +1068,12 @@ impl Character {
             for etc_field in specced_class.tracked_fields.iter_mut() {
                 let max_before = self::get_etc_field_max(
                     &etc_field.0,
-                    &class.class_specific_leveled,
+                    class.class_specific_leveled(),
                     level_before,
                 );
                 let max_after = self::get_etc_field_max(
                     &etc_field.0,
-                    &class.class_specific_leveled,
+                    class.class_specific_leveled(),
                     level_after,
                 );
                 match (max_before, max_after) {
@@ -1085,7 +1085,7 @@ impl Character {
     }
     /// Inner function for leveling up without recalculating etc info.
     fn level_up_inner(&mut self, class: &Class, stats: &Stats) -> Option<usize> {
-        let class_name: &String = &class.name;
+        let class_name: &str = class.name();
         // checking if the character is already specced into that class
         let current_class = self
             .classes
@@ -1107,11 +1107,11 @@ impl Character {
     // When a character tries to multiclass into a new class.
     // Returns Some(1) if succeeds, or None if the character doesn't have the correct requirements.
     fn level_multiclass(&mut self, class: &Class, stats: &Stats) -> Option<usize> {
-        let or = class.multiclassing_prerequisites_or;
+        let or = class.multiclassing_prerequisites_or();
 
         let mut able_to_multiclass = !or;
 
-        for (stat, min_value) in class.multiclassing_prerequisites.iter() {
+        for (stat, min_value) in class.multiclassing_prerequisites().iter() {
             let condition = *stats.get_stat_type(stat) >= *min_value as isize;
             dbg!((
                 &stat,
@@ -1127,7 +1127,7 @@ impl Character {
 
         if able_to_multiclass {
             self.classes.push(SpeccedClass::from_class(class, 1));
-            self.equipment_proficiencies += class.multiclassing_proficiency_gain.clone();
+            self.equipment_proficiencies += class.multiclassing_proficiency_gain().clone();
             Some(1)
         } else {
             None
@@ -1675,6 +1675,8 @@ fn weapon_actions_inner(
 
     attacks
 }
+
+
 /// A class as it's used for a character. This contains all the relevant information from a class
 /// for a character at their level.
 ///
@@ -1735,7 +1737,7 @@ impl SpeccedClass {
     fn from_class(class: &Class, level: usize) -> SpeccedClass {
         let subclass = PresentedOption::Choice(class.subclasses.to_vec());
 
-        let base_tracked_fields = class.tracked_fields.clone();
+        let base_tracked_fields = class.tracked_fields().clone();
         let tracked_fields = base_tracked_fields
             .into_iter()
             .map(|v| {
@@ -1745,20 +1747,20 @@ impl SpeccedClass {
             .collect::<Vec<_>>();
 
         SpeccedClass {
-            class: class.name.clone(),
+            class: class.name().to_string(),
             level,
             current_class_features: class
-                .features
+                .features()
                 .get(0..level)
                 .expect("class doesn't have proper features!")
                 .to_vec(),
-            items: class.beginning_items.to_vec(),
+            items: class.beginning_items().to_vec(),
             subclass,
-            spellcasting: class.spellcasting.clone().map(|v| (v, vec![])),
-            hit_die: class.hit_die,
+            spellcasting: class.spellcasting().cloned().map(|v| (v, vec![])),
+            hit_die: class.hit_die(),
             tracked_fields,
             class_specific: class
-                .class_specific_leveled
+                .class_specific_leveled()
                 .iter()
                 .map(|(k, arr)| (k.clone(), arr[0].clone()))
                 .collect(),
@@ -1789,9 +1791,9 @@ impl SpeccedClass {
             return;
         }
         self.current_class_features
-            .push(class.features[self.level].clone());
+            .push(class.features()[self.level].clone());
         self.class_specific = class
-            .class_specific_leveled
+            .class_specific_leveled()
             .iter()
             .map(|(k, arr)| (k.clone(), arr[self.level].clone()))
             .collect();

@@ -1,6 +1,6 @@
 use crate::{
     character::{
-        class::{Class, ItemCategory, Subclass, TrackedField},
+        class::{Class, ClassBuilder, ItemCategory, Subclass, TrackedField},
         features::{Feature, PresentedOption},
         items::{Item, ItemType, WeaponType},
         spells::{SpellCasterType, SpellCastingPreperation, Spellcasting},
@@ -142,7 +142,7 @@ fn saves(json: &Value) -> Result<Vec<StatType>, CharacterDataError> {
 
 fn proficiency_choices(
     map: &Value,
-) -> Result<(usize, PresentedOption<SkillType>), CharacterDataError> {
+) -> Result<(usize, Vec<SkillType>), CharacterDataError> {
     let proficiency_choice_array = map.get_array("proficiency_choices")?;
 
     let first_choice = proficiency_choice_array
@@ -169,7 +169,12 @@ fn proficiency_choices(
         })
         .collect_result()?;
 
-    Ok((num, proficiency_options))
+    let proficiency_options_vec = match proficiency_options {
+        PresentedOption::Base(_) => return Err(CharacterDataError::mismatch("proficiency options", "choice", "single value")),
+        PresentedOption::Choice(v) => v,
+    };
+
+    Ok((num, proficiency_options_vec))
 }
 
 async fn items(
@@ -738,7 +743,7 @@ async fn json_to_class(
     let saving_throw_proficiencies: Vec<StatType> = saves(&json).unwrap_or_default();
     let equipment_proficiencies =
         equipment_proficiencies(&json).map_err(|v| v.prepend("equipement proficiencies "))?;
-    let skill_proficiency_choices: (usize, PresentedOption<SkillType>) =
+    let skill_proficiency_choices: (usize, Vec<SkillType>) =
         proficiency_choices(&json).map_err(|v| v.prepend("Skill choices "))?;
     let beginning_items = items(getter, &json)
         .await
@@ -761,7 +766,9 @@ async fn json_to_class(
     let features = class_features(levels_arr).await?;
 
     let class_specific_leveled =
-        class_specific(levels_arr).map_err(|v| v.prepend("Class specific values"))?;
+        class_specific(levels_arr).map_err(|v| v.prepend("Class specific values"))?
+        .into_iter()
+        .collect::<Vec<_>>();
 
     let spellcasting = process_spellcasting(&json, levels_arr).await?;
 
@@ -773,22 +780,22 @@ async fn json_to_class(
         .map(|v| vec![v])
         .unwrap_or_default();
 
-    let class = Class {
-        name,
-        subclasses,
-        features,
-        beginning_items,
-        saving_throw_proficiencies,
-        equipment_proficiencies,
-        hit_die,
-        class_specific_leveled,
-        skill_proficiency_choices,
-        spellcasting,
-        multiclassing_prerequisites,
-        multiclassing_prerequisites_or,
-        multiclassing_proficiency_gain,
-        tracked_fields: etc_fields,
-    };
-
-    Ok(class)
+    let name = name[0..1].to_uppercase() + &name[1..];
+    ClassBuilder::new()
+        .name(name)
+        .set_subclasses(subclasses)
+        .features(features)
+        .set_beginning_items(beginning_items)
+        .add_multiple_save_proficiencies(saving_throw_proficiencies)
+        .set_equipment_proficiencies(equipment_proficiencies)
+        .hit_die(hit_die)
+        .add_multiple_class_specific_fields(class_specific_leveled)
+        .skill_proficiency_choices(skill_proficiency_choices.0, skill_proficiency_choices.1)
+        .spellcasting_option(spellcasting)
+        .set_multiclassing_prerequisites(multiclassing_prerequisites)
+        .set_multiclassing_prerequisites_or(multiclassing_prerequisites_or)
+        .add_multiclassing_proficiency(multiclassing_proficiency_gain)
+        .add_multiple_tracked_fields(etc_fields)
+        .build()
+        .map_err(|v| CharacterDataError::mismatch("Character Build", "Valid build", &format!("Invalid build with error {}", v)))
 }

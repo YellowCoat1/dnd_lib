@@ -6,5 +6,5 @@ use dnd_lib::prelude::*;
 async fn sorcerer() {
     let provider = Dnd5eapigetter::new();
     let sorcerer = provider.get_class("sorcerer").await.unwrap();
-    assert_eq!(sorcerer.name, "Sorcerer");
+    assert_eq!(sorcerer.name(), "Sorcerer");
 }

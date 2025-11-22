@@ -17,35 +17,104 @@ pub(crate) const UNARMORED_MOVEMENT: [usize; 20] = [
 ///
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Class {
-    pub name: String,
+    name: String,
     pub subclasses: Vec<Subclass>,
-    /// features are listed by level.
-    pub features: [Vec<PresentedOption<Feature>>; 20],
-    pub beginning_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
-    pub saving_throw_proficiencies: Vec<StatType>,
-    /// The dice size of a hit die, e.g. 12 is 1d12.
-    pub hit_die: usize,
-    /// The first field of the tuple is how many to choose.
-    pub skill_proficiency_choices: (usize, PresentedOption<SkillType>),
-    /// If the class is a spellcaster. Contains all the relevant information for spellcasting.
-    pub spellcasting: Option<Spellcasting>,
-    pub equipment_proficiencies: EquipmentProficiencies,
-    /// The features that appear on a class's table, rather than text features. =
-    /// They're indexed by name, and returns the values for all 20 levels.
-    pub class_specific_leveled: HashMap<String, [String; 20]>,
-
-    /// The prerequisites for multiclassing into this class. By default, these are "and"ed together.
-    pub multiclassing_prerequisites: HashMap<StatType, usize>,
-    /// If true, the prerequisites are "or"ed together rather than "and"ed.
-    pub multiclassing_prerequisites_or: bool,
-    /// The proficiencies a character would gain if they multiclassed into this class.
-    pub multiclassing_proficiency_gain: EquipmentProficiencies,
-
-    /// See [TrackedField] for more information.
-    pub tracked_fields: Vec<TrackedField>,
+    features: [Vec<PresentedOption<Feature>>; 20],
+    beginning_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
+    saving_throw_proficiencies: Vec<StatType>,
+    hit_die: usize,
+    skill_proficiency_choices: (usize, PresentedOption<SkillType>),
+    spellcasting: Option<Spellcasting>,
+    equipment_proficiencies: EquipmentProficiencies,
+    class_specific_leveled: HashMap<String, [String; 20]>,
+    multiclassing_prerequisites: HashMap<StatType, usize>,
+    multiclassing_prerequisites_or: bool,
+    multiclassing_proficiency_gain: EquipmentProficiencies,
+    tracked_fields: Vec<TrackedField>,
 }
 
 impl Class {
+
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    /// Gets the class's features.
+    ///
+    /// features are listed by level.
+    pub fn features(&self) -> &[Vec<PresentedOption<Feature>>; 20] {
+        &self.features
+    }
+    /// Gets the list of beginning possible items for the class.
+    ///
+    /// This defines a list of options, where each option is a list of ([ItemCategory], quantity) tuples.
+    ///
+    /// The items are stored as an ItemCategory, which can be a specific item, or a category like
+    /// "simple weapon" or "light armor". The second field of the tuple is the quantity of that
+    /// item/category.
+    ///
+    /// So, for instance, "choose between a longbow with 20 arrows or a simple weapon"
+    /// would be represented as two options: a [(longbow,1), (arrow, 20)], and a [(simple weapon, 1)].
+    pub fn beginning_items(&self) -> &Vec<PresentedOption<Vec<(ItemCategory, usize)>>> {
+        &self.beginning_items
+    }
+    /// The list of saving throw proficiencies granted by the class. Just about every class has
+    /// this as two stats.
+    pub fn saving_throw_proficiencies(&self) -> &Vec<StatType> {
+        &self.saving_throw_proficiencies
+    }
+    /// Gets the dice size of a hit die, e.g. 12 is 1d12.
+    pub fn hit_die(&self) -> usize {
+        self.hit_die
+    }
+    /// Gets the skill proficiency choices for the class.
+    ///
+    /// The first field of the tuple is how many to choose, and the second is the options.
+    /// e.g. (2, [Athletics, Acrobatics, Stealth]) means "choose 2 from Athletics, Acrobatics, and
+    /// Stealth".
+    pub fn skill_proficiency_choices(&self) -> &(usize, PresentedOption<SkillType>) {
+        &self.skill_proficiency_choices
+    }
+    /// If the class is a spellcaster. Contains all the relevant information for spellcasting.
+    pub fn spellcasting(&self) -> Option<&Spellcasting> {
+        self.spellcasting.as_ref()
+    }
+    /// The equipment proficiencies granted by the class, e.g. "light armor", "simple weapons",
+    /// "land vehicles"
+    pub fn equipment_proficiencies(&self) -> &EquipmentProficiencies {
+        &self.equipment_proficiencies
+    }
+    /// The features that appear on a class's table, rather than text features. =
+    /// They're indexed by name, and returns the values for all 20 levels.
+    pub fn class_specific_leveled(&self) -> &HashMap<String, [String; 20]> {
+        &self.class_specific_leveled
+    }
+    /// The prerequisites for multiclassing into this class. By default, these are "and"ed together.
+    ///
+    /// e.g. (Strength: 13, Dexterity: 13) means "You must have at least 13 Strength and 13
+    /// Dexterity to multiclass into this class".
+    pub fn multiclassing_prerequisites(&self) -> &HashMap<StatType, usize> {
+        &self.multiclassing_prerequisites
+    }
+    /// If true, the prerequisites are "or"ed together rather than "and"ed.
+    ///
+    /// e.g. [Class::multiclassing_prerequisites] as (Strength: 13, Dexterity: 13) with this set to true means "You must have at least 13
+    /// Strength or 13 Dexterity to multiclass into this class".
+    ///
+    /// By default, this is false, meaning the prerequisites are "and"ed together.
+    pub fn multiclassing_prerequisites_or(&self) -> bool {
+        self.multiclassing_prerequisites_or
+    }
+    /// The proficiencies a character would gain if they multiclassed into this class.
+    pub fn multiclassing_proficiency_gain(&self) -> &EquipmentProficiencies {
+        &self.multiclassing_proficiency_gain
+    }
+    /// Fields that must be actively tracked by the character. See [TrackedField] for more information.
+    pub fn tracked_fields(&self) -> &Vec<TrackedField> {
+        &self.tracked_fields
+    }
+
+
     /// gets the class's features up until a specific level.
     /// this returns every feature a class would have at the specified level
     pub fn get_all_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
@@ -215,6 +284,11 @@ impl ClassBuilder {
         self
     }
 
+    pub fn add_multiple_save_proficiencies(mut self, stats: Vec<StatType>) -> Self{
+        self.saving_throw_proficiencies.extend(stats);
+        self
+    }
+
     pub fn hit_die(mut self, hit_die: usize) -> Self {
         self.hit_die = Some(hit_die);
         self
@@ -248,9 +322,19 @@ impl ClassBuilder {
         self.spellcasting = Some(spellcasting);
         self
     }
+    
+    pub fn spellcasting_option(mut self, spellcasting: Option<Spellcasting>) -> Self {
+        self.spellcasting = spellcasting;
+        self
+    }
 
     pub fn add_class_specific_field(mut self, name: String, values: [String; 20]) -> Self {
         self.class_specific_leveled.insert(name, values);
+        self
+    }
+
+    pub fn add_multiple_class_specific_fields(mut self, fields: Vec<(String, [String;20])>) -> Self {
+        self.class_specific_leveled.extend(fields);
         self
     }
 
@@ -284,6 +368,11 @@ impl ClassBuilder {
 
     pub fn add_tracked_field(mut self, field: TrackedField) -> Self {
         self.tracked_fields.push(field);
+        self
+    }
+
+    pub fn add_multiple_tracked_fields(mut self, fields: Vec<TrackedField>) -> Self {
+        self.tracked_fields.extend(fields);
         self
     }
 

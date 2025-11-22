@@ -38,7 +38,7 @@ fn wizard_multiclassing(class: &Class) {
     use crate::character::stats::{EquipmentProficiencies, StatType};
 
     assert_eq!(
-        class.multiclassing_proficiency_gain,
+        *class.multiclassing_proficiency_gain(),
         EquipmentProficiencies::default()
     );
 
@@ -46,7 +46,7 @@ fn wizard_multiclassing(class: &Class) {
     let multiclassing_prerequisites = vec![(v.as_ref().unwrap(), &13)];
 
     assert_eq!(
-        class.multiclassing_prerequisites.iter().collect::<Vec<_>>(),
+        class.multiclassing_prerequisites().iter().collect::<Vec<_>>(),
         multiclassing_prerequisites,
         "wizard multiclassing prerequisites are incorrect"
     );
@@ -60,7 +60,7 @@ fn wizard_skill_proficiencies(class: &Class) {
         vec![Arcana, History, Insight, Investigation, Medicine, Religion];
 
     assert_eq!(
-        class.skill_proficiency_choices.1,
+        class.skill_proficiency_choices().1,
         Choice(proficiencies),
         "Couldn't retrieve proper wizard proficiencies"
     );
@@ -72,11 +72,11 @@ async fn wizard_items(class: &Class) {
     let spellbook_choice_entry =
         PresentedOption::Base(vec![(ItemCategory::Item(spellbook_item), 1)]);
     assert_eq!(
-        class.beginning_items.first().cloned(),
+        class.beginning_items().first().cloned(),
         Some(spellbook_choice_entry)
     );
     let first_choice = class
-        .beginning_items
+        .beginning_items()
         .get(1)
         .expect("Wizard should have more than one item")
         .choices()
@@ -98,7 +98,7 @@ async fn wizard_items(class: &Class) {
 async fn wizard_features(class: &Class) {
     let wizard_spellcasting_feature = get_feature("spellcasting-wizard").await.unwrap();
     let wizard_feature = class
-        .features
+        .features()
         .first()
         .expect("Wizard has no features")
         .first()
@@ -112,7 +112,7 @@ async fn wizard_features(class: &Class) {
 
 fn wizard_class_specific(class: &Class) {
     let arcane_recovery = class
-        .class_specific_leveled
+        .class_specific_leveled()
         .get("arcane recovery levels")
         .expect("wizard should have class specific fields!");
     let arcane_recovery_nums: Vec<usize> =
@@ -141,12 +141,12 @@ async fn fighter_items() {
         .expect("failed to get warlock class from api");
 
     assert_eq!(
-        fighter.beginning_items.len(),
+        fighter.beginning_items().len(),
         4,
         "Fighter should have 4 item choices"
     );
 
-    let first_choice = fighter.beginning_items[0]
+    let first_choice = fighter.beginning_items()[0]
         .choices()
         .expect("Fighter should have beginning choices");
     assert_eq!(
@@ -190,7 +190,7 @@ async fn fighter_items() {
         _ => panic!("Arrows should be items, not a category"),
     }
 
-    let second_choice = fighter.beginning_items[1]
+    let second_choice = fighter.beginning_items()[1]
         .choices()
         .expect("Fighter's second item field should be a choice");
     assert_eq!(
@@ -211,9 +211,8 @@ async fn fighter_items() {
         "Fighter should be able to choose 2 martial weapons"
     );
 
-    // proficiencies. ew.
-    let (n, _ops) = fighter.skill_proficiency_choices;
-    assert_eq!(n, 2);
+    let (n, _) = fighter.skill_proficiency_choices();
+    assert_eq!(*n, 2);
 }
 
 async fn get_with_class_context(

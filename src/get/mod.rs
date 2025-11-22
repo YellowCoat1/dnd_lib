@@ -121,8 +121,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.class_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
-        let mut class = get_class_inner(self, name).await?;
-        capitalize(&mut class.name);
+        let class = get_class_inner(self, name).await?;
         self.class_cache
             .lock()
             .unwrap()
