@@ -67,8 +67,7 @@ use super::{CharacterDescriptors, CharacterStory};
 /// ability score increase, a possible subrace or subclass, or a language option.
 ///
 /// Most customization is done through choosing an option in a [PresentedOption], which is often
-/// done by using
-/// [PresentedOption::choose_in_place].
+/// done by using [PresentedOption::choose_in_place].
 ///
 /// There's also occasionally a regular [Option]. A `None` value would mean an unfilled
 /// choice, which you can fill into a `Some(T)` to "choose" it's value. This is usually used for
@@ -80,13 +79,14 @@ use super::{CharacterDescriptors, CharacterStory};
 /// The following can be found manually, but is provided as a convinience.
 ///
 /// #### Major features
-/// The choice for subraces is available through the [Character::race] field, and then
-/// [Race::subraces].
+///
+/// ##### Subraces
+/// See the subraces available with `Character.race.subraces()` and choose one with `Character.race.choose_subrace(n)`.
+/// This is a wrapper around a [PresentedOption::choose_in_place].
+///
 ///
 /// If a race or subrace can choose an ability score, (like how variant human can chose any two to
-/// add +1), then that can be found from the `ability_bonuses` field, at `ability_bonuses[n].0`
-/// where n is the index of the ability score increase. An unchosen ability bonus is represented by
-/// a `None` value, and filling it with a `Some(StatType)` will "choose" it.
+/// add +1), you can find the choice through `Character.race.ability_bonuses_unchosen`.
 ///
 /// The choice for subclasses is available through `Character.classes[n].subclass`.
 ///
@@ -1857,7 +1857,7 @@ impl SpeccedRace {
     }
 
     // returns mutable refrences to every unchosen ability bonus
-    pub fn ability_bonuses_unchosen_mut(&mut self) -> Vec<(&mut Option<StatType>, isize)> {
+    pub fn ability_bonuses_unchosen(&mut self) -> Vec<(&mut Option<StatType>, isize)> {
         self.ability_bonuses
             .iter_mut()
             .filter_map(|(stat, bonus)| {
