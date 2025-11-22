@@ -185,16 +185,16 @@ impl Character {
             ],
             class_saving_throw_proficiencies: class.saving_throw_proficiencies().clone(),
 
-            background: background.name.clone(),
-            background_proficiencies: background.proficiencies.clone(),
-            background_languages: background.language_options.clone(),
+            background: background.name().to_string(),
+            background_proficiencies: background.proficiencies().clone(),
+            background_languages: background.language_options().clone(),
             personality_traits: (
-                PresentedOption::Choice(background.personality_traits.clone()),
-                PresentedOption::Choice(background.personality_traits.clone()),
+                PresentedOption::Choice(background.personality_traits().clone()),
+                PresentedOption::Choice(background.personality_traits().clone()),
             ),
-            ideal: PresentedOption::Choice(background.ideals.clone()),
-            bond: PresentedOption::Choice(background.bonds.clone()),
-            flaw: PresentedOption::Choice(background.flaws.clone()),
+            ideal: PresentedOption::Choice(background.ideals().clone()),
+            bond: PresentedOption::Choice(background.bonds().clone()),
+            flaw: PresentedOption::Choice(background.flaws().clone()),
 
             hp: 1,
             temp_hp: 0,
@@ -205,7 +205,7 @@ impl Character {
         };
 
         // add background items
-        new_character.add_item_list(background.equipment.clone());
+        new_character.add_item_list(background.equipment().clone());
 
         // set hp
         new_character.hp = new_character.max_hp();

@@ -1,6 +1,6 @@
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
-use crate::character::background::LanguageOption;
+use crate::character::background::{BackgroundBuilder, LanguageOption};
 use crate::character::features::Feature;
 use crate::character::{background::Background, features::PresentedOption, stats::SkillType};
 use crate::get::json_tools::{parse_skilltype, parse_string};
@@ -35,7 +35,7 @@ pub async fn get_background(
         let equipment_index = equipment_val.get_map("equipment")?.get_str("index")?;
         let item_val = getter.get_item(&equipment_index).await?;
         let equipment_num = equipment_val.get_usize("quantity")?;
-        equipment.push((item_val, equipment_num).into());
+        equipment.push((item_val, equipment_num));
     }
 
     let feature_map = json.get_map("feature")?;
@@ -66,17 +66,23 @@ pub async fn get_background(
     let language_options: Vec<LanguageOption> =
         vec![LanguageOption::UnnamedChoice, LanguageOption::UnnamedChoice];
 
-    Ok(Background {
-        name,
-        proficiencies,
-        equipment,
-        features: vec![feature],
-        personality_traits,
-        language_options,
-        ideals,
-        bonds,
-        flaws,
-    })
+    BackgroundBuilder::new(&name)
+        .add_proficiencies(proficiencies.clone())
+        .add_equipment_set(equipment.clone())
+        .add_feature(feature)
+        .add_personality_traits(personality_traits)
+        .add_ideals(ideals)
+        .add_bonds(bonds)
+        .add_flaws(flaws)
+        .add_language_options(language_options)
+        .build()
+        .map_err(|e| {
+            CharacterDataError::mismatch(
+                "Background Building",
+                "Valid background",
+                &format!("Building Error {:?}", e),
+            )
+        })
 }
 
 fn process_personality(json: &Value) -> Result<Vec<String>, CharacterDataError> {

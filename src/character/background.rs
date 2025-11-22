@@ -4,14 +4,32 @@ use super::choice::PresentedOption;
 use super::features::Feature;
 use super::items::ItemCount;
 use super::stats::SkillType;
+use heck::ToTitleCase;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// A D&D Character background.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Background {
-    pub name: String,
-    /// Skill proficiencies granted by the background.
+    name: String,
+    proficiencies: Vec<PresentedOption<SkillType>>,
+    equipment: Vec<ItemCount>,
+    features: Vec<Feature>,
+    language_options: Vec<LanguageOption>,
+
+    personality_traits: Vec<String>,
+    ideals: Vec<String>,
+    bonds: Vec<String>,
+    flaws: Vec<String>,
+}
+
+impl Background {
+    /// Returns the name of the background.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Returns the proficiencies granted by the background.
     ///
     /// ## Proficiency Representation
     /// [Classes](crate::character::class::Class), which you may be more familiar with, represent
@@ -23,19 +41,37 @@ pub struct Background {
     /// or a choice of skill proficiencies. For example, the "Acolyte" background provides
     /// proficiency in two specific skills (Insight and Religion), while the "Charlatan" background
     /// allows you to choose two skills from a list of options.
-    pub proficiencies: Vec<PresentedOption<SkillType>>,
-    //pub languages: Vec<String>,
-    /// A static list of starting equipment. Each item is paired with its count.
-    pub equipment: Vec<ItemCount>,
-    /// Features granted by this background.
-    pub features: Vec<Feature>,
-    /// Language options granted by this background.
-    pub language_options: Vec<LanguageOption>,
+    pub fn proficiencies(&self) -> &Vec<PresentedOption<SkillType>> {
+        &self.proficiencies
+    }
 
-    pub personality_traits: Vec<String>,
-    pub ideals: Vec<String>,
-    pub bonds: Vec<String>,
-    pub flaws: Vec<String>,
+    /// Gets the equipment granted by the background.
+    pub fn equipment(&self) -> &Vec<ItemCount> {
+        &self.equipment
+    }
+
+    /// Returns the features granted by the background.
+    pub fn features(&self) -> &Vec<Feature> {
+        &self.features
+    }
+
+    pub fn personality_traits(&self) -> &Vec<String> {
+        &self.personality_traits
+    }
+    pub fn ideals(&self) -> &Vec<String> {
+        &self.ideals
+    }
+    pub fn bonds(&self) -> &Vec<String> {
+        &self.bonds
+    }
+    pub fn flaws(&self) -> &Vec<String> {
+        &self.flaws
+    }
+
+    /// Returns the language options granted by the background.
+    pub fn language_options(&self) -> &Vec<LanguageOption> {
+        &self.language_options
+    }
 }
 
 /// Represents a single option between languages for a background.
@@ -184,7 +220,7 @@ impl BackgroundBuilder {
     pub fn new(name: &str) -> Self {
         Self {
             background: Background {
-                name: name.to_string(),
+                name: name.to_string().to_title_case(),
                 proficiencies: Vec::new(),
                 equipment: Vec::new(),
                 features: Vec::new(),
@@ -202,9 +238,27 @@ impl BackgroundBuilder {
         self
     }
 
+    pub fn add_proficiencies<I>(mut self, proficiencies: I) -> Self
+    where
+        I: IntoIterator<Item = PresentedOption<SkillType>>,
+    {
+        self.background.proficiencies.extend(proficiencies);
+        self
+    }
+
     /// Adds equipment to the background's starting equipment.
     pub fn add_equipment(mut self, item: Item, count: usize) -> Self {
         self.background.equipment.push(ItemCount { item, count });
+        self
+    }
+
+    pub fn add_equipment_set<I>(mut self, items: I) -> Self
+    where
+        I: IntoIterator<Item = (Item, usize)>,
+    {
+        for (item, count) in items {
+            self.background.equipment.push(ItemCount { item, count });
+        }
         self
     }
 
@@ -221,8 +275,24 @@ impl BackgroundBuilder {
         self
     }
 
+    pub fn add_features<I>(mut self, features: I) -> Self
+    where
+        I: IntoIterator<Item = Feature>,
+    {
+        self.background.features.extend(features);
+        self
+    }
+
     pub fn add_language_option(mut self, option: LanguageOption) -> Self {
         self.background.language_options.push(option);
+        self
+    }
+
+    pub fn add_language_options<I>(mut self, options: I) -> Self
+    where
+        I: IntoIterator<Item = LanguageOption>,
+    {
+        self.background.language_options.extend(options);
         self
     }
 
@@ -230,16 +300,48 @@ impl BackgroundBuilder {
         self.background.personality_traits.push(trait_desc);
         self
     }
+
+    pub fn add_personality_traits<I>(mut self, traits: I) -> Self
+    where
+        I: IntoIterator<Item = String>,
+    {
+        self.background.personality_traits.extend(traits);
+        self
+    }
+
     pub fn add_ideal(mut self, ideal: String) -> Self {
         self.background.ideals.push(ideal);
         self
     }
+
+    pub fn add_ideals<I>(mut self, ideals: I) -> Self
+    where
+        I: IntoIterator<Item = String>,
+    {
+        self.background.ideals.extend(ideals);
+        self
+    }
+
     pub fn add_bond(mut self, bond: String) -> Self {
         self.background.bonds.push(bond);
         self
     }
+    pub fn add_bonds<I>(mut self, bonds: I) -> Self
+    where
+        I: IntoIterator<Item = String>,
+    {
+        self.background.bonds.extend(bonds);
+        self
+    }
     pub fn add_flaw(mut self, flaw: String) -> Self {
         self.background.flaws.push(flaw);
+        self
+    }
+    pub fn add_flaws<I>(mut self, flaws: I) -> Self
+    where
+        I: IntoIterator<Item = String>,
+    {
+        self.background.flaws.extend(flaws);
         self
     }
 

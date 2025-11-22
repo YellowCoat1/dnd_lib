@@ -109,8 +109,7 @@ impl crate::getter::DataProvider for Dnd5eapigetter {
         if let Some(cached) = self.background_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
-        let mut background = get_background_inner(self, name).await?;
-        capitalize(&mut background.name);
+        let background = get_background_inner(self, name).await?;
         self.background_cache
             .lock()
             .unwrap()
@@ -198,16 +197,19 @@ mod test {
             .await
             .expect("failed to get acolyte!");
         let insight = acolyte
-            .proficiencies
+            .proficiencies()
             .first()
             .expect("acolyte should have proficiencies!");
         assert_eq!(*insight, PresentedOption::Base(SkillType::Insight));
         let hero = acolyte
-            .personality_traits
+            .personality_traits()
             .first()
             .expect("acolyte should have personality traits!");
         assert_eq!(*hero, String::from("I idolize a particular hero of my faith, and constantly refer to that person's deeds and example."));
-        let tradition = acolyte.ideals.first().expect("acolyte should have ideals!");
+        let tradition = acolyte
+            .ideals()
+            .first()
+            .expect("acolyte should have ideals!");
         assert_eq!(*tradition, String::from("Tradition. The ancient traditions of worship and sacrifice must be preserved and upheld."));
     }
 }
