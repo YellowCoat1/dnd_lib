@@ -1676,7 +1676,6 @@ fn weapon_actions_inner(
     attacks
 }
 
-
 /// A class as it's used for a character. This contains all the relevant information from a class
 /// for a character at their level.
 ///

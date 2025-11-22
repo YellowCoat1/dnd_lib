@@ -41,8 +41,8 @@ use crate::character::{background::Background, class::Class, items::Item, spells
 ///```
 ///
 /// There's no guarentee that different implementations return exactly the same values. It is
-/// requested that the name field is always the same, being capitalized like a title. e.g. "Wizard"
-/// or "Flag Bearer"
+/// requested, though, that the name field always matches the name passed to the getter. (Save for
+/// capitalization differences.)
 ///
 ///
 /// ## Using Different Sources

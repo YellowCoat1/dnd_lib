@@ -46,7 +46,10 @@ fn wizard_multiclassing(class: &Class) {
     let multiclassing_prerequisites = vec![(v.as_ref().unwrap(), &13)];
 
     assert_eq!(
-        class.multiclassing_prerequisites().iter().collect::<Vec<_>>(),
+        class
+            .multiclassing_prerequisites()
+            .iter()
+            .collect::<Vec<_>>(),
         multiclassing_prerequisites,
         "wizard multiclassing prerequisites are incorrect"
     );

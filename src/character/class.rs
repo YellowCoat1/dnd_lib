@@ -2,9 +2,9 @@ use super::features::{Feature, PresentedOption};
 use super::items::{ArmorCategory, Item, WeaponType};
 use super::spells::Spellcasting;
 use super::stats::{EquipmentProficiencies, SkillType, StatType};
+use heck::ToTitleCase;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use heck::ToTitleCase;
 
 // unarmored movement
 pub(crate) const UNARMORED_MOVEMENT: [usize; 20] = [
@@ -35,8 +35,6 @@ pub struct Class {
 }
 
 impl Class {
-
-
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -114,7 +112,6 @@ impl Class {
     pub fn tracked_fields(&self) -> &Vec<TrackedField> {
         &self.tracked_fields
     }
-
 
     /// gets the class's features up until a specific level.
     /// this returns every feature a class would have at the specified level
@@ -241,7 +238,7 @@ impl ClassBuilder {
     }
 
     pub fn name(mut self, name: String) -> Self {
-        self.name = Some(name);
+        self.name = Some(name.to_title_case());
         self
     }
 
@@ -285,7 +282,7 @@ impl ClassBuilder {
         self
     }
 
-    pub fn add_multiple_save_proficiencies(mut self, stats: Vec<StatType>) -> Self{
+    pub fn add_multiple_save_proficiencies(mut self, stats: Vec<StatType>) -> Self {
         self.saving_throw_proficiencies.extend(stats);
         self
     }
@@ -323,18 +320,22 @@ impl ClassBuilder {
         self.spellcasting = Some(spellcasting);
         self
     }
-    
+
     pub fn spellcasting_option(mut self, spellcasting: Option<Spellcasting>) -> Self {
         self.spellcasting = spellcasting;
         self
     }
 
     pub fn add_class_specific_field(mut self, name: String, values: [String; 20]) -> Self {
-        self.class_specific_leveled.insert(name.to_title_case(), values);
+        self.class_specific_leveled
+            .insert(name.to_title_case(), values);
         self
     }
 
-    pub fn add_multiple_class_specific_fields(mut self, fields: Vec<(String, [String;20])>) -> Self {
+    pub fn add_multiple_class_specific_fields(
+        mut self,
+        fields: Vec<(String, [String; 20])>,
+    ) -> Self {
         self.class_specific_leveled.extend(fields);
         self
     }

@@ -140,9 +140,7 @@ fn saves(json: &Value) -> Result<Vec<StatType>, CharacterDataError> {
         .collect::<Result<Vec<_>, _>>()
 }
 
-fn proficiency_choices(
-    map: &Value,
-) -> Result<(usize, Vec<SkillType>), CharacterDataError> {
+fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), CharacterDataError> {
     let proficiency_choice_array = map.get_array("proficiency_choices")?;
 
     let first_choice = proficiency_choice_array
@@ -170,7 +168,13 @@ fn proficiency_choices(
         .collect_result()?;
 
     let proficiency_options_vec = match proficiency_options {
-        PresentedOption::Base(_) => return Err(CharacterDataError::mismatch("proficiency options", "choice", "single value")),
+        PresentedOption::Base(_) => {
+            return Err(CharacterDataError::mismatch(
+                "proficiency options",
+                "choice",
+                "single value",
+            ))
+        }
         PresentedOption::Choice(v) => v,
     };
 
@@ -765,8 +769,8 @@ async fn json_to_class(
 
     let features = class_features(levels_arr).await?;
 
-    let class_specific_leveled =
-        class_specific(levels_arr).map_err(|v| v.prepend("Class specific values"))?
+    let class_specific_leveled = class_specific(levels_arr)
+        .map_err(|v| v.prepend("Class specific values"))?
         .into_iter()
         .collect::<Vec<_>>();
 
@@ -796,5 +800,11 @@ async fn json_to_class(
         .add_multiclassing_proficiency(multiclassing_proficiency_gain)
         .add_multiple_tracked_fields(etc_fields)
         .build()
-        .map_err(|v| CharacterDataError::mismatch("Character Build", "Valid build", &format!("Invalid build with error {}", v)))
+        .map_err(|v| {
+            CharacterDataError::mismatch(
+                "Character Build",
+                "Valid build",
+                &format!("Invalid build with error {}", v),
+            )
+        })
 }
