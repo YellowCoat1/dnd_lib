@@ -195,6 +195,21 @@ pub fn chosen<T>(presented: &[PresentedOption<T>]) -> Vec<&T> {
         .collect()
 }
 
+/// Returns references to all [PresentedOption::Base] values within a slice of references to
+/// [PresentedOption]s.
+pub fn chosen_ref<'a, T>(presented: &[&'a PresentedOption<T>]) -> Vec<&'a T> {
+    presented
+        .iter()
+        .filter_map(|p| {
+            if let PresentedOption::Base(ref f) = *p {
+                Some(f)
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 /// Returns two lists: One with refrences to all `Base` values, and one with refrences to all
 /// `Choice` values.
 /// `split(t).0` is equivalent to `chosen(t)`.

@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 
 use crate::character::background::LanguageOption;
+use crate::character::choice::chosen_ref;
 use crate::character::class::ItemCategory;
 use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment};
 use crate::character::spells::SpellCastingPreperation;
@@ -133,18 +134,7 @@ pub struct Character {
     pub hp: usize,
     pub temp_hp: usize,
 
-    /// The name of the character's background
-    pub background: String,
-    /// The proficiencies granted by the background
-    pub background_proficiencies: Vec<PresentedOption<SkillType>>,
-    /// The languages granted by the background
-    pub background_languages: Vec<LanguageOption>,
-
-    /// The character can choose 2 personality traits.
-    pub personality_traits: (PresentedOption<String>, PresentedOption<String>),
-    pub ideal: PresentedOption<String>,
-    pub bond: PresentedOption<String>,
-    pub flaw: PresentedOption<String>,
+    pub background: SpeccedBackground,
 
     /// Etc field for describing the character's story, enemies, personality, etc
     pub story: CharacterStory,
@@ -186,17 +176,7 @@ impl Character {
             ],
             class_saving_throw_proficiencies: class.saving_throw_proficiencies().clone(),
 
-            background: background.name().to_string(),
-            background_proficiencies: background.proficiencies().clone(),
-            background_languages: background.language_options().clone(),
-            personality_traits: (
-                PresentedOption::Choice(background.personality_traits().clone()),
-                PresentedOption::Choice(background.personality_traits().clone()),
-            ),
-            ideal: PresentedOption::Choice(background.ideals().clone()),
-            bond: PresentedOption::Choice(background.bonds().clone()),
-            flaw: PresentedOption::Choice(background.flaws().clone()),
-
+            background: SpeccedBackground::from_background(background),
             hp: 1,
             temp_hp: 0,
             story: CharacterStory::default(),
@@ -464,7 +444,7 @@ impl Character {
     pub fn skills(&self) -> SkillProficiencies {
         let mut base = SkillProficiencies::default();
         let chosen_class_skills: Vec<&SkillType> = chosen(&self.class_skill_proficiencies);
-        let background_skills: Vec<&SkillType> = chosen(&self.background_proficiencies);
+        let background_skills: Vec<&SkillType> = chosen_ref(&self.background.proficiencies());
 
         for skill in chosen_class_skills.iter().chain(background_skills.iter()) {
             let cloned_skill = *(*skill);
@@ -942,11 +922,7 @@ impl Character {
         }
 
         // background languages
-        for lang in self.background_languages.iter() {
-            if let LanguageOption::Fixed(l) = lang {
-                languages.insert(l.as_str());
-            }
-        }
+        languages.extend(self.background.languages());
 
         languages
     }
@@ -1914,6 +1890,98 @@ impl SpeccedRace {
             subraces,
             languages: race.languages().to_vec(),
             wildcard_languages: race.wildcard_languages().to_vec(),
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct SpeccedBackground {
+    background: String,
+    proficiencies: Vec<PresentedOption<SkillType>>,
+    features: Vec<Feature>,
+    language_options: Vec<LanguageOption>,
+
+    personality_traits: PresentedOption<String>,
+    ideals: PresentedOption<String>,
+    bonds: PresentedOption<String>,
+    flaws: PresentedOption<String>,
+}
+
+impl SpeccedBackground {
+    pub fn name(&self) -> &str {
+        &self.background
+    }
+
+    pub fn proficiencies(&self) -> Vec<&PresentedOption<SkillType>> {
+        self.proficiencies.iter().collect()
+    }
+    pub fn features(&self) -> Vec<&Feature> {
+        self.features.iter().collect()
+    }
+    pub fn feature_effects(&self) -> Vec<&FeatureEffect> {
+        self.features
+            .iter()
+            .flat_map(|v| v.effects.iter())
+            .collect()
+    }
+    pub fn feature_effects_mut(&mut self) -> Vec<&mut FeatureEffect> {
+        self.features
+            .iter_mut()
+            .flat_map(|v| v.effects.iter_mut())
+            .collect()
+    }
+    /// Returns a list of all chosen/fixed languages.
+    pub fn languages(&self) -> Vec<&str> {
+        self.language_options
+            .iter()
+            .filter_map(|v| match v {
+                LanguageOption::Fixed(lang) => Some(lang.as_str()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Returns a list of all language options.
+    pub fn language_options(&self) -> Vec<&LanguageOption> {
+        self.language_options.iter().collect()
+    }
+
+    /// Returns a list of unchosen language options, and the index they are at in the total
+    /// language options list.
+    pub fn unchosen_language_options(&self) -> Vec<(usize, &LanguageOption)> {
+        self.language_options
+            .iter()
+            .enumerate()
+            .filter(|v| !matches!(v.1, LanguageOption::Fixed(_)))
+            .collect()
+    }
+
+    /// Chooses a language for the language option at the given index.
+    ///
+    /// The index is in relation to **all** language options, not just unchosen ones.
+    ///
+    /// Returns true if successful, false if the index is out of bounds, the language option is
+    /// already fixed, or the language isn't on the list.
+    ///
+    /// This is a wrapper around [LanguageOption::set_to]. See it for more details.
+    pub fn choose_language_option(&mut self, index: usize, lang: &str) -> bool {
+        if self.language_options.len() <= index {
+            return false;
+        }
+
+        self.language_options[index].set_to(lang.to_string())
+    }
+
+    fn from_background(background: &Background) -> SpeccedBackground {
+        SpeccedBackground {
+            background: background.name().to_string(),
+            proficiencies: background.proficiencies().to_vec(),
+            features: background.features().to_vec(),
+            language_options: background.language_options().to_vec(),
+            personality_traits: PresentedOption::Choice(background.personality_traits().clone()),
+            ideals: PresentedOption::Choice(background.ideals().clone()),
+            bonds: PresentedOption::Choice(background.bonds().clone()),
+            flaws: PresentedOption::Choice(background.flaws().clone()),
         }
     }
 }

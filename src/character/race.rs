@@ -229,7 +229,8 @@ impl Subrace {
     }
 
     pub fn trait_effects_mut(&mut self) -> Vec<&mut FeatureEffect> {
-        self.traits.iter_mut()
+        self.traits
+            .iter_mut()
             .filter_map(|option| option.choices_mut())
             .flatten()
             .flat_map(|v| &mut v.effects)
