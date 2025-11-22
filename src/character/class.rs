@@ -4,6 +4,7 @@ use super::spells::Spellcasting;
 use super::stats::{EquipmentProficiencies, SkillType, StatType};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use heck::ToTitleCase;
 
 // unarmored movement
 pub(crate) const UNARMORED_MOVEMENT: [usize; 20] = [
@@ -329,7 +330,7 @@ impl ClassBuilder {
     }
 
     pub fn add_class_specific_field(mut self, name: String, values: [String; 20]) -> Self {
-        self.class_specific_leveled.insert(name, values);
+        self.class_specific_leveled.insert(name.to_title_case(), values);
         self
     }
 

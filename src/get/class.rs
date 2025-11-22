@@ -780,7 +780,6 @@ async fn json_to_class(
         .map(|v| vec![v])
         .unwrap_or_default();
 
-    let name = name[0..1].to_uppercase() + &name[1..];
     ClassBuilder::new()
         .name(name)
         .set_subclasses(subclasses)
