@@ -1,5 +1,4 @@
 #![cfg(feature = "network-intensive-tests")]
-use dnd_lib::character::background::LanguageOption;
 use dnd_lib::character::stats::{SkillModifiers, SkillType};
 use dnd_lib::prelude::*;
 
@@ -73,14 +72,14 @@ async fn level_3_elf_monk() {
     );
 
     // choosing the languages
-    let lang_options = &mut georg.background_languages;
+    let lang_options = georg.background.language_options();
     assert_eq!(
         lang_options.len(),
         2,
         "Acolyte should have 2 language options"
     );
-    lang_options[0] = LanguageOption::Fixed(String::from("Dwarvish"));
-    lang_options[1] = LanguageOption::Fixed(String::from("Draconic"));
+    georg.background.choose_language_option(0, "Dwarvish");
+    georg.background.choose_language_option(1, "Draconic");
 
     let langs = georg.total_languages();
     assert!(langs.contains("Common"));
