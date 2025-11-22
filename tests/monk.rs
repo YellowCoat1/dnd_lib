@@ -82,7 +82,7 @@ async fn level_3_elf_monk() {
     lang_options[0] = LanguageOption::Fixed(String::from("Dwarvish"));
     lang_options[1] = LanguageOption::Fixed(String::from("Draconic"));
 
-    let langs = georg.languages();
+    let langs = georg.total_languages();
     assert!(langs.contains("Common"));
     assert!(langs.contains("Elvish"));
     assert!(langs.contains("Dwarvish"));
@@ -90,7 +90,7 @@ async fn level_3_elf_monk() {
 
     // choosing the subrace
     // there's only one option, (high elf) so we just choose the one available
-    georg.race.subraces_mut().choose_in_place(0);
+    georg.race.choose_subrace(0);
 
     // making sure the monk has zero ki points at level 1
     assert_eq!(

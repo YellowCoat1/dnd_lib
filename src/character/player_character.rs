@@ -545,7 +545,7 @@ impl Character {
     ///         .race(&elf)
     ///         .stats(stats)
     ///         .build().unwrap();
-    ///     john.race.subraces_mut().choose_in_place(0);
+    ///     john.race.choose_subrace(0); // high elf
     ///
     ///     // An int of 14 is a modifier of 2.
     ///     assert_eq!(john.stats().modifiers().as_ref().intelligence, 2);
@@ -1896,8 +1896,8 @@ impl SpeccedRace {
     pub fn subraces(&self) -> &PresentedOption<Subrace> {
         &self.subraces
     }
-    pub fn subraces_mut(&mut self) -> &mut PresentedOption<Subrace> {
-        &mut self.subraces
+    pub fn choose_subrace(&mut self, index: usize) -> bool {
+        self.subraces.choose_in_place(index)
     }
 
     pub fn languages(&self) -> &Vec<String> {

@@ -92,7 +92,7 @@ async fn level_5_halfling_rogue() {
         .choose_in_place(4);
 
     // choosing the subrace
-    bingus.race.subraces_mut().choose_in_place(0);
+    bingus.race.choose_subrace(0); // lightfoot
 
     // level bingus up to level 5
     bingus.level_up_to_level(&rogue, 5);
