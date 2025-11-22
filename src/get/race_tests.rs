@@ -1,7 +1,4 @@
-use crate::character::{
-    features::PresentedOption,
-    stats::{Size, StatType},
-};
+use crate::character::stats::{Size, StatType};
 use crate::{prelude::*, provider};
 
 #[tokio::test]
@@ -9,21 +6,19 @@ async fn get_elf() {
     let provider = provider();
     let elf = provider.get_race("elf").await.expect("failed to get elf!");
     assert_eq!(
-        (elf.name, elf.speed, elf.size),
-        ("Elf".to_string(), 30, Size::Medium)
+        (elf.name(), elf.speed(), *elf.size()),
+        ("Elf", 30, Size::Medium)
     );
     assert_eq!(
-        elf.ability_bonuses.first().cloned(),
+        elf.ability_bonuses().first().cloned(),
         Some((Some(StatType::Dexterity), 2))
     );
-    assert_eq!(elf.languages.first().cloned(), Some(String::from("Common")));
+    assert_eq!(
+        elf.languages().first().cloned(),
+        Some(String::from("Common"))
+    );
 
-    let subraces = match elf.subraces {
-        PresentedOption::Base(_) => panic!("Elf should have a subrace!"),
-        PresentedOption::Choice(c) => c,
-    };
-
-    let high_elf = subraces.first().expect("Elf should have subraces!");
+    let high_elf = elf.subraces().first().expect("Elf should have subraces!");
 
     assert_eq!(high_elf.name.as_str(), "High Elf");
     assert_eq!(
@@ -39,12 +34,9 @@ async fn get_dragonborn() {
         .get_race("dragonborn")
         .await
         .expect("failed to get dragonborn!");
-    assert_eq!(
-        (dragonborn.name, dragonborn.speed),
-        ("Dragonborn".to_string(), 30)
-    );
+    assert_eq!((dragonborn.name(), dragonborn.speed()), ("Dragonborn", 30));
     let draconic = dragonborn
-        .languages
+        .languages()
         .get(1)
         .expect("Dragonborn should have 2 languages")
         .clone();

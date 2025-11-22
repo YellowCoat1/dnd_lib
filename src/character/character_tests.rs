@@ -40,7 +40,7 @@ async fn char_stats() {
     other_stats.constitution += 2;
     assert_eq!(jill.stats(), other_stats);
     // choose
-    jill.race.subraces.choose_in_place(0);
+    jill.race.subraces_mut().choose_in_place(0);
     other_stats.wisdom += 1;
     assert_eq!(jill.stats(), other_stats);
     other_stats.wisdom += 3;
@@ -64,7 +64,7 @@ async fn char_spells() {
 
     // this is john. john has a base int score of 13, and john is a high elf. His int should be 14.
     let mut john = Character::new(String::from("john"), &wizard, &acolyte, &elf, stats);
-    john.race.subraces.choose_in_place(0);
+    john.race.subraces_mut().choose_in_place(0);
 
     // An int of 14 is a modifier of 2.
     assert_eq!(john.stats().modifiers().stats.intelligence, 2);

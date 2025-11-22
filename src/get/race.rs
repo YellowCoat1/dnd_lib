@@ -2,9 +2,8 @@ use super::feature::get_feature_from_trait;
 use super::get_page::get_raw_json;
 use super::json_tools::{parse_string, ValueExt};
 use super::subrace::get_subrace;
-use crate::character::features::PresentedOption;
 use crate::character::stats::Size;
-use crate::character::{Race, Subrace};
+use crate::character::{Race, RaceBuilder, Subrace};
 use crate::get::subrace::ability_bonus_choice;
 use crate::getter::CharacterDataError;
 use serde_json::Value;
@@ -54,16 +53,12 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
     let languages_array = race_json.get_array("languages")?;
     let languages = process_languages(languages_array)?;
 
-    let wildcard_language_count = race_json
+    let wildcard_languages = race_json
         .get_map("language_options")
         .ok()
         .map(|v| v.get_usize("choose"))
-        .transpose()?;
-
-    let wildcard_languages = match wildcard_language_count {
-        Some(count) => vec![None; count],
-        None => vec![],
-    };
+        .transpose()?
+        .unwrap_or(0);
 
     let traits_arr = race_json.get_array("traits")?;
     let mut traits = Vec::with_capacity(traits_arr.len());
@@ -75,18 +70,17 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
     }
 
     let subrace_array = race_json.get_array("subraces")?;
-    let subraces_raw = process_subraces(subrace_array).await?;
-    let subraces = PresentedOption::Choice(subraces_raw.into_iter().collect());
-    Ok(Race {
-        name,
-        size,
-        speed,
-        ability_bonuses,
-        traits,
-        languages,
-        wildcard_languages,
-        subraces,
-    })
+    let subraces = process_subraces(subrace_array).await?;
+
+    Ok(RaceBuilder::new(&name)
+        .size(size)
+        .speed(speed)
+        .add_ability_bonuses(ability_bonuses)
+        .add_traits(traits)
+        .add_languages(languages)
+        .add_wildcard_languages(wildcard_languages)
+        .add_subraces(subraces.clone())
+        .build())
 }
 
 fn process_languages(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {

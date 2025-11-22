@@ -98,9 +98,7 @@ pub struct Dnd5eapigetter {
 #[async_trait]
 impl crate::getter::DataProvider for Dnd5eapigetter {
     async fn get_race(&self, name: &str) -> Result<Race, crate::getter::CharacterDataError> {
-        let mut c = get_race_inner(name).await?;
-        capitalize(&mut c.name);
-        Ok(c)
+        get_race_inner(name).await
     }
     async fn get_background(
         &self,

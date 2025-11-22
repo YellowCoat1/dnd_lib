@@ -90,7 +90,7 @@ async fn level_3_elf_monk() {
 
     // choosing the subrace
     // there's only one option, (high elf) so we just choose the one available
-    georg.race.subraces.choose_in_place(0);
+    georg.race.subraces_mut().choose_in_place(0);
 
     // making sure the monk has zero ki points at level 1
     assert_eq!(

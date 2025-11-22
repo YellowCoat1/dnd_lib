@@ -89,6 +89,14 @@ impl<T> PresentedOption<T> {
         }
     }
 
+    /// Returns the list of sub-options mutably if this is a `Choice`, otherwise returns [None].
+    pub fn choices_mut(&mut self) -> Option<&mut [T]> {
+        match self {
+            PresentedOption::Base(_) => None,
+            PresentedOption::Choice(v) => Some(v),
+        }
+    }
+
     /// Maps a `PresentedOption<T>` to a `PresentedOption<U>`.
     pub fn map<U, F>(self, mut map_closure: F) -> PresentedOption<U>
     where

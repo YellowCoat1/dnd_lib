@@ -7,6 +7,7 @@ use crate::character::background::LanguageOption;
 use crate::character::class::ItemCategory;
 use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment};
 use crate::character::spells::SpellCastingPreperation;
+use crate::character::Subrace;
 
 use super::background::Background;
 use super::choice::chosen;
@@ -114,7 +115,7 @@ pub struct Character {
     pub name: String,
     /// Individual classes that the character has specced into.
     pub classes: Vec<SpeccedClass>,
-    pub race: Race,
+    pub race: SpeccedRace,
     /// Lists active spell slots. These can be spent.
     pub available_spell_slots: Option<SpellSlots>,
     /// Lists active pact magic slots. These can be spent. Seperate from regular spell slots.
@@ -174,7 +175,7 @@ impl Character {
             classes: vec![SpeccedClass::from_class(class, 1)],
             items: vec![],
             equipment_proficiencies: class.equipment_proficiencies().clone(),
-            race: race.clone(),
+            race: SpeccedRace::from_race(race),
             base_stats,
             bonus_features: vec![],
             available_spell_slots: None,
@@ -214,7 +215,7 @@ impl Character {
         new_character.add_class_items();
 
         // set the correct size
-        new_character.descriptors.size = new_character.race.size;
+        new_character.descriptors.size = *race.size();
 
         new_character.available_spell_slots = new_character.spell_slots();
         new_character.available_pact_slots = new_character.pact_slots();
@@ -544,7 +545,7 @@ impl Character {
     ///         .race(&elf)
     ///         .stats(stats)
     ///         .build().unwrap();
-    ///     john.race.subraces.choose_in_place(0);
+    ///     john.race.subraces_mut().choose_in_place(0);
     ///
     ///     // An int of 14 is a modifier of 2.
     ///     assert_eq!(john.stats().modifiers().as_ref().intelligence, 2);
@@ -794,15 +795,11 @@ impl Character {
     ///
     /// This does not include main race features.
     pub fn subrace_features(&self) -> Vec<&Feature> {
-        let subrace = match self.race.subraces.as_base() {
-            Some(v) => v,
-            _ => return vec![],
-        };
-
-        subrace
-            .traits
-            .iter()
-            .filter_map(|race_trait| race_trait.as_base())
+        self.race
+            .subrace()
+            .into_iter()
+            .flat_map(|subrace| subrace.traits.iter())
+            .filter_map(|subrace_trait| subrace_trait.as_base())
             .collect()
     }
 
@@ -1835,4 +1832,88 @@ fn get_etc_field_max(
         .class_specific_max
         .clone()
         .and_then(|v| class_specific.get(&v)?[level - 1].parse::<usize>().ok()))
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SpeccedRace {
+    race: String,
+    speed: usize,
+    ability_bonuses: Vec<(Option<StatType>, isize)>,
+    traits: Vec<PresentedOption<Feature>>,
+    subraces: PresentedOption<Subrace>,
+    languages: Vec<String>,
+    wildcard_languages: Vec<Option<String>>,
+}
+
+impl SpeccedRace {
+    pub fn name(&self) -> &str {
+        &self.race
+    }
+    pub fn speed(&self) -> usize {
+        self.speed
+    }
+    pub fn ability_bonuses(&self) -> &Vec<(Option<StatType>, isize)> {
+        &self.ability_bonuses
+    }
+
+    // returns mutable refrences to every unchosen ability bonus
+    pub fn ability_bonuses_unchosen_mut(&mut self) -> Vec<(&mut Option<StatType>, isize)> {
+        self.ability_bonuses
+            .iter_mut()
+            .filter_map(|(stat, bonus)| {
+                if stat.is_none() {
+                    Some((stat, *bonus))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    pub fn traits(&self) -> &Vec<PresentedOption<Feature>> {
+        &self.traits
+    }
+    pub fn trait_features(&self) -> Vec<&FeatureEffect> {
+        self.traits
+            .iter()
+            .flat_map(|v| v.as_base())
+            .flat_map(|v| &v.effects)
+            .collect::<Vec<&FeatureEffect>>()
+    }
+    pub fn trait_features_mut(&mut self) -> Vec<&mut FeatureEffect> {
+        self.traits
+            .iter_mut()
+            .filter_map(|v| v.as_base_mut())
+            .flat_map(|v| &mut v.effects)
+            .collect::<Vec<&mut FeatureEffect>>()
+    }
+
+    /// Gets the subrace, if chosen.
+    pub fn subrace(&self) -> Option<&Subrace> {
+        self.subraces.as_base()
+    }
+
+    pub fn subraces(&self) -> &PresentedOption<Subrace> {
+        &self.subraces
+    }
+    pub fn subraces_mut(&mut self) -> &mut PresentedOption<Subrace> {
+        &mut self.subraces
+    }
+
+    pub fn languages(&self) -> &Vec<String> {
+        &self.languages
+    }
+
+    fn from_race(race: &Race) -> SpeccedRace {
+        let subraces = PresentedOption::Choice(race.subraces().to_vec());
+        SpeccedRace {
+            race: race.name().to_string(),
+            speed: race.speed(),
+            ability_bonuses: race.ability_bonuses().to_vec(),
+            traits: race.traits().to_vec(),
+            subraces,
+            languages: race.languages().to_vec(),
+            wildcard_languages: race.wildcard_languages().to_vec(),
+        }
+    }
 }
