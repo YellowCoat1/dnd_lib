@@ -45,22 +45,19 @@ pub struct Background {
 ///
 ///
 /// ```
-/// use dnd_lib::character::{
-///     background::LanguageOption,
-/// };
+/// use dnd_lib::character::background::LanguageOption;
 ///
 /// let choices = vec![
 ///   "Elvish".to_string(),
-///   "Dwarvish".to_string(),
-///   "Halfling".to_string(),
+///   "dwArVish".to_string(),
+///   "HALFLING".to_string(),
 /// ];
+/// let mut lang_option = LanguageOption::new_named_choice(choices);
 ///
-/// // initially, a choice between languages is contructed, usually inside a Background.
-/// let mut lang_option = LanguageOption::NamedChoice(choices.clone());
-/// lang_option.set_to(choice.to_string());
-/// assert_eq!(lang_option, LanguageOption::Fixed(choice.to_string()));
-/// 
+/// assert_eq!(lang_option.set_to("Draconic".to_string()), false); // not in choices
 ///
+/// lang_option.set_to("dwarvish".to_string());
+/// assert_eq!(lang_option, LanguageOption::new_fixed("Dwarvish".to_string()));
 ///
 /// ```
 
