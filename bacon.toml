@@ -1,0 +1,77 @@
+#:schema https://dystroy.org/bacon/.bacon.schema.json
+
+# This is a configuration file for the bacon tool
+#
+# Complete help on configuration: https://dystroy.org/bacon/config/
+#
+# You may check the current default at
+#   https://github.com/Canop/bacon/blob/main/defaults/default-bacon.toml
+
+default_job = "clippy"
+env.CARGO_TERM_COLOR = "always"
+
+[jobs.check]
+command = ["cargo", "check", "--tests", "--all-features"]
+need_stdout = false
+
+# Run clippy on the default target
+[jobs.clippy]
+command = ["cargo", "clippy", "--tests", "--all-features"]
+need_stdout = false
+
+# Run clippy on all targets
+# To disable some lints, you may change the job this way:
+#    [jobs.clippy-all]
+#    command = [
+#        "cargo", "clippy",
+#        "--all-targets",
+#    	 "--",
+#    	 "-A", "clippy::bool_to_int_with_if",
+#    	 "-A", "clippy::collapsible_if",
+#    	 "-A", "clippy::derive_partial_eq_without_eq",
+#    ]
+# need_stdout = false
+
+# Run clippy in pedantic mode
+# The 'dismiss' feature may come handy
+[jobs.pedantic]
+command = [
+	"cargo", "clippy",
+	"--",
+	"-W", "clippy::pedantic",
+]
+need_stdout = false
+
+# This job lets you run
+# - all tests: bacon test
+# - a specific test: bacon test -- config::test_default_files
+# - the tests of a package: bacon test -- -- -p config
+[jobs.test]
+command = ["cargo", "test", "--all-features"]
+need_stdout = true
+
+[jobs.doctest]
+command = ["cargo", "test", "--doc"]
+need_stdout = true
+
+[jobs.doc]
+command = ["cargo", "doc", "--no-deps"]
+need_stdout = false
+
+# If the doc compiles, then it opens in your browser and bacon switches
+# to the previous job
+[jobs.doc-open]
+command = ["cargo", "doc", "--no-deps", "--open"]
+need_stdout = false
+on_success = "back" # so that we don't open the browser at each change
+
+# You may define here keybindings that would be specific to
+# a project, for example a shortcut to launch a specific job.
+# Shortcuts to internal functions (scrolling, toggling, etc.)
+# should go in your personal global prefs.toml file instead.
+[keybindings]
+# alt-m = "job:my-job"
+c = "job:clippy" # comment this to have 'c' run clippy on only the default target
+t = "job:test"
+d = "job:doctest"
+p = "job:pedantic" 

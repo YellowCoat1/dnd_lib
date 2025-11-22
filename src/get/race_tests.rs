@@ -20,9 +20,9 @@ async fn get_elf() {
 
     let high_elf = elf.subraces().first().expect("Elf should have subraces!");
 
-    assert_eq!(high_elf.name.as_str(), "High Elf");
+    assert_eq!(high_elf.name(), "High Elf");
     assert_eq!(
-        high_elf.ability_bonuses.first().cloned(),
+        high_elf.ability_bonuses().first().cloned(),
         Some((Some(StatType::Intelligence), 1))
     );
 }

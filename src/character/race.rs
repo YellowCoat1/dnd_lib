@@ -1,5 +1,5 @@
 use crate::character::{
-    features::{Feature, PresentedOption},
+    features::{Feature, FeatureEffect, PresentedOption},
     stats::StatType,
 };
 use heck::ToTitleCase;
@@ -175,12 +175,10 @@ impl RaceBuilder {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Subrace {
-    pub name: String,
-    pub description: String,
-    /// Lists ability bonuses.
-    /// See [Race::ability_bonuses]
-    pub ability_bonuses: Vec<(Option<StatType>, isize)>,
-    pub traits: Vec<PresentedOption<Feature>>,
+    name: String,
+    description: String,
+    ability_bonuses: Vec<(Option<StatType>, isize)>,
+    traits: Vec<PresentedOption<Feature>>,
 }
 
 impl PartialEq for Subrace {
@@ -199,11 +197,105 @@ impl Subrace {
         }
     }
 
-    pub fn push_ability_bonus(&mut self, stat: Option<StatType>, bonus: isize) {
-        self.ability_bonuses.push((stat, bonus));
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    pub fn description(&self) -> &str {
+        &self.description
     }
 
-    pub fn push_trait(&mut self, race_trait: PresentedOption<Feature>) {
-        self.traits.push(race_trait);
+    /// Lists ability bonuses.
+    /// See [Race::ability_bonuses]
+    pub fn ability_bonuses(&self) -> &Vec<(Option<StatType>, isize)> {
+        &self.ability_bonuses
+    }
+
+    /// Returns mutable references to unchosen ability bonuses.
+    pub fn ability_bonuses_unchosen(&mut self) -> Vec<(&mut Option<StatType>, isize)> {
+        self.ability_bonuses
+            .iter_mut()
+            .filter_map(|(stat, bonus)| {
+                if stat.is_none() {
+                    Some((stat, *bonus))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    pub fn traits(&self) -> &Vec<PresentedOption<Feature>> {
+        &self.traits
+    }
+
+    pub fn trait_effects_mut(&mut self) -> Vec<&mut FeatureEffect> {
+        self.traits.iter_mut()
+            .filter_map(|option| option.choices_mut())
+            .flatten()
+            .flat_map(|v| &mut v.effects)
+            .collect()
+    }
+}
+
+pub struct SubraceBuilder {
+    name: String,
+    description: String,
+    ability_bonuses: Vec<(Option<StatType>, isize)>,
+    traits: Vec<PresentedOption<Feature>>,
+}
+
+impl SubraceBuilder {
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_title_case(),
+            description: String::new(),
+            ability_bonuses: Vec::new(),
+            traits: Vec::new(),
+        }
+    }
+
+    pub fn name(mut self, name: String) -> Self {
+        self.name = name.to_title_case();
+        self
+    }
+
+    pub fn description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    pub fn add_ability_bonus(mut self, stat: Option<StatType>, bonus: isize) -> Self {
+        self.ability_bonuses.push((stat, bonus));
+        self
+    }
+
+    pub fn add_ability_bonuses<I>(mut self, bonuses: I) -> Self
+    where
+        I: IntoIterator<Item = (Option<StatType>, isize)>,
+    {
+        self.ability_bonuses.extend(bonuses);
+        self
+    }
+
+    pub fn add_trait(mut self, trait_: PresentedOption<Feature>) -> Self {
+        self.traits.push(trait_);
+        self
+    }
+
+    pub fn add_traits<I>(mut self, traits: I) -> Self
+    where
+        I: IntoIterator<Item = PresentedOption<Feature>>,
+    {
+        self.traits.extend(traits);
+        self
+    }
+
+    pub fn build(self) -> Subrace {
+        Subrace {
+            name: self.name,
+            description: self.description,
+            ability_bonuses: self.ability_bonuses,
+            traits: self.traits,
+        }
     }
 }

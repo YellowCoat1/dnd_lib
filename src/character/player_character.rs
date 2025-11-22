@@ -329,7 +329,7 @@ impl Character {
         }
 
         if let PresentedOption::Base(ref chosen_subrace) = self.race.subraces {
-            for (subrace_stat, amount) in chosen_subrace.ability_bonuses.iter() {
+            for (subrace_stat, amount) in chosen_subrace.ability_bonuses().iter() {
                 if let Some(s) = subrace_stat {
                     *new_stats.get_stat_type_mut(s) += amount;
                 }
@@ -798,7 +798,7 @@ impl Character {
         self.race
             .subrace()
             .into_iter()
-            .flat_map(|subrace| subrace.traits.iter())
+            .flat_map(|subrace| subrace.traits().iter())
             .filter_map(|subrace_trait| subrace_trait.as_base())
             .collect()
     }
