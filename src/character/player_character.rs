@@ -624,6 +624,35 @@ impl Character {
     ///
     /// Pact slots are treated differenty than spell slots. For regular spell slots, see
     /// [Character::spell_slots].
+    ///
+    /// ```rust
+    ///   # #[cfg(feature = "dnd5eapi")] {
+    ///   # #[tokio::main]
+    ///   # async fn main() {
+    ///   # use dnd_lib::prelude::*;
+    ///   # use dnd_lib::character::spells::PactSlots;
+    ///   # use dnd_lib::character::CharacterBuilder;
+    ///   #
+    ///   # let provider = Dnd5eapigetter::new();
+    ///   # let warlock = provider.get_class("warlock").await.unwrap();
+    ///   # let acolyte = provider.get_background("acolyte").await.unwrap();
+    ///   # let human = provider.get_race("human").await.unwrap();
+    ///   let mut john = CharacterBuilder::new("john")
+    ///     .class(&warlock)
+    ///     .background(&acolyte)
+    ///     .race(&human)
+    ///     .stats(Stats::default())
+    ///     .build().unwrap();
+    ///
+    ///   let level_1_pact_slots = john.pact_slots().unwrap();
+    ///   assert_eq!(level_1_pact_slots, PactSlots { level: 1, num: 1 });
+    ///
+    ///   john.level_up_to_level(&warlock, 5);
+    ///   let level_5_pact_slots = john.pact_slots().unwrap();
+    ///   assert_eq!(level_5_pact_slots, PactSlots { level: 3, num: 2 });
+    ///   # }
+    ///   # }
+    /// ```
     pub fn pact_slots(&self) -> Option<PactSlots> {
         let (_, slots_level) = self
             .classes
