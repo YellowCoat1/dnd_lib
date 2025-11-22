@@ -916,7 +916,7 @@ impl Character {
         hp
     }
 
-    pub fn languages(&self) -> HashSet<&str> {
+    pub fn total_languages(&self) -> HashSet<&str> {
         let mut languages: HashSet<&str> = HashSet::new();
 
         // feature granted languages
