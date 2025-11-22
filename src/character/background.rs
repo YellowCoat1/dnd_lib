@@ -40,6 +40,9 @@ pub struct Background {
 
 /// Represents a single option between languages for a background.
 ///
+/// Prefer using [LanguageOption::new_fixed] and [LanguageOption::new_named_choice] to construct
+/// this, as it handles the string formatting.
+///
 ///
 /// ```
 /// use dnd_lib::character::{
@@ -54,18 +57,9 @@ pub struct Background {
 ///
 /// // initially, a choice between languages is contructed, usually inside a Background.
 /// let mut lang_option = LanguageOption::NamedChoice(choices.clone());
-///
-/// // A player makes their choice of which language to select.
-/// // In a real application, the choice would be displayed, read from user input, and applied.
-/// let choice: &str = match &lang_option {
-///     LanguageOption::Fixed(s) => s,
-///     LanguageOption::NamedChoice(c) => c.first().expect("empty :("),
-///     LanguageOption::UnnamedChoice => "Elvish",
-/// };
-///
 /// lang_option.set_to(choice.to_string());
-///
-/// ///
+/// assert_eq!(lang_option, LanguageOption::Fixed(choice.to_string()));
+/// 
 ///
 ///
 /// ```
@@ -80,13 +74,51 @@ pub enum LanguageOption {
     UnnamedChoice,
 }
 
+fn capitalize_first(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => s.to_string(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
+}
+
 impl LanguageOption {
-    /// Sets the language option to a fixed language.
+    /// Sets the language option to a fixed language, returning true on success and false
+    /// otherwise.
     ///
     /// This is useful for converting a choice option into a fixed option after the player has made
     /// their selection.
-    pub fn set_to(&mut self, s: String) {
-        *self = LanguageOption::Fixed(s);
+    ///
+    /// # Errors
+    /// Returns false if `self` is `Fixed`, if `s` is not in the list of choices for `NamedChoice`,
+    /// or if `self` is `UnnamedChoice`. The value is not set in these cases.
+    pub fn set_to(&mut self, s: String) -> bool {
+        let s = capitalize_first(&s.to_lowercase());
+        match self {
+            LanguageOption::Fixed(_) => return false,
+            LanguageOption::NamedChoice(choices) => {
+                if !choices.contains(&s) {
+                    return false;
+                }
+            }
+            LanguageOption::UnnamedChoice => (),
+        }
+        let f = Self::new_fixed(s);
+        *self = f;
+        true
+    }
+
+    /// Constructs a fixed language option with proper capitalization.
+    pub fn new_fixed(s: String) -> Self {
+        LanguageOption::Fixed(capitalize_first(&s.to_lowercase()))
+    }
+    /// Constructs a named choice language option with proper capitalization.
+    pub fn new_named_choice(choices: Vec<String>) -> Self {
+        let choices: Vec<String> = choices
+            .into_iter()
+            .map(|s| capitalize_first(&s.to_lowercase()))
+            .collect();
+        LanguageOption::NamedChoice(choices)
     }
 }
 
