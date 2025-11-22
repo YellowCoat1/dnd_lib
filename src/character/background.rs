@@ -170,6 +170,12 @@ pub enum BackgroundBuildError {
 ///
 /// assert!(bg_result.is_ok());
 /// ```
+///  The following fields are required:
+///  - At least 1 proficiency.
+///  - At least 1 ideal.
+///  - At least 1 bond.
+///  - At least 1 flaw.
+///  - At least 2 personality traits.
 pub struct BackgroundBuilder {
     background: Background,
 }
@@ -241,12 +247,6 @@ impl BackgroundBuilder {
     ///
     ///  # Errors
     ///  Returns a [BackgroundBuildError] if any required fields are missing or invalid.
-    ///  The following fields are required:
-    ///  - At least 1 proficiency.
-    ///  - At least 1 ideal.
-    ///  - At least 1 bond.
-    ///  - At least 1 flaw.
-    ///  - At least 2 personality traits.
     ///
     pub fn build(self) -> Result<Background, BackgroundBuildError> {
         use BackgroundBuildError::*;
