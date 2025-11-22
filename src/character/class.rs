@@ -243,37 +243,37 @@ impl ClassBuilder {
     }
 
     /// Adds a subclass to the list of subclasses.
-    pub fn push_subclass(mut self, subclass: Subclass) -> Self {
+    pub fn add_subclass(mut self, subclass: Subclass) -> Self {
         self.subclasses.push(subclass);
         self
     }
 
     /// Sets the subclasses to the provided list.
-    pub fn set_subclasses(mut self, subclasses: Vec<Subclass>) -> Self {
-        self.subclasses = subclasses;
+    pub fn add_subclasses<T>(mut self, subclasses: T) -> Self
+    where
+        T: IntoIterator<Item = Subclass>,
+    {
+        self.subclasses.extend(subclasses);
         self
     }
 
-    pub fn features(mut self, features: [Vec<PresentedOption<Feature>>; 20]) -> Self {
+    pub fn set_features(mut self, features: [Vec<PresentedOption<Feature>>; 20]) -> Self {
         self.features = Some(features);
         self
     }
 
     /// Adds a beginning item to the list of beginning items.
-    pub fn push_beginning_item(
-        mut self,
-        item: PresentedOption<Vec<(ItemCategory, usize)>>,
-    ) -> Self {
+    pub fn add_beginning_item(mut self, item: PresentedOption<Vec<(ItemCategory, usize)>>) -> Self {
         self.beginning_items.push(item);
         self
     }
 
-    /// Sets the beginning items to the provided list.
-    pub fn set_beginning_items(
-        mut self,
-        items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
-    ) -> Self {
-        self.beginning_items = items;
+    /// Adds multiple beginning items to the list of beginning items.
+    pub fn add_beginning_items<T>(mut self, items: T) -> Self
+    where
+        T: IntoIterator<Item = PresentedOption<Vec<(ItemCategory, usize)>>>,
+    {
+        self.beginning_items.extend(items);
         self
     }
 
@@ -282,17 +282,20 @@ impl ClassBuilder {
         self
     }
 
-    pub fn add_multiple_save_proficiencies(mut self, stats: Vec<StatType>) -> Self {
+    pub fn add_multiple_save_proficiencies<T>(mut self, stats: T) -> Self
+    where
+        T: IntoIterator<Item = StatType>,
+    {
         self.saving_throw_proficiencies.extend(stats);
         self
     }
 
-    pub fn hit_die(mut self, hit_die: usize) -> Self {
+    pub fn set_hit_die(mut self, hit_die: usize) -> Self {
         self.hit_die = Some(hit_die);
         self
     }
 
-    pub fn skill_proficiency_choices(
+    pub fn set_skill_proficiency_choices(
         mut self,
         num_choices: usize,
         options: Vec<SkillType>,
@@ -306,22 +309,12 @@ impl ClassBuilder {
         self
     }
 
-    pub fn set_equipment_proficiencies(mut self, proficiencies: EquipmentProficiencies) -> Self {
-        self.equipment_proficiencies = proficiencies;
-        self
-    }
-
     pub fn add_equipment_proficiencies(mut self, proficiencies: EquipmentProficiencies) -> Self {
         self.equipment_proficiencies += proficiencies;
         self
     }
 
-    pub fn spellcasting(mut self, spellcasting: Spellcasting) -> Self {
-        self.spellcasting = Some(spellcasting);
-        self
-    }
-
-    pub fn spellcasting_option(mut self, spellcasting: Option<Spellcasting>) -> Self {
+    pub fn set_spellcasting(mut self, spellcasting: Option<Spellcasting>) -> Self {
         self.spellcasting = spellcasting;
         self
     }
@@ -332,24 +325,24 @@ impl ClassBuilder {
         self
     }
 
-    pub fn add_multiple_class_specific_fields(
-        mut self,
-        fields: Vec<(String, [String; 20])>,
-    ) -> Self {
+    pub fn add_class_specific_fields<T>(mut self, fields: T) -> Self
+    where
+        T: IntoIterator<Item = (String, [String; 20])>,
+    {
         self.class_specific_leveled.extend(fields);
-        self
-    }
-
-    pub fn set_multiclassing_prerequisites(
-        mut self,
-        prerequisites: HashMap<StatType, usize>,
-    ) -> Self {
-        self.multiclassing_prerequisites = prerequisites;
         self
     }
 
     pub fn add_multiclassing_prerequisite(mut self, stat: StatType, value: usize) -> Self {
         self.multiclassing_prerequisites.insert(stat, value);
+        self
+    }
+
+    pub fn add_multiclassing_prerequisites<T>(mut self, prerequisites: T) -> Self
+    where
+        T: IntoIterator<Item = (StatType, usize)>,
+    {
+        self.multiclassing_prerequisites.extend(prerequisites);
         self
     }
 
@@ -373,7 +366,10 @@ impl ClassBuilder {
         self
     }
 
-    pub fn add_multiple_tracked_fields(mut self, fields: Vec<TrackedField>) -> Self {
+    pub fn add_tracked_fields<T>(mut self, fields: T) -> Self
+    where
+        T: IntoIterator<Item = TrackedField>,
+    {
         self.tracked_fields.extend(fields);
         self
     }
