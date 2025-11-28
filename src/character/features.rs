@@ -19,7 +19,15 @@ pub use super::choice::*;
 
 /// A feature represents a general effect/trait. Any extra effect from a race, class, etc is a feature.
 ///
-/// e.g. Darkvision, extra attack, ability score increase
+/// e.g. Darkvision, extra attack, or an ability score increase.
+///
+/// Features are used in this crate to represent any non-numeric effect that a character can have.
+/// These effects are unpredictable and varied, so Features need to be flexible to represent them.
+///
+/// All features have a name. Most have a description, which lists what the feature does. For
+/// select features, there are mechanical effects that this crate supports, which are listed under
+/// [Feature::effects]. Each [FeatureEffect] represents a mechanical effect that the feature has on
+/// the character. See [FeatureEffect] for more details.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Feature {
     // The name of the feature
@@ -110,9 +118,13 @@ impl Action for ComputedCustomAction {
     }
 }
 
-/// Different effects a feature can have.
+/// Different mechanical effects a [Feature] can have.
 ///
-/// This list will grow as the crate is developed.
+/// Features describe any effect something may have on a character. Some of these effects have
+/// mechanical implications that this crate can represent. These mechanical effects are listed
+/// here.
+///
+/// This list will grow as the crate is developed. 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FeatureEffect {
     /// Grants proficiency in a saving throw

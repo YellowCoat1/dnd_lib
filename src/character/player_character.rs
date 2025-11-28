@@ -787,7 +787,7 @@ impl Character {
 
     // ----------- FEATURES ------------
 
-    /// Every feature currently granted by any items the character has equipped.
+    /// Every [Feature] currently granted by any items the character has equipped.
     pub fn item_features(&self) -> Vec<&Feature> {
         self.items
             .iter()
@@ -796,7 +796,7 @@ impl Character {
             .collect()
     }
 
-    /// Every feature currently granted by the character's class, not including subclass features.
+    /// Every [Feature] currently granted by the character's class, not including subclass features.
     pub fn class_features(&self) -> Vec<&Feature> {
         self.classes
             .iter()
@@ -804,7 +804,7 @@ impl Character {
             .collect()
     }
 
-    /// Every feature currently granted by the character's subclass(es).
+    /// Every [Feature] currently granted by the character's subclass(es).
     pub fn subclass_features(&self) -> Vec<&Feature> {
         self.classes
             .iter()
@@ -813,8 +813,8 @@ impl Character {
             .collect()
     }
 
-    /// Every feature currently granted by the character's race.
-    /// These are typically called traits, though in this library everything is under a [Feature].
+    /// Every [Feature] currently granted by the character's race.
+    /// These are typically called traits in D&D 5e.
     ///
     /// This does not include subrace features.
     pub fn race_features(&self) -> Vec<&Feature> {
@@ -825,7 +825,7 @@ impl Character {
             .collect()
     }
 
-    /// Every feature granted by the subrace of the character's race.
+    /// Every [Feature] granted by the subrace of the character's race.
     ///
     /// This does not include main race features.
     pub fn subrace_features(&self) -> Vec<&Feature> {
@@ -837,7 +837,7 @@ impl Character {
             .collect()
     }
 
-    /// Every feature from all sources in effect on the character.
+    /// Every [Feature] from all sources in effect on the character.
     ///
     /// The features are collected from the character's race, subrace, class, subclass, items, and
     /// any extra bonus features the character may have as listed in [Character::bonus_features].
