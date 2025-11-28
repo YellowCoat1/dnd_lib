@@ -928,7 +928,8 @@ impl Character {
         ac
     }
 
-    /// This finds the hp of the character, assuming that you took the average value.
+    /// This finds the maximum hp of the character. This assumes that you took the average die
+    /// instead of rolling for each level up.
     pub fn max_hp(&self) -> usize {
         let level = self.level();
         let hit_die = self
@@ -950,6 +951,9 @@ impl Character {
         hp
     }
 
+    /// Returns every language the character knows.
+    ///
+    /// This is collected from background, race, and features.
     pub fn total_languages(&self) -> HashSet<&str> {
         let mut languages: HashSet<&str> = HashSet::new();
 
@@ -983,7 +987,7 @@ impl Character {
 
     /// Processes the character taking damage.
     ///
-    /// Returns true if the characted dropped to zero hp, or false otherwise.
+    /// If the character's hp reaches 0, this returns true. Otherwise, it returns false.
     pub fn damage(&mut self, damage: usize) -> bool {
         let o = self.hp.checked_sub(damage);
         match o {
@@ -1018,7 +1022,8 @@ impl Character {
 
     /// Returns the different speeds of the character, e.g. flying and climbing.
     ///
-    /// Most of these speeds, besides walking, is rare for a character to have.
+    /// Aarococra have flying speed, for example, so an aarococra character would have `character.speeds().flying
+    /// == Some(30)`. A human would have `character.speeds().flying == None`.
     pub fn speeds(&self) -> Speeds {
         let mut speeds = Speeds {
             walking: Some(self.speed()),
@@ -1247,7 +1252,7 @@ impl Character {
     /// Returns the total equipment proficiencies for the character.
     ///
     /// This aggregates proficiencies from the class, possible race features, and
-    ///  [Character::bonus_features].
+    /// [Character::bonus_features].
     pub fn equipment_proficiencies(&self) -> EquipmentProficiencies {
         let feature_effects = self
             .race_features()
@@ -1475,6 +1480,9 @@ impl Character {
     }
 
     /// Calculates and applies the effects of taking a long rest.
+    ///
+    /// This regains all hp, spell slots, pact magic slots, spent hit dice, and
+    /// replenishes any features that recharge on a long rest.
     pub fn long_rest(&mut self) {
         // regain all hp
         self.hp = self.max_hp();
@@ -1558,6 +1566,33 @@ impl Character {
 
         return_vector
     }
+
+    /// Returns the information necessary to select spells for a single spellcasting class after a
+    /// long rest. (or after creating the character.)
+    ///
+    /// See [Character::prepare_spells] for more information.
+    pub fn prepare_spells_single(&mut self, class_index: usize) -> Option<(&mut Vec<Spell>, usize, usize)> {
+        let modifiers = self.stats().modifiers();
+        let class = self.classes.get_mut(class_index)?;
+        let class_level = class.level;
+        let casting = class.spellcasting.as_mut()?;
+
+        // if it isn't a class that prepares it's spells, return None
+        if !matches!(
+            casting.0.preperation_type,
+            SpellCastingPreperation::Prepared
+        ) {
+            return None;
+        }
+
+        let cantrips_num = casting.0.cantrips_per_level[class_level - 1];
+
+        let ability = *modifiers
+            .stats
+            .get_stat_type(&casting.0.spellcasting_ability);
+        let spells_num = (class.level as isize + ability).max(0) as usize;
+        Some((&mut casting.1, spells_num, cantrips_num))
+    } 
 
     /// Gets the amount of spells the class at the index can prepare or know.
     ///
