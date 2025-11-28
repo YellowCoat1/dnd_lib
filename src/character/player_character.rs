@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::character::background::LanguageOption;
 use crate::character::choice::chosen_ref;
 use crate::character::class::ItemCategory;
-use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment};
+use crate::character::items::{ArmorCategory, HeldEquipment, Item, is_proficient_with};
 use crate::character::spells::SpellCastingPreperation;
 use crate::character::Subrace;
 
@@ -102,6 +102,33 @@ use super::{CharacterDescriptors, CharacterStory};
 /// The amount of spells the character can prepare in that class can be found by
 /// `Character.num_spells(n)` where n is the index of the class.
 ///
+/// #### Items
+///
+/// Items can be chosen either by using [Character::choose_items] and
+/// [Character::set_unchosen_category], or by directly mainpulating the [Character::items] list.
+/// After choosing items through either method, you must call [Character::add_chosen_items] to
+/// add them to the character's item list.
+///
+/// The beginning item choices is a list of options, each of which are lists of item categories.
+/// So, for example, "a shortsword or any simple melee weapon" would be represented as
+/// `PresentedOption::Base([ (ItemCategory::Item(shortsword), 1),
+/// (ItemCategory::Weapon(Simple), 1) ])`. This would be one option in the
+/// `Character::unchosen_items` list.
+///
+/// When you use methods to choose items, you first choose the option, then choose the category
+/// within that option. After choosing, you must call [Character::add_chosen_items] to add them to
+/// the character's item list.
+///
+/// First, you choose the option. So, out of "a shortsword" or "any simple melee weapon", you
+/// choose either the first or the second option. This is done with [Character::choose_items].
+///
+/// Then, you choose the category, (if there is any) so "any simple melee weapon" could be chosen as a "dagger".
+/// This is done with [Character::set_unchosen_category]. Do note that you would need to retrieve
+/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [Dnd5eapigetter](crate::prelude::Dnd5eapigetter))  once you know the simple weapon you want is a dagger.
+///
+/// Finally, you call [Character::add_chosen_items] to add the chosen items to the character's item
+/// list.
+///
 /// #### Minor features
 ///
 /// Various strings for describing the character's story are availiable at [Character::story].
@@ -128,6 +155,8 @@ pub struct Character {
     /// The items the character has. This also stores whether or not the item is currently
     /// held/equipped.
     pub items: Vec<HeldEquipment>,
+    /// See the [Character] documentation for items.
+    pub unchosen_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     equipment_proficiencies: EquipmentProficiencies,
     pub class_skill_proficiencies: Vec<PresentedOption<SkillType>>,
     class_saving_throw_proficiencies: Vec<StatType>,
@@ -164,6 +193,7 @@ impl Character {
             name,
             classes: vec![SpeccedClass::from_class(class, 1)],
             items: vec![],
+            unchosen_items: class.beginning_items().clone(),
             equipment_proficiencies: class.equipment_proficiencies().clone(),
             race: SpeccedRace::from_race(race),
             base_stats,
@@ -192,7 +222,7 @@ impl Character {
         new_character.hp = new_character.max_hp();
 
         // add class items
-        new_character.add_class_items();
+        new_character.add_chosen_items();
 
         // set the correct size
         new_character.descriptors.size = *race.size();
@@ -209,47 +239,21 @@ impl Character {
         }
     }
 
-    /// Adds the class's items to the character, and removes those items from their [SpeccedClass] entry.
-    /// ignores unchosen items.
-    ///
-    /// When a character is created, the items that are added are only the base, given items. Any
-    /// choices (e.g. "A shortsword or any simple weapon") must be selected from the
-    /// [SpeccedClass]'s list. This function will add every selected item, and remove them from
-    /// that list to avoid double-adding.
-    ///
-    /// For selecting options, see [PresentedOption::choose_in_place]
-    ///
-    /// ```
-    /// # #[cfg(feature = "dnd5eapi")] {
-    /// # #[tokio::main]
-    /// # async fn main() {
-    /// # use dnd_lib::prelude::*;
-    /// # let provider = Dnd5eapigetter::new();
-    /// # let fighter = provider.get_class("fighter").await.unwrap();
-    /// # let human = provider.get_race("human").await.unwrap();
-    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
-    /// # let mut john = CharacterBuilder::new("john")
-    /// #   .class(&fighter)
-    /// #   .background(&acolyte)
-    /// #   .race(&human)
-    /// #   .stats(Stats::default())
-    /// #   .build().unwrap();
-    /// // select the first option for the first item choice
-    /// john.classes[0].items[0].choose_in_place(0);
-    /// // adds the selected item to john's inventory
-    /// john.add_class_items();
-    /// // now, john.classes[0].items[0] is what items[1] was before, since items[0] was removed.
-    /// // john.items now contains the item that was selected.
-    /// # }
-    /// # }
-    /// ```
-    pub fn add_class_items(&mut self) {
+    /// Add any chosen items from the unchosen items list to the character's items.
+    /// This goes through the unchosen items, and for any that have been chosen, it adds the
+    /// selected items to the character's items list.
+    pub fn add_chosen_items(&mut self) {
         let mut items: Vec<ItemCount> = vec![];
-        self.classes[0].items = self.classes[0]
-            .items
+        self.unchosen_items = self.unchosen_items
             .iter()
             .filter(|o| {
                 if let PresentedOption::Base(v) = o {
+                    // return true if any item category is not an item
+                    for (cat, _) in v.iter() {
+                        if !matches!(cat, ItemCategory::Item(_)) {
+                            return true;
+                        }
+                    }
                     items.extend_from_slice(&Character::selected_items(v));
                     false
                 } else {
@@ -259,6 +263,56 @@ impl Character {
             .cloned()
             .collect();
         self.add_item_list(items);
+    }
+
+    /// Gets the unchosen items available to the character.
+    pub fn unchosen_items(&self) -> &Vec<PresentedOption<Vec<(ItemCategory, usize)>>> {
+        &self.unchosen_items
+    }
+
+    /// Chooses an item option from the unchosen items.
+    /// `index` is which unchosen item to choose from.
+    /// `choice_index` is which choice to pick from that option.
+    /// So, `character.choose_items(0, 2)` would choose the 3rd option from the first unchosen item.
+    pub fn choose_items(&mut self, index: usize, choice_index: usize) {
+        if let Some(option) = self.unchosen_items.get_mut(index) {
+            option.choose_in_place(choice_index);
+        }
+    }
+
+    /// Gets the list of unchosen item categories. This returns a list of tuples, where the first
+    /// field is the index of the unchosen item option, the second field is the index of the
+    /// choice within that option, and the third field is a reference to the item category.
+    pub fn get_unchosen_categories(&self) -> Vec<(usize, usize, &ItemCategory)> {
+        let mut categories = vec![];
+        for (i, option) in self.unchosen_items.iter().enumerate() {
+            if let PresentedOption::Base(choices) = option {
+                for (j, (category, _)) in choices.iter().enumerate() {
+                    categories.push((i, j, category));
+                }
+            }
+        }
+        categories
+    }
+
+    /// Sets the item category for an unchosen item.
+    ///
+    /// You can find which are availiable to set at [Character::unchosen_items]. 
+    ///
+    /// `index` is which unchosen item option to set from.
+    /// `choice_index` is which choice within that option to set.
+    /// `item` is the item to set the category to.
+    pub fn set_unchosen_category(&mut self, index: usize, choice_index: usize, item: Item) -> bool {
+        let choices = match self.unchosen_items.get_mut(index) {
+            Some(PresentedOption::Base(choices)) => choices,
+            _ => return false,
+        };
+        let category = match choices.get_mut(choice_index) {
+            Some(v) => &mut v.0,
+            _ => return false,
+        };
+        *category = ItemCategory::Item(item);
+        true
     }
 
     fn selected_items(items: &[(ItemCategory, usize)]) -> Vec<ItemCount> {
@@ -1672,14 +1726,6 @@ pub struct SpeccedClass {
     /// features of a new level, it needs to be grabbed from a [Class]. This is why
     /// [Character::level_up] requires a class.
     pub current_class_features: Vec<Vec<PresentedOption<Feature>>>,
-    /// Items given by the class at level 1. This is only relevant for the first class.
-    ///
-    /// This field is a list of options to select, of which can each be a list of items.
-    ///
-    /// The first field in the tuple is an [ItemCategory], which needs to be a [ItemCategory::Item]
-    /// in order to be "Chosen". The second field in the tuple is the count of the item, or how
-    /// many there are.
-    pub items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     /// The subclasses that can be chosen. The character must choose a subclass before gaining any
     /// features from it.
     pub subclass: PresentedOption<Subclass>,
@@ -1726,7 +1772,6 @@ impl SpeccedClass {
                 .get(0..level)
                 .expect("class doesn't have proper features!")
                 .to_vec(),
-            items: class.beginning_items().to_vec(),
             subclass,
             spellcasting: class.spellcasting().cloned().map(|v| (v, vec![])),
             hit_die: class.hit_die(),
@@ -1985,3 +2030,4 @@ impl SpeccedBackground {
         }
     }
 }
+
