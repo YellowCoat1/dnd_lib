@@ -1570,7 +1570,9 @@ impl Character {
     /// Returns the information necessary to select spells for a single spellcasting class after a
     /// long rest. (or after creating the character.)
     ///
-    /// See [Character::prepare_spells] for more information.
+    /// See [Character::prepare_spells] for more information. The fields are the same, just using
+    /// an `Option` instead of a `Vec`, and omitting the class index since it's provided as an
+    /// argument.
     pub fn prepare_spells_single(&mut self, class_index: usize) -> Option<(&mut Vec<Spell>, usize, usize)> {
         let modifiers = self.stats().modifiers();
         let class = self.classes.get_mut(class_index)?;
@@ -1594,7 +1596,9 @@ impl Character {
         Some((&mut casting.1, spells_num, cantrips_num))
     } 
 
-    /// Gets the amount of spells the class at the index can prepare or know.
+    /// Gets the amount of spells the class at the index can prepare or know. The first field is
+    /// the amount of spells (1st level and onward), and the second field is the amount of
+    /// cantrips.
     ///
     /// Returns [None] if the class does not exist, or if the class is not a spellcaster.
     pub fn num_spells(&mut self, class_index: usize) -> Option<(usize, usize)> {
