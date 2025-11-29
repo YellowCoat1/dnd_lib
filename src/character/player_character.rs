@@ -297,11 +297,15 @@ impl Character {
 
     /// Sets the item category for an unchosen item.
     ///
-    /// You can find which are availiable to set at [Character::unchosen_items]. 
+    /// You can find which are availiable to set at [Character::get_unchosen_categories]. 
     ///
     /// `index` is which unchosen item option to set from.
     /// `choice_index` is which choice within that option to set.
     /// `item` is the item to set the category to.
+    ///
+    /// Returns false if either `index` or `choice_index` are out of bounds, if `index` is not a
+    /// [PresentedOption::Base], or if the [ItemCategory] at that index is already a
+    /// [ItemCategory::Item].
     pub fn set_unchosen_category(&mut self, index: usize, choice_index: usize, item: Item) -> bool {
         let choices = match self.unchosen_items.get_mut(index) {
             Some(PresentedOption::Base(choices)) => choices,
@@ -311,6 +315,9 @@ impl Character {
             Some(v) => &mut v.0,
             _ => return false,
         };
+        if let ItemCategory::Item(_) = category {
+            return false;
+        }
         *category = ItemCategory::Item(item);
         true
     }

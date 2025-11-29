@@ -1,21 +1,70 @@
-use crate::prelude::*;
+use crate::{character::{choice::PresentedOption, class::ItemCategory, items::Item}, prelude::*};
 
 /// Builds a character from parts.
 ///
-/// ```ignore
+/// ```rust
+/// #[cfg(feature = "dnd5eapi")] {
+/// # use dnd_lib::prelude::*;
+/// #[tokio::main]
+/// # async fn main() {
+/// # let provider = Dnd5eapigetter::new();
+/// # let barbarian = provider.get_class("barbarian").await.unwrap();
+/// # let human = provider.get_race("human").await.unwrap();
+/// # let acolyte = provider.get_background("acolyte").await.unwrap();
 /// let george = CharacterBuilder::new("george")
-///     .class(barbarian)
-///     .background(acolyte)
-///     .race(human)
+///     .class(&barbarian)
+///     .background(&acolyte)
+///     .race(&human)
 ///     .stats(Stats::default())
 ///     .build().unwrap();
-///
+/// # }
+/// # }
 /// ```
+///
+/// ### Items
+/// This builder can also be used to choose items while building the character with
+/// [choose_items](CharacterBuilder::choose_items) and
+/// [set_unchosen_category](CharacterBuilder::set_unchosen_category).
+///
+/// ```rust
+/// # #[cfg(feature = "dnd5eapi")] {
+/// # use dnd_lib::prelude::*;
+/// # #[tokio::main]
+/// # async fn main() {
+/// # let provider = Dnd5eapigetter::new();
+/// # let barbarian = provider.get_class("barbarian").await.unwrap();
+/// # let human = provider.get_race("human").await.unwrap();
+/// # let acolyte = provider.get_background("acolyte").await.unwrap();
+/// let spear = provider.get_item("spear").await.unwrap();
+/// let george = CharacterBuilder::new("george")
+///    // get the basic character parts out of the way
+///    .class(&barbarian)
+///    .background(&acolyte)
+///    .race(&human)
+///    .stats(Stats::default())
+///    // The first item choice for barbarians is between "a greataxe" and "any martial melee weapon"
+///    // We want the first option, so we choose index 0
+///    .choose_items(0, 0).0
+///    // The second item choice is between "two handaxes" and "any simple weapon"
+///    // We want the second option, so we choose index 1
+///    .choose_items(1, 1).0
+///    // Now, we need to set what "any simple weapon" is. Let's make it a spear.
+///    .set_unchosen_category(1, 0, spear).0
+///    // Now that we've chosen our weapons, we can build the character.
+///    .build().unwrap();
+/// # }
+/// # }
+/// ```
+///
+/// There isn't anything for reading which items there are directly. Instead, read them from
+/// the class using [Class::beginning_items].
+
 // the i stands for internal
 #[derive(Clone)]
 pub struct CharacterBuilder<'a, 'b, 'c> {
     name: String,
     iclass: Option<&'a Class>,
+    items: Option<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>>,
     ibackground: Option<&'b Background>,
     irace: Option<&'c Race>,
     istats: Option<Stats>,
@@ -26,6 +75,7 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         CharacterBuilder {
             name: name.to_string(),
             iclass: None,
+            items: None,
             ibackground: None,
             irace: None,
             istats: None,
@@ -52,6 +102,65 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         self
     }
 
+    // utility function for methods that need to set items.
+    //
+    // If items are already set, returns a mutable reference to them. 
+    // If not, intializes them from the class.
+    // If there is no class, returns None.
+    fn set_items(&mut self) -> Option<&mut Vec<PresentedOption<Vec<(ItemCategory, usize)>>>> {
+        match (&mut self.items, &mut self.iclass) {
+            (Some(_), Some(_)) => {
+                self.items.as_mut()
+            },
+            (None, Some(c)) => {
+                let v = c.beginning_items().clone();
+                self.items = Some(v);
+                self.items.as_mut()
+            }
+            (_, None) => None,
+        }
+    }
+
+    /// Sets the chosen items, in the case that you want to choose your items while building the
+    /// character.
+    /// 
+    /// This method acts in the same way as [Character::choose_items].
+    pub fn choose_items(mut self, index: usize, choice_index: usize) -> (Self, bool) {
+
+        let items = match self.set_items() {
+            Some(s) => s,
+            _ => return (self, false),
+        };
+
+        if let Some(option) = items.get_mut(index) {
+            option.choose_in_place(choice_index);
+            (self, true)
+        } else {
+            (self, false)
+        }
+    }
+
+    /// Chooses an unchosen [ItemCategory] directly in the unchosen item list.
+    ///
+    /// This method acts in the same way as [Character::set_unchosen_category].
+    pub fn set_unchosen_category(mut self, index: usize, choice_index: usize, item: Item) -> (Self, bool) {
+        let items = match self.set_items() {
+            Some(s) => s,
+            _ => return (self, false),
+        };
+
+        let choices = match items.get_mut(index) {
+            Some(PresentedOption::Base(choices)) => choices,
+            _ => return (self, false),
+        };
+        let category = match choices.get_mut(choice_index) {
+            Some(v) => &mut v.0,
+            _ => return (self, false),
+        };
+        *category = ItemCategory::Item(item);
+        (self, true)
+    }
+
     /// Builds the character. Panics if one or all of the fields have not been set.
     pub fn build(self) -> Result<Character, &'static str> {
         let class = self.iclass.ok_or("Missing class")?;
@@ -59,6 +168,11 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         let race = self.irace.ok_or("Missing race")?;
         let stats = self.istats.ok_or("Missing stats")?;
 
-        Ok(Character::new(self.name, class, background, race, stats))
+        let mut character = Character::new(self.name, class, background, race, stats);
+        if let Some(items) = self.items {
+            character.unchosen_items = items;
+            character.add_chosen_items();
+        }
+        Ok(character)
     }
 }
