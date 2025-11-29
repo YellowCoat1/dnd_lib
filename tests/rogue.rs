@@ -43,7 +43,9 @@ async fn level_5_halfling_rogue() {
         Some("Shortbow".to_string())
     );
 
-    bingus.items.get_mut(2)
+    bingus
+        .items
+        .get_mut(2)
         .expect("should have leather armor")
         .equip();
 

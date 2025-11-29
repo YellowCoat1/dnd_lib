@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::character::background::LanguageOption;
 use crate::character::choice::chosen_ref;
 use crate::character::class::ItemCategory;
-use crate::character::items::{ArmorCategory, HeldEquipment, Item, is_proficient_with};
+use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment, Item};
 use crate::character::spells::SpellCastingPreperation;
 use crate::character::Subrace;
 
@@ -244,7 +244,8 @@ impl Character {
     /// selected items to the character's items list.
     pub fn add_chosen_items(&mut self) {
         let mut items: Vec<ItemCount> = vec![];
-        self.unchosen_items = self.unchosen_items
+        self.unchosen_items = self
+            .unchosen_items
             .iter()
             .filter(|o| {
                 if let PresentedOption::Base(v) = o {
@@ -297,7 +298,7 @@ impl Character {
 
     /// Sets the item category for an unchosen item.
     ///
-    /// You can find which are availiable to set at [Character::get_unchosen_categories]. 
+    /// You can find which are availiable to set at [Character::get_unchosen_categories].
     ///
     /// `index` is which unchosen item option to set from.
     /// `choice_index` is which choice within that option to set.
@@ -1580,7 +1581,10 @@ impl Character {
     /// See [Character::prepare_spells] for more information. The fields are the same, just using
     /// an `Option` instead of a `Vec`, and omitting the class index since it's provided as an
     /// argument.
-    pub fn prepare_spells_single(&mut self, class_index: usize) -> Option<(&mut Vec<Spell>, usize, usize)> {
+    pub fn prepare_spells_single(
+        &mut self,
+        class_index: usize,
+    ) -> Option<(&mut Vec<Spell>, usize, usize)> {
         let modifiers = self.stats().modifiers();
         let class = self.classes.get_mut(class_index)?;
         let class_level = class.level;
@@ -1601,7 +1605,7 @@ impl Character {
             .get_stat_type(&casting.0.spellcasting_ability);
         let spells_num = (class.level as isize + ability).max(0) as usize;
         Some((&mut casting.1, spells_num, cantrips_num))
-    } 
+    }
 
     /// Gets the amount of spells the class at the index can prepare or know. The first field is
     /// the amount of spells (1st level and onward), and the second field is the amount of
@@ -2076,4 +2080,3 @@ impl SpeccedBackground {
         }
     }
 }
-

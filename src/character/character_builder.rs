@@ -1,4 +1,9 @@
-use crate::{character::{choice::PresentedOption, class::ItemCategory, items::Item}, prelude::*};
+use crate::{
+    character::{choice::PresentedOption, class::ItemCategory, items::Item},
+    prelude::*,
+};
+
+type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 
 /// Builds a character from parts.
 ///
@@ -58,13 +63,12 @@ use crate::{character::{choice::PresentedOption, class::ItemCategory, items::Ite
 ///
 /// There isn't anything for reading which items there are directly. Instead, read them from
 /// the class using [Class::beginning_items].
-
 // the i stands for internal
 #[derive(Clone)]
 pub struct CharacterBuilder<'a, 'b, 'c> {
     name: String,
     iclass: Option<&'a Class>,
-    items: Option<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>>,
+    items: Option<Vec<ItemChoice>>,
     ibackground: Option<&'b Background>,
     irace: Option<&'c Race>,
     istats: Option<Stats>,
@@ -104,14 +108,12 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
 
     // utility function for methods that need to set items.
     //
-    // If items are already set, returns a mutable reference to them. 
+    // If items are already set, returns a mutable reference to them.
     // If not, intializes them from the class.
     // If there is no class, returns None.
-    fn set_items(&mut self) -> Option<&mut Vec<PresentedOption<Vec<(ItemCategory, usize)>>>> {
+    fn set_items(&mut self) -> Option<&mut Vec<ItemChoice>> {
         match (&mut self.items, &mut self.iclass) {
-            (Some(_), Some(_)) => {
-                self.items.as_mut()
-            },
+            (Some(_), Some(_)) => self.items.as_mut(),
             (None, Some(c)) => {
                 let v = c.beginning_items().clone();
                 self.items = Some(v);
@@ -123,10 +125,9 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
 
     /// Sets the chosen items, in the case that you want to choose your items while building the
     /// character.
-    /// 
+    ///
     /// This method acts in the same way as [Character::choose_items].
     pub fn choose_items(mut self, index: usize, choice_index: usize) -> (Self, bool) {
-
         let items = match self.set_items() {
             Some(s) => s,
             _ => return (self, false),
@@ -143,7 +144,12 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
     /// Chooses an unchosen [ItemCategory] directly in the unchosen item list.
     ///
     /// This method acts in the same way as [Character::set_unchosen_category].
-    pub fn set_unchosen_category(mut self, index: usize, choice_index: usize, item: Item) -> (Self, bool) {
+    pub fn set_unchosen_category(
+        mut self,
+        index: usize,
+        choice_index: usize,
+        item: Item,
+    ) -> (Self, bool) {
         let items = match self.set_items() {
             Some(s) => s,
             _ => return (self, false),

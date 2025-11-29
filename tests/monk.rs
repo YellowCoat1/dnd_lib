@@ -32,7 +32,9 @@ async fn level_3_elf_monk() {
     georg.add_chosen_items();
 
     // equip the shortsword
-    georg.items.get_mut(3)
+    georg
+        .items
+        .get_mut(3)
         .expect("Items were not added correctly")
         .equip();
 

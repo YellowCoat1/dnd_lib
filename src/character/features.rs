@@ -124,7 +124,7 @@ impl Action for ComputedCustomAction {
 /// mechanical implications that this crate can represent. These mechanical effects are listed
 /// here.
 ///
-/// This list will grow as the crate is developed. 
+/// This list will grow as the crate is developed.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FeatureEffect {
     /// Grants proficiency in a saving throw
