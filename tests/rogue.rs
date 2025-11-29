@@ -27,29 +27,10 @@ async fn level_5_halfling_rogue() {
     let mut bingus = Character::new("bingus".to_string(), &rogue, &acolyte, &halfling, stats);
 
     // add bingus's items
-    let class_items = &mut bingus
-        .classes
-        .get_mut(0)
-        .expect("Halfing should have a class!")
-        .items;
-    // Choosing rapier
-    class_items
-        .get_mut(0)
-        .expect("Halfling rogue should have an item choice")
-        .choose_in_place(0);
-    // Choosing shortbow
-    class_items
-        .get_mut(1)
-        .expect("Halfling rogue should have a 2nd item choice")
-        .choose_in_place(0);
-    // Choosing the pack to use (Dungeoneer's)
-    class_items
-        .get_mut(2)
-        .expect("Halfling rogue should have a 3nd item choice")
-        .choose_in_place(1);
-
-    // add the items chosen
-    bingus.add_class_items();
+    bingus.choose_items(0, 0); // rapier
+    bingus.choose_items(1, 0); // shortbow
+    bingus.choose_items(2, 1); // dungeoneer's pack
+    bingus.add_chosen_items();
 
     // 6th item should be a Rapier
     assert_eq!(
@@ -62,7 +43,9 @@ async fn level_5_halfling_rogue() {
         Some("Shortbow".to_string())
     );
 
-    bingus.items[2].equip();
+    bingus.items.get_mut(2)
+        .expect("should have leather armor")
+        .equip();
 
     // choose skill proficiencies granted by the class
 

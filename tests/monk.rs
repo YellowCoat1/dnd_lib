@@ -27,16 +27,16 @@ async fn level_3_elf_monk() {
     let mut georg = Character::new("gerog".to_string(), &monk, &acolyte, &elf, stats);
 
     // add class items
-    let class_items = &mut georg
-        .classes
-        .get_mut(0)
-        .expect("character should have a class")
-        .items;
-    class_items[0].choose_in_place(0);
-    class_items[1].choose_in_place(0);
-    georg.add_class_items();
+    georg.choose_items(0, 0);
+    georg.choose_items(1, 0);
+    georg.add_chosen_items();
+
     // equip the shortsword
-    georg.items[3].equip();
+    georg.items.get_mut(3)
+        .expect("Items were not added correctly")
+        .equip();
+
+    assert_eq!(georg.items.len(), 5);
 
     assert_eq!(georg.items[0].item.name, "Clothes, common");
     assert_eq!(georg.items[3].item.name, "Shortsword");
