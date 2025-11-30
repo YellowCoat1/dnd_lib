@@ -10,9 +10,9 @@
 //!
 //! These structs are similar, but have slightly edited data to represent the choices made for the
 //! character. For example, [Class] has a `Vec<Subclass>` to show the subclasses associated with it, while [SpeccedClass] has a
-//! `PresentedOption<Subclass> to represent the choice of subclass. Similarly, [Race] has a `usize`
+//! `PresentedOption<Subclass>` to represent the choice of subclass. Similarly, [Race] has a `usize`
 //! to represent the number of "wildcard" languages, (language options that can be anything) while
-//! the [SpeccedRace] has a `Vec<Option<String>> to represent the actual languages chosen.
+//! the [SpeccedRace] has a `Vec<Option<String>>` to represent the actual languages chosen.
 
 use std::collections::{HashMap, HashSet};
 
