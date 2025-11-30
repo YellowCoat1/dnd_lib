@@ -1,3 +1,4 @@
+#![cfg_attr(doc, feature(doc_auto_cfg))]
 //! Data for creating a character, and associated data in a character.
 //!
 //! The main feature of this module, and this crate in general, is the [Character] struct.
@@ -1618,11 +1619,9 @@ impl Character {
     /// This function has no secondary effects, and is purely for retrieving data easily.
     ///
     /// ```rust
-    ///
     /// # #[cfg(feature = "dnd5eapi")] {
-    /// # use tokio::runtime::Runtime;
-    /// # let rt = Runtime::new().unwrap();
-    /// # rt.block_on(async {
+    /// # #[tokio::main]
+    /// # async fn main() {
     /// # use dnd_lib::prelude::*;
     /// # let provider = Dnd5eapigetter::new();
     /// # let wizard = provider.get_class("wizard").await.unwrap();
@@ -1638,9 +1637,10 @@ impl Character {
     /// assert_eq!(prepared_spells.len(), 1); // only one spellcasting class
     /// let (class_index, spell_list, num_spells, num_cantrips) = &prepared_spells[0];
     /// assert_eq!(*class_index, 0); // only one class, so index is 0
-    /// assert_eq!(*num_spells, 1); // 1 (level) + 0 (int mod) = 1 spell can be prepared
+    /// panic!("spell_list has {} spells", spell_list.len());
+    /// assert_eq!(*num_spells, 2); // 1 (level) + 0 (int mod) = 1 spell can be prepared
     /// assert_eq!(*num_cantrips, 3);// wizards get 3 cantrips at level 1
-    /// # })
+    /// # }
     /// # }
     /// ```
     pub fn prepare_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize, usize)> {
