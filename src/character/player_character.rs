@@ -13,6 +13,10 @@
 //! to represent the number of "wildcard" languages, (language options that can be anything) while
 //! the [SpeccedRace] has a `Vec<Option<String>>` to represent the actual languages chosen.
 
+pub use super::{
+    character_builder::CharacterBuilder,
+    character_etc::*,
+};
 use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
@@ -41,7 +45,6 @@ use super::stats::{
     EquipmentProficiencies, Modifiers, Saves, SkillModifiers, SkillProficiencies, SkillType,
     Speeds, StatType, Stats, PROFICIENCY_BY_LEVEL,
 };
-use super::{CharacterDescriptors, CharacterStory};
 
 /// A struct to represent a Dungeons and Dragons character.
 ///
@@ -692,7 +695,7 @@ impl Character {
     ///   # rt.block_on(async {
     ///   # use dnd_lib::prelude::*;
     ///   # use dnd_lib::character::spells::PactSlots;
-    ///   # use dnd_lib::character::CharacterBuilder;
+    ///   # use dnd_lib::character::player_character::CharacterBuilder;
     ///   #
     ///   # let provider = Dnd5eapigetter::new();
     ///   # let warlock = provider.get_class("warlock").await.unwrap();
