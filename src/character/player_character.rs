@@ -1096,7 +1096,7 @@ impl Character {
             .find(|v| v.class == "Monk")
             .expect("Unarmored defense without monk levels. Did you add it manually?")
             .level;
-        if level < 1 || level > 20 {
+        if !(1..=20).contains(&level) {
             return 0;
         }
         UNARMORED_MOVEMENT[level - 1]
