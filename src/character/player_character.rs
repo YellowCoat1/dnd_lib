@@ -1263,6 +1263,32 @@ impl Character {
     }
 
     /// Level up until the total level (not class level) is equal to the given number.
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # use dnd_lib::prelude::*;
+    /// # let provider = Dnd5eapigetter::new();
+    /// # let fighter = provider.get_class("fighter").await.unwrap();
+    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
+    /// # let human = provider.get_race("human").await.unwrap();
+    /// let mut john = CharacterBuilder::new("john")
+    ///     .class(&fighter)
+    ///     .background(&acolyte)
+    ///     .race(&human)
+    ///     .stats(Stats::default())
+    ///     .build().unwrap();
+    ///
+    /// // John starts at level 1 fighter
+    /// assert_eq!(john.level(), 1);
+    /// // Leveling up to level 5
+    /// john.level_up_to_level(&fighter, 5);
+    /// // Now john is level 5 fighter
+    /// assert_eq!(john.level(), 5);
+    /// # }
+    /// # }
+    /// ```
     pub fn level_up_to_level(&mut self, class: &Class, level: usize) -> Option<usize> {
         if level > 20 {
             return None;
@@ -1465,6 +1491,35 @@ impl Character {
     ///
     /// Returns a bool of it it succeeded or not. The function fails if the amount of hit die are
     /// more than what's available, or if the hit die override has a different length than the amount of hit die spent.
+    ///
+    /// ```
+    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # use dnd_lib::prelude::*;
+    /// # let provider = Dnd5eapigetter::new();
+    /// # let fighter = provider.get_class("fighter").await.unwrap();
+    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
+    /// # let human = provider.get_race("human").await.unwrap();
+    /// let mut john = CharacterBuilder::new("john")
+    ///     .class(&fighter)
+    ///     .stats(Stats::default())
+    ///     // other fields omitted
+    /// #    .background(&acolyte)
+    /// #    .race(&human)
+    /// #    .build().unwrap();
+    /// // John is at max hp
+    /// assert_eq!(john.hp, john.max_hp());
+    /// // John takes 10 damage
+    /// john.damage(10);
+    /// // John takes a short rest, spending 1 hit die.
+    /// let success = john.short_rest(1, None);
+    /// assert!(success);
+    /// // John should have regained 6 hp, which is the average of a d10 hit die + 0 constitution modifier.
+    /// assert_eq!(john.hp, john.max_hp() - 4);
+    /// # }
+    /// # }
+    /// ```
     pub fn short_rest(&mut self, die_amount: usize, manual_hit_die: Option<Vec<usize>>) -> bool {
         let hit_die = self
             .classes
