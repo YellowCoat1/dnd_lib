@@ -73,5 +73,5 @@ on_success = "back" # so that we don't open the browser at each change
 # alt-m = "job:my-job"
 c = "job:clippy" # comment this to have 'c' run clippy on only the default target
 t = "job:test"
-d = "job:doctest"
+d = "job:doc"
 p = "job:pedantic" 

@@ -74,7 +74,7 @@ mod getter;
 pub mod save;
 
 // re-exports
-pub use character::Character;
+pub use character::player_character::Character;
 pub use character::CharacterBuilder;
 pub use getter::*;
 
@@ -100,7 +100,7 @@ pub mod prelude {
     pub use crate::{
         character::class::Class,
         character::stats::Stats,
-        character::{background::Background, Character, CharacterBuilder, Race},
+        character::{background::Background, player_character::Character, CharacterBuilder, Race},
         getter::{CharacterDataError, DataProvider},
     };
 }

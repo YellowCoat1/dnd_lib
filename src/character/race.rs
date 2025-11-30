@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 
 use super::stats::Size;
 
+/// A race that can be used by the character.
+///
+/// This is static information which isn't edited once 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Race {
     name: String,
@@ -16,7 +19,7 @@ pub struct Race {
     traits: Vec<PresentedOption<Feature>>,
     subraces: Vec<Subrace>,
     languages: Vec<String>,
-    wildcard_languages: Vec<Option<String>>,
+    wildcard_languages: usize,
 }
 
 impl PartialEq for Race {
@@ -51,8 +54,8 @@ impl Race {
     pub fn languages(&self) -> &Vec<String> {
         &self.languages
     }
-    pub fn wildcard_languages(&self) -> &Vec<Option<String>> {
-        &self.wildcard_languages
+    pub fn wildcard_languages(&self) -> usize {
+        self.wildcard_languages
     }
     pub fn add_subrace(&mut self, subrace: Subrace) {
         self.subraces.push(subrace);
@@ -67,7 +70,7 @@ pub struct RaceBuilder {
     pub traits: Vec<PresentedOption<Feature>>,
     pub subraces: Vec<Subrace>,
     pub languages: Vec<String>,
-    pub wildcard_languages: Vec<Option<String>>,
+    pub wildcard_languages: usize,
 }
 
 impl RaceBuilder {
@@ -80,7 +83,7 @@ impl RaceBuilder {
             traits: Vec::new(),
             subraces: vec![],
             languages: Vec::new(),
-            wildcard_languages: Vec::new(),
+            wildcard_languages: 0,
         }
     }
 
@@ -151,11 +154,11 @@ impl RaceBuilder {
     }
 
     pub fn add_wildcard_language(mut self) -> Self {
-        self.wildcard_languages.push(None);
+        self.wildcard_languages += 1;
         self
     }
     pub fn add_wildcard_languages(mut self, num: usize) -> Self {
-        self.wildcard_languages.extend((0..num).map(|_| None));
+        self.wildcard_languages += num;
         self
     }
 

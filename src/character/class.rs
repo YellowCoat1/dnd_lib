@@ -14,7 +14,7 @@ pub(crate) const UNARMORED_MOVEMENT: [usize; 20] = [
 /// A D&D Class.
 ///
 /// This is a static class that contains all the information needed for a character to take it. For
-/// a class in application, see [SpeccedClass](crate::character::SpeccedClass) instead.
+/// a class in application, see [SpeccedClass](crate::character::player_character::SpeccedClass) instead.
 ///
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Class {
@@ -157,7 +157,7 @@ pub enum ItemCategory {
 /// which need to be actively tracked and stored.
 ///
 /// This stores only the metadata about the field; the actual value for a character would be stored
-/// in that character's [SpeccedClass](crate::character::SpeccedClass).
+/// in that character's [SpeccedClass](crate::character::player_character::SpeccedClass).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TrackedField {
     pub name: String,

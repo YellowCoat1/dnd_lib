@@ -1,4 +1,19 @@
 #![cfg_attr(doc, feature(doc_auto_cfg))]
+//! Data for creating a character, and associated data in a character.
+//!
+//! The main feature of this module, and this crate in general, is the [Character] struct.
+//!
+//! ### Specced Data
+//! The major structs ([Classes](Class), [Backgrounds](Background), and [Races](Race)) aren't
+//! stored verbatim in the [Character] struct. They're meant to be static information, instead of
+//! actively used. This is what [SpeccedClass], [SpeccedBackground], and [SpeccedRace] are for.
+//!
+//! These structs are similar, but have slightly edited data to represent the choices made for the
+//! character. For example, [Class] has a `Vec<Subclass>` to show the subclasses associated with it, while [SpeccedClass] has a
+//! `PresentedOption<Subclass> to represent the choice of subclass. Similarly, [Race] has a `usize`
+//! to represent the number of "wildcard" languages, (language options that can be anything) while
+//! the [SpeccedRace] has a `Vec<Option<String>> to represent the actual languages chosen.
+
 use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
@@ -195,7 +210,7 @@ impl Character {
             items: vec![],
             unchosen_items: class.beginning_items().clone(),
             equipment_proficiencies: class.equipment_proficiencies().clone(),
-            race: SpeccedRace::from_race(race),
+            race: SpeccedRace::new(race),
             base_stats,
             bonus_features: vec![],
             available_spell_slots: None,
@@ -206,7 +221,7 @@ impl Character {
             ],
             class_saving_throw_proficiencies: class.saving_throw_proficiencies().clone(),
 
-            background: SpeccedBackground::from_background(background),
+            background: SpeccedBackground::new(background),
             hp: 1,
             temp_hp: 0,
             story: CharacterStory::default(),
@@ -1075,6 +1090,9 @@ impl Character {
             .find(|v| v.class == "Monk")
             .expect("Unarmored defense without monk levels. Did you add it manually?")
             .level;
+        if level < 1 || level > 20 {
+            return 0;
+        }
         UNARMORED_MOVEMENT[level - 1]
     }
 
@@ -1083,7 +1101,7 @@ impl Character {
     /// Returns the character's current level in that class, or [None] if the level would exceed
     /// 20.
     pub fn level_up(&mut self, class: &Class) -> Option<usize> {
-        // get the spell slots before leveling up. This is usefule for recalculating spell slots.
+        // get the spell slots before leveling up. This is useful for recalculating spell slots.
         let spell_slots_before = self.spell_slots();
         let pact_slots_before = self.pact_slots();
         let stats = self.stats();
@@ -1905,6 +1923,7 @@ fn get_etc_field_max(
         .and_then(|v| class_specific.get(&v)?[level - 1].parse::<usize>().ok()))
 }
 
+/// A [Race] in application.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SpeccedRace {
     race: String,
@@ -1975,7 +1994,8 @@ impl SpeccedRace {
         &self.languages
     }
 
-    fn from_race(race: &Race) -> SpeccedRace {
+    pub fn new(race: &Race) -> SpeccedRace {
+        let wildcard_languages: Vec<Option<String>> = vec![None; race.wildcard_languages()];
         let subraces = PresentedOption::Choice(race.subraces().to_vec());
         SpeccedRace {
             race: race.name().to_string(),
@@ -1984,11 +2004,12 @@ impl SpeccedRace {
             traits: race.traits().to_vec(),
             subraces,
             languages: race.languages().to_vec(),
-            wildcard_languages: race.wildcard_languages().to_vec(),
+            wildcard_languages,
         }
     }
 }
 
+/// A [Background] in application.
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SpeccedBackground {
     background: String,
@@ -2067,7 +2088,7 @@ impl SpeccedBackground {
         self.language_options[index].set_to(lang.to_string())
     }
 
-    fn from_background(background: &Background) -> SpeccedBackground {
+    pub fn new(background: &Background) -> SpeccedBackground {
         SpeccedBackground {
             background: background.name().to_string(),
             proficiencies: background.proficiencies().to_vec(),

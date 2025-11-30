@@ -8,7 +8,8 @@ use strum::{Display as StrumDisplay, EnumString};
 
 /// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately.
 ///
-/// If you want stats, you need to use a get function.
+/// If you want an [Item], you need to use a get function, like
+/// [Dnd5eapigetter](crate::prelude::Dnd5eapigetter).
 pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
     "club",
     "dagger",
@@ -20,14 +21,55 @@ pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
     "sickle",
     "spear",
 ];
-/// Lists the names of all regular D&D  ranged simple weapons. See [SIMPLE_WEAPONS_MELEE].
+
+/// Lists the names of all regular D&D ranged simple weapons. 
 ///
-/// Note that with Dnd5eapigetter, "light crossbow" is "crossbow light"
-pub const SIMPLE_WEAPONS_RANGED: [&str; 4] = ["light crossbow", "dart", "shortbow", "sling"];
+/// See [SIMPLE_WEAPONS_MELEE].
+///
+/// If you want an [Item], you need to use a get function, like
+/// [Dnd5eapigetter](crate::prelude::Dnd5eapigetter).
+pub const SIMPLE_WEAPONS_RANGED: [&str; 4] = ["crossbow light ", "dart", "shortbow", "sling"];
+
+/// Lists the names of all regular D&D simple weapons.
+///
+/// Uses [SIMPLE_WEAPONS_MELEE] and [SIMPLE_WEAPONS_RANGED].
+pub const fn simple_weapons() -> [&'static str; 13] {
+    let mut weapons = [""; 13];
+    let mut i = 0;
+    while i < SIMPLE_WEAPONS_MELEE.len() {
+        weapons[i] = SIMPLE_WEAPONS_MELEE[i];
+        i += 1;
+    }
+    let mut j = 0;
+    while j < SIMPLE_WEAPONS_RANGED.len() {
+        weapons[i + j] = SIMPLE_WEAPONS_RANGED[j];
+        j += 1;
+    }
+    weapons
+}
+
+/// Lists the names of all regular D&D martial weapons.
+///
+/// Uses [MARTIAL_WEAPONS_MELEE] and [MARTIAL_WEAPONS_RANGED].
+pub const fn martial_weapons() -> [&'static str; 23] {
+    let mut weapons = [""; 23];
+    let mut i = 0;
+    while i < MARTIAL_WEAPONS_MELEE.len() {
+        weapons[i] = MARTIAL_WEAPONS_MELEE[i];
+        i += 1;
+    }
+    let mut j = 0;
+    while j < MARTIAL_WEAPONS_RANGED.len() {
+        weapons[i + j] = MARTIAL_WEAPONS_RANGED[j];
+        j += 1;
+    }
+    weapons
+}
 
 /// Lists the names of all regular D&D melee martial weapons. Ranged weapons are listed seperately.
 ///
-/// If you want stats, you need to use a get function.
+/// If you want an [Item], you need to use a get function, like
+/// [Dnd5eapigetter](crate::prelude::Dnd5eapigetter).
 pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
     "battleaxe",
     "flail",
@@ -48,14 +90,17 @@ pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
     "warhammer",
     "whip",
 ];
-/// Lists the names of all regular D&D ranged martial weapons. See [MARTIAL_WEAPONS_MELEE].
+
+/// Lists the names of all regular D&D ranged martial weapons. 
 ///
-/// Note that with Dnd5eapigetter, "hand crossbow" is "crossbow hand", and "heavy crossbow" is
-/// "crossbow heavy"
+/// See [MARTIAL_WEAPONS_MELEE].
+///
+/// If you want an [Item], you need to use a get function, like
+/// [Dnd5eapigetter](crate::prelude::Dnd5eapigetter).
 pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
     "blowgun",
-    "hand crossbow",
-    "heavy crossbow",
+    "crossbow hand",
+    "crossbow heavy",
     "longbow",
     "net",
 ];

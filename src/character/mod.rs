@@ -13,8 +13,7 @@ pub use race::*;
 mod character_etc;
 pub mod class;
 pub use character_etc::{CharacterDescriptors, CharacterStory};
-mod player_character;
-pub use player_character::{Castable, Character, SpeccedClass};
+pub mod player_character;
 mod character_builder;
 pub use character_builder::CharacterBuilder;
 
