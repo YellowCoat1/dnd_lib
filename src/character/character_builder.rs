@@ -10,8 +10,9 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// ```rust
 /// #[cfg(feature = "dnd5eapi")] {
 /// # use dnd_lib::prelude::*;
-/// #[tokio::main]
-/// # async fn main() {
+/// # use tokio::runtime::Runtime;
+/// # let rt = Runtime::new().unwrap();
+/// # rt.block_on(async {
 /// # let provider = Dnd5eapigetter::new();
 /// # let barbarian = provider.get_class("barbarian").await.unwrap();
 /// # let human = provider.get_race("human").await.unwrap();
@@ -22,7 +23,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 ///     .race(&human)
 ///     .stats(Stats::default())
 ///     .build().unwrap();
-/// # }
+/// # })
 /// # }
 /// ```
 ///
@@ -34,8 +35,9 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// ```rust
 /// # #[cfg(feature = "dnd5eapi")] {
 /// # use dnd_lib::prelude::*;
-/// # #[tokio::main]
-/// # async fn main() {
+/// # use tokio::runtime::Runtime;
+/// # let rt = Runtime::new().unwrap();
+/// # rt.block_on(async {
 /// # let provider = Dnd5eapigetter::new();
 /// # let barbarian = provider.get_class("barbarian").await.unwrap();
 /// # let human = provider.get_race("human").await.unwrap();
@@ -57,7 +59,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 ///    .set_unchosen_category(1, 0, spear).0
 ///    // Now that we've chosen our weapons, we can build the character.
 ///    .build().unwrap();
-/// # }
+/// # })
 /// # }
 /// ```
 ///
