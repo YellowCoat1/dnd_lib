@@ -51,8 +51,9 @@ use super::{CharacterDescriptors, CharacterStory};
 ///
 /// ```
 /// # #[cfg(feature = "dnd5eapi")] {
-/// #[tokio::main]
-/// async fn main() {
+/// # use tokio::runtime::Runtime;
+/// # let rt = Runtime::new().unwrap();
+/// # rt.block_on(async {
 ///     use dnd_lib::prelude::*;
 ///
 ///     let provider = Dnd5eapigetter::new();
@@ -66,7 +67,7 @@ use super::{CharacterDescriptors, CharacterStory};
 ///         .race(&human)
 ///         .stats(Stats::default())
 ///         .build().unwrap();
-/// }
+/// # })
 /// # }
 /// ```
 ///
@@ -454,8 +455,9 @@ impl Character {
     ///
     /// ```
     /// # #[cfg(feature = "dnd5eapi")] {
-    /// # #[tokio::main]
-    /// # async fn main() {
+    /// # use tokio::runtime::Runtime;
+    /// # let rt = Runtime::new().unwrap();
+    /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
     /// # use dnd_lib::character::stats::StatType;
     /// # let provider = Dnd5eapigetter::new();
@@ -473,7 +475,7 @@ impl Character {
     /// // fighter gives proficiency in str and con saves
     /// assert!(saves.is_proficient(StatType::Strength));
     /// assert!(saves.is_proficient(StatType::Constitution));
-    /// # }
+    /// # })
     /// # }
     pub fn saves(&self) -> Saves {
         let mut base = Saves::default();
@@ -585,8 +587,9 @@ impl Character {
     ///
     /// ```rust
     ///     # #[cfg(feature = "dnd5eapi")] {
-    ///     # #[tokio::main]
-    ///     # async fn main() {
+    ///     # use tokio::runtime::Runtime;
+    ///     # let rt = Runtime::new().unwrap();
+    ///     # rt.block_on(async {
     ///     # use dnd_lib::prelude::*;
     ///     # let provider = Dnd5eapigetter::new();
     ///     # let wizard = provider.get_class("wizard").await.unwrap();
@@ -611,7 +614,7 @@ impl Character {
     ///         .expect("wizard character should be a spellcaster");
     ///     assert_eq!(spell_save, 12);
     ///     assert_eq!(spell_mod, 4);
-    ///     # }
+    ///     # })
     ///     # }
     /// ```
     pub fn spellcasting_scores(&self, class_index: usize) -> Option<(isize, isize)> {
@@ -684,8 +687,9 @@ impl Character {
     ///
     /// ```rust
     ///   # #[cfg(feature = "dnd5eapi")] {
-    ///   # #[tokio::main]
-    ///   # async fn main() {
+    ///   # use tokio::runtime::Runtime;
+    ///   # let rt = Runtime::new().unwrap();
+    ///   # rt.block_on(async {
     ///   # use dnd_lib::prelude::*;
     ///   # use dnd_lib::character::spells::PactSlots;
     ///   # use dnd_lib::character::CharacterBuilder;
@@ -707,7 +711,7 @@ impl Character {
     ///   john.level_up_to_level(&warlock, 5);
     ///   let level_5_pact_slots = john.pact_slots().unwrap();
     ///   assert_eq!(level_5_pact_slots, PactSlots { level: 3, num: 2 });
-    ///   # }
+    ///   # })
     ///   # }
     /// ```
     pub fn pact_slots(&self) -> Option<PactSlots> {
@@ -1265,8 +1269,9 @@ impl Character {
     ///
     /// ```rust
     /// # #[cfg(feature = "dnd5eapi")] {
-    /// # #[tokio::main]
-    /// # async fn main() {
+    /// # use tokio::runtime::Runtime;
+    /// # let rt = Runtime::new().unwrap();
+    /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
     /// # let provider = Dnd5eapigetter::new();
     /// # let fighter = provider.get_class("fighter").await.unwrap();
@@ -1285,7 +1290,7 @@ impl Character {
     /// john.level_up_to_level(&fighter, 5);
     /// // Now john is level 5 fighter
     /// assert_eq!(john.level(), 5);
-    /// # }
+    /// # })
     /// # }
     /// ```
     pub fn level_up_to_level(&mut self, class: &Class, level: usize) -> Option<usize> {
@@ -1493,8 +1498,9 @@ impl Character {
     ///
     /// ```
     /// # #[cfg(feature = "dnd5eapi")] {
-    /// # #[tokio::main]
-    /// # async fn main() {
+    /// # use tokio::runtime::Runtime;
+    /// # let rt = Runtime::new().unwrap();
+    /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
     /// # let provider = Dnd5eapigetter::new();
     /// # let fighter = provider.get_class("fighter").await.unwrap();
@@ -1516,7 +1522,7 @@ impl Character {
     /// assert!(success);
     /// // John should have regained 6 hp, which is the average of a d10 hit die + 0 constitution modifier.
     /// assert_eq!(john.hp, john.max_hp() - 4);
-    /// # }
+    /// # })
     /// # }
     /// ```
     pub fn short_rest(&mut self, die_amount: usize, manual_hit_die: Option<Vec<usize>>) -> bool {
