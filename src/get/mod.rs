@@ -36,6 +36,9 @@ pub mod raw_getters {
 mod datastore;
 pub use datastore::Dnd5eapiDatastore;
 
+#[cfg(test)]
+mod datastore_tests;
+
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Mutex;

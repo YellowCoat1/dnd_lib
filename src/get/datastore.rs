@@ -111,35 +111,35 @@ impl Dnd5eapiDatastore {
             runtime: Runtime::new().unwrap(),
         }
     }
-    pub fn request_class(&self, class_name: String) {
-        self.classes.request(class_name, &self.runtime);
+    pub fn request_class(&self, class_name: &str) {
+        self.classes.request(class_name.to_string(), &self.runtime);
     }
-    pub fn get_class(&self, class_name: String) -> Option<Arc<Class>> {
-        self.classes.try_get(class_name)
+    pub fn get_class(&self, class_name: &str) -> Option<Arc<Class>> {
+        self.classes.try_get(class_name.to_string())
     }
-    pub fn request_background(&self, background_name: String) {
-        self.backgrounds.request(background_name, &self.runtime);
+    pub fn request_background(&self, background_name: &str) {
+        self.backgrounds.request(background_name.to_string(), &self.runtime);
     }
-    pub fn get_background(&self, background_name: String) -> Option<Arc<Background>> {
-        self.backgrounds.try_get(background_name)
+    pub fn get_background(&self, background_name: &str) -> Option<Arc<Background>> {
+        self.backgrounds.try_get(background_name.to_string())
     }
-    pub fn request_race(&self, race_name: String) {
-        self.races.request(race_name, &self.runtime);
+    pub fn request_race(&self, race_name: &str) {
+        self.races.request(race_name.to_string(), &self.runtime);
     }
-    pub fn get_race(&self, race_name: String) -> Option<Arc<Race>> {
-        self.races.try_get(race_name)
+    pub fn get_race(&self, race_name: &str) -> Option<Arc<Race>> {
+        self.races.try_get(race_name.to_string())
     }
-    pub fn request_item(&self, item_name: String) {
-        self.items.request(item_name, &self.runtime);
+    pub fn request_item(&self, item_name: &str) {
+        self.items.request(item_name.to_string(), &self.runtime);
     }
-    pub fn get_item(&self, item_name: String) -> Option<Arc<Item>> {
-        self.items.try_get(item_name)
+    pub fn get_item(&self, item_name: &str) -> Option<Arc<Item>> {
+        self.items.try_get(item_name.to_string())
     }
-    pub fn request_spell(&self, spell_name: String) {
-        self.spells.request(spell_name, &self.runtime);
+    pub fn request_spell(&self, spell_name: &str) {
+        self.spells.request(spell_name.to_string(), &self.runtime);
     }
-    pub fn get_spell(&self, spell_name: String) -> Option<Arc<Spell>> {
-        self.spells.try_get(spell_name)
+    pub fn get_spell(&self, spell_name: &str) -> Option<Arc<Spell>> {
+        self.spells.try_get(spell_name.to_string())
     }
 }
 
