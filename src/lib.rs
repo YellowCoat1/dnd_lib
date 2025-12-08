@@ -99,7 +99,11 @@ pub mod prelude {
     pub use crate::{
         character::class::Class,
         character::stats::Stats,
-        character::{background::Background, player_character::{Character, CharacterBuilder}, Race},
+        character::{
+            background::Background,
+            player_character::{Character, CharacterBuilder},
+            Race,
+        },
         getter::{CharacterDataError, DataProvider},
     };
 }

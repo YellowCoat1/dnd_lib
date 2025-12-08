@@ -22,7 +22,7 @@ pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
     "spear",
 ];
 
-/// Lists the names of all regular D&D ranged simple weapons. 
+/// Lists the names of all regular D&D ranged simple weapons.
 ///
 /// See [SIMPLE_WEAPONS_MELEE].
 ///
@@ -91,7 +91,7 @@ pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
     "whip",
 ];
 
-/// Lists the names of all regular D&D ranged martial weapons. 
+/// Lists the names of all regular D&D ranged martial weapons.
 ///
 /// See [MARTIAL_WEAPONS_MELEE].
 ///

@@ -33,6 +33,8 @@ pub mod raw_getters {
     pub use super::race::get_race as get_race_raw;
     pub use super::spell::get_spell as get_spell_raw;
 }
+mod datastore;
+pub use datastore::Dnd5eapiDatastore;
 
 use async_trait::async_trait;
 use std::collections::HashMap;

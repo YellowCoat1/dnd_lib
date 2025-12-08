@@ -10,10 +10,10 @@ mod race;
 pub mod spells;
 pub mod stats;
 pub use race::*;
+mod character_builder;
 mod character_etc;
 pub mod class;
 pub mod player_character;
-mod character_builder;
 
 #[cfg(test)]
 mod character_tests;

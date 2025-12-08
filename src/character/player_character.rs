@@ -13,10 +13,7 @@
 //! to represent the number of "wildcard" languages, (language options that can be anything) while
 //! the [SpeccedRace] has a `Vec<Option<String>>` to represent the actual languages chosen.
 
-pub use super::{
-    character_builder::CharacterBuilder,
-    character_etc::*,
-};
+pub use super::{character_builder::CharacterBuilder, character_etc::*};
 use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};

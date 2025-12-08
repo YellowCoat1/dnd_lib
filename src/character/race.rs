@@ -9,7 +9,7 @@ use super::stats::Size;
 
 /// A race that can be used by the character.
 ///
-/// This is static information which isn't edited once 
+/// This is static information which isn't edited once
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Race {
     name: String,
