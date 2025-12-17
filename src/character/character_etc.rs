@@ -5,6 +5,8 @@ use super::stats::{Alignment, Size};
 /// Contains all the etc strings for describing the story of a
 /// character.
 ///
+/// None of these have any mechanical effects.
+///
 /// All of the fields are split by paragraphs.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CharacterStory {
@@ -17,7 +19,7 @@ pub struct CharacterStory {
 
 /// Contains all the etc strings for describing how a character looks and acts.
 ///
-/// All of the fields are split by paragraphs.
+/// Most of these do not have any mechanical effects.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CharacterDescriptors {
     pub gender: String,
