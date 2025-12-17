@@ -196,7 +196,7 @@ pub struct Character {
 impl Character {
     /// Builds a level 1 character with base equipment from the class and background.
     ///
-    /// Typically using [CharacterBuilder](crate::character::CharacterBuilder) is preferred over this.
+    /// Typically using [CharacterBuilder] is preferred over this.
     pub fn new(
         name: String,
         class: &Class,
