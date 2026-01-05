@@ -118,7 +118,8 @@ impl Dnd5eapiDatastore {
         self.classes.try_get(class_name.to_string())
     }
     pub fn request_background(&self, background_name: &str) {
-        self.backgrounds.request(background_name.to_string(), &self.runtime);
+        self.backgrounds
+            .request(background_name.to_string(), &self.runtime);
     }
     pub fn get_background(&self, background_name: &str) -> Option<Arc<Background>> {
         self.backgrounds.try_get(background_name.to_string())

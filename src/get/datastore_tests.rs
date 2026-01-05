@@ -1,12 +1,10 @@
 use std::time::{Duration, Instant};
 
-
 #[test]
 fn datastore_get_item() {
     let datastore = super::Dnd5eapiDatastore::new();
 
     datastore.request_item("shortsword");
-
 
     let start = Instant::now();
     let interval = Duration::from_millis(100);

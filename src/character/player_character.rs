@@ -167,10 +167,9 @@ pub struct Character {
     /// Extra features from etc sources that aren't listed otherwise. Feel free to append on any
     /// extra feature you want your character to have.
     pub bonus_features: Vec<Feature>,
-    /// The items the character has. This also stores whether or not the item is currently
-    /// held/equipped.
+    /// The items the character has.
     pub items: Vec<HeldEquipment>,
-    /// See the [Character] documentation for items.
+    /// See the [documentation for items](Character#items).
     pub unchosen_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     equipment_proficiencies: EquipmentProficiencies,
     pub class_skill_proficiencies: Vec<PresentedOption<SkillType>>,
