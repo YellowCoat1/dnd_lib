@@ -69,7 +69,7 @@ async fn level_3_druid() {
     );
     assert_eq!(boopo.available_pact_slots, None);
 
-    let v = boopo.prepare_spells();
+    let v = boopo.prepare_spells_multiple();
     assert_eq!(
         v.len(),
         1,

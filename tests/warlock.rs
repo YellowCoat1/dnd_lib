@@ -95,7 +95,7 @@ async fn level_10_warlock() {
     assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 20]));
 
     // There should be no spells to prepare for warlock, as they know their spells.
-    assert_eq!(baroopa.prepare_spells().len(), 0);
+    assert_eq!(baroopa.prepare_spells_multiple().len(), 0);
 
     // add the spells
     let warlock_spells = &mut baroopa.classes[0]

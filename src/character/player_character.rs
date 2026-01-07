@@ -22,7 +22,7 @@ use crate::character::background::LanguageOption;
 use crate::character::choice::chosen_ref;
 use crate::character::class::ItemCategory;
 use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment, Item};
-use crate::character::spells::SpellCastingPreperation;
+use crate::character::spells::{SpellCastingPreperation, SpellsAvailable};
 use crate::character::Subrace;
 
 use super::background::Background;
@@ -1607,48 +1607,7 @@ impl Character {
         }
     }
 
-    /// Returns the information necessary to select spells for each spellcasting class after a long rest. (or after creating
-    /// the character.)
-    ///
-    /// The first field is the index of the [SpeccedClass] of the spellcasting class.
-    ///
-    /// The second field is the prepared spell list of that spellcaster. If you want to access it directly
-    /// instead, just do `character.classes[index].spellcasting.unwrap().1` with the index
-    /// provided.
-    ///
-    /// The third field is the amount of spells (1st level and onward) the character can prepare.
-    ///
-    /// The fourth field is the amount of cantrips the character can prepare.
-    ///
-    /// This function has no secondary effects, and is purely for retrieving data easily.
-    ///
-    /// ```rust
-    ///
-    /// # #[cfg(feature = "dnd5eapi")] {
-    /// # use tokio::runtime::Runtime;
-    /// # let rt = Runtime::new().unwrap();
-    /// # rt.block_on(async {
-    /// # use dnd_lib::prelude::*;
-    /// # let provider = Dnd5eapigetter::new();
-    /// # let wizard = provider.get_class("wizard").await.unwrap();
-    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
-    /// # let human = provider.get_race("human").await.unwrap();
-    /// let mut spellcaster = CharacterBuilder::new("spellcaster")
-    ///     .class(&wizard)
-    ///     .background(&acolyte)
-    ///     .race(&human)
-    ///     .stats(Stats::default())
-    ///     .build().unwrap();
-    /// let prepared_spells = spellcaster.prepare_spells();
-    /// assert_eq!(prepared_spells.len(), 1); // only one spellcasting class
-    /// let (class_index, spell_list, num_spells, num_cantrips) = &prepared_spells[0];
-    /// assert_eq!(*class_index, 0); // only one class, so index is 0
-    /// assert_eq!(*num_spells, 1); // 1 (level) + 0 (int mod) = 1 spell can be prepared
-    /// assert_eq!(*num_cantrips, 3);// wizards get 3 cantrips at level 1
-    /// # })
-    /// # }
-    /// ```
-    pub fn prepare_spells(&mut self) -> Vec<(usize, &mut Vec<Spell>, usize, usize)> {
+    pub fn prepare_spells_multiple(&mut self) -> Vec<(usize, &mut Vec<Spell>, SpellsAvailable)> {
         let mut return_vector = vec![];
         let modifiers = self.stats().modifiers();
 
@@ -1667,28 +1626,60 @@ impl Character {
                 continue;
             }
 
-            let cantrips_num = casting.0.cantrips_per_level[class_level - 1];
+            let num_cantrips = casting.0.cantrips_per_level[class_level - 1];
 
             let ability = *modifiers
                 .stats
                 .get_stat_type(&casting.0.spellcasting_ability);
-            let spells_num = (class.level as isize + ability).max(0) as usize;
-            return_vector.push((n, &mut casting.1, spells_num, cantrips_num));
+            let num_spells = (class.level as isize + ability).max(0) as usize;
+            let spells_available = SpellsAvailable {
+                num_spells,
+                num_cantrips,
+            };
+
+            return_vector.push((n, &mut casting.1, spells_available));
         }
 
         return_vector
     }
 
-    /// Returns the information necessary to select spells for a single spellcasting class after a
-    /// long rest. (or after creating the character.)
+    /// Returns the information necessary to select spells after a long rest (or creating
+    /// the character.)
     ///
-    /// See [Character::prepare_spells] for more information. The fields are the same, just using
-    /// an `Option` instead of a `Vec`, and omitting the class index since it's provided as an
-    /// argument.
-    pub fn prepare_spells_single(
+    /// The first field is the prepared spell list of that spellcaster. If you want to access it directly
+    /// instead, just do `character.classes[class_index].spellcasting.unwrap().1` 
+    ///
+    /// If you instead just need the number of spells and cantrips to prepare, use
+    /// [Character::num_spells].
+    ///
+    /// ```rust
+    ///
+    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # use tokio::runtime::Runtime;
+    /// # let rt = Runtime::new().unwrap();
+    /// # rt.block_on(async {
+    /// # use dnd_lib::prelude::*;
+    /// # let provider = Dnd5eapigetter::new();
+    /// # let wizard = provider.get_class("wizard").await.unwrap();
+    /// # let acolyte = provider.get_background("acolyte").await.unwrap();
+    /// # let human = provider.get_race("human").await.unwrap();
+    /// let mut spellcaster = CharacterBuilder::new("spellcaster")
+    ///     .class(&wizard)
+    ///     .background(&acolyte)
+    ///     .race(&human)
+    ///     .stats(Stats::default())
+    ///     .build().unwrap();
+    /// let prepared_spells = spellcaster.prepare_spells(0);
+    /// let (_spell_list, spells_available) = prepared_spells.unwrap();
+    /// assert_eq!(spells_available.num_spells, 1); // 1 (level) + 0 (int mod) = 1 spell can be prepared
+    /// assert_eq!(spells_available.num_cantrips, 3);// wizards get 3 cantrips at level 1
+    /// # })
+    /// # }
+    /// ```
+    pub fn prepare_spells(
         &mut self,
         class_index: usize,
-    ) -> Option<(&mut Vec<Spell>, usize, usize)> {
+    ) -> Option<(&mut Vec<Spell>, SpellsAvailable)> {
         let modifiers = self.stats().modifiers();
         let class = self.classes.get_mut(class_index)?;
         let class_level = class.level;
@@ -1702,21 +1693,24 @@ impl Character {
             return None;
         }
 
-        let cantrips_num = casting.0.cantrips_per_level[class_level - 1];
+        let num_cantrips = casting.0.cantrips_per_level[class_level - 1];
 
         let ability = *modifiers
             .stats
             .get_stat_type(&casting.0.spellcasting_ability);
-        let spells_num = (class.level as isize + ability).max(0) as usize;
-        Some((&mut casting.1, spells_num, cantrips_num))
+        let num_spells = (class.level as isize + ability).max(0) as usize;
+        let spells_available = SpellsAvailable {
+            num_spells,
+            num_cantrips,
+        };
+
+        Some((&mut casting.1, spells_available))
     }
 
-    /// Gets the amount of spells the class at the index can prepare or know. The first field is
-    /// the amount of spells (1st level and onward), and the second field is the amount of
-    /// cantrips.
+    /// Gets the amount of spells the class at the index can prepare or know. 
     ///
     /// Returns [None] if the class does not exist, or if the class is not a spellcaster.
-    pub fn num_spells(&mut self, class_index: usize) -> Option<(usize, usize)> {
+    pub fn num_spells(&mut self, class_index: usize) -> Option<SpellsAvailable> {
         let class_level = self.classes.get(class_index)?.level;
         if class_level == 0 {
             return None;
@@ -1728,10 +1722,15 @@ impl Character {
             .modifiers()
             .stats
             .get_stat_type(&spellcasting_ability);
-        let cantrips_num = casting.cantrips_per_level[class_level - 1];
-        let spells_num = (class_level as isize + modifier).max(0) as usize;
+        let num_cantrips = casting.cantrips_per_level[class_level - 1];
+        let num_spells = (class_level as isize + modifier).max(0) as usize;
 
-        Some((spells_num, cantrips_num))
+        let spells_available = SpellsAvailable {
+            num_spells,
+            num_cantrips
+        };
+
+        Some(spells_available)
     }
 }
 

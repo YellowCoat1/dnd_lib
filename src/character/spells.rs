@@ -231,6 +231,15 @@ pub enum SpellCastingPreperation {
     Known,
 }
 
+
+
+/// Represents the amount of spells available to a caster.
+///
+/// E.g. 3 spells to prepare and 2 cantrips known.
+pub struct SpellsAvailable {
+    pub num_spells: usize,
+    pub num_cantrips: usize,
+}
 /// The spell slots for every level of a full spell caster.
 pub const CASTER_SLOTS: [[usize; 9]; 20] = [
     [2, 0, 0, 0, 0, 0, 0, 0, 0],
