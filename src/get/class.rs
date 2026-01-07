@@ -309,6 +309,7 @@ fn equipment_category_choice(map: &Value) -> Result<ItemCategory, CharacterDataE
 fn str_to_cat(s: &str) -> Option<ItemCategory> {
     match s.to_lowercase().replace(['_', '-'], " ").as_str() {
         "simple weapons" => Some(ItemCategory::Weapon(WeaponType::Simple)),
+        "simple melee weapons" => Some(ItemCategory::Weapon(WeaponType::Simple)),
         "martial weapons" => Some(ItemCategory::Weapon(WeaponType::Martial)),
         "a martial weapon" => Some(ItemCategory::Weapon(WeaponType::Martial)),
         "a simple weapon" => Some(ItemCategory::Weapon(WeaponType::Simple)),
