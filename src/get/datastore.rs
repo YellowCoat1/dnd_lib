@@ -76,9 +76,9 @@ type SpellRequester = InternalRequester<
 /// ```rust
 /// use dnd_lib::get::Dnd5eapiDatastore;
 /// let datastore = Dnd5eapiDatastore::new();
-/// datastore.request_class("wizard".to_string());
+/// datastore.request_class("wizard");
 /// // Do other stuff...
-/// if let Some(wizard_class) = datastore.get_class("wizard".to_string()) {
+/// if let Some(wizard_class) = datastore.get_class("wizard") {
 ///     // Use the wizard_class data
 ///     println!("Wizard class data is ready!");
 /// } else {
