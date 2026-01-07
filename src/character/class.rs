@@ -153,6 +153,16 @@ pub enum ItemCategory {
     Armor(ArmorCategory),
 }
 
+impl std::fmt::Display for ItemCategory {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ItemCategory::Item(item) => write!(f, "{}", item.name),
+            ItemCategory::Weapon(weapon_type) => write!(f, "{}", weapon_type),
+            ItemCategory::Armor(armor_category) => write!(f, "{}", armor_category),
+        }
+    }
+}
+
 /// Tracks a resource that the class uses. Things like the barbarian rages or the druid wildshapes,
 /// which need to be actively tracked and stored.
 ///

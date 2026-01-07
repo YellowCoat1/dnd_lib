@@ -267,6 +267,7 @@ pub enum WeaponType {
     Martial,
     MartialRanged,
 }
+
 ///
 /// Takes equipment proficiencies and a weapon type, returns if the proficiencies has that weapon
 /// type.
