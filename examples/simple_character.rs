@@ -10,13 +10,20 @@ async fn main() {
         // wait for it to complete getting from the api
         .await
         // panic if there was an error
-        .unwrap();
+        .expect("Failed to get elf");
     println!("got race");
+
     // same for the class
-    let druid = provider.get_class("druid").await.unwrap();
+    let druid = provider.get_class("druid")
+        .await
+        .expect("Failed to get druid");
     println!("got class");
+
     // and the background
-    let acolyte = provider.get_background("acolyte").await.unwrap();
+    let acolyte = provider.get_background("acolyte")
+        .await
+        .expect("Failed to get acolyte");
+
     println!("got background");
 
     // some basic stats for our character
@@ -30,7 +37,7 @@ async fn main() {
     };
 
     // now we can create our character
-    let george = CharacterBuilder::new("George") // first, creating the builder with the name of the character
+    let mut george = CharacterBuilder::new("George") // first, creating the builder with the name of the character
         .race(&elf) // making george an elf
         .class(&druid) // making george a druid
         .background(&acolyte) // giving george the acolyte background
@@ -48,6 +55,7 @@ async fn main() {
     
     println!("Items to choose from:");
     for item in unchosen_items.iter() { // for every item choice
+        print!(" - ");
         match item {
             PresentedOption::Base(b) => { // if it's chosen,
                 for (i, item) in b.iter().enumerate() { // list all the items
@@ -74,4 +82,26 @@ async fn main() {
             }
         }
     }
+
+    // choose the shield
+    // this is from the first choice, and within that choice the shield is the first option
+    george.choose_items(0, 0);
+
+    // choose the quarterstaff for the second choice
+    // this is the second choice, and within that choice "Any simple melee weapon" is the second option
+    george.choose_items(1, 1); 
+
+    // get the quarterstaff item
+    let quarterstaff = provider.get_item("quarterstaff")
+        .await
+        .expect("Failed to get quarterstaff");
+
+    // set the quarterstaff as the unchosen item for the second choice
+    // notice how the choice index is now 0. 
+    // Because we set the choice already, that choice is now the one and only choice, so its index is 0.
+    let result = george.set_unchosen_category(1, 0, quarterstaff);
+    assert!(result, "Failed to give the druid a quarterstaff");
+
+    // finally, submit these choices and give the character these items.
+    george.add_chosen_items();
 }
