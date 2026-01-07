@@ -104,4 +104,15 @@ async fn main() {
 
     // finally, submit these choices and give the character these items.
     george.add_chosen_items();
+
+
+    // selecting the subrace for george
+    let subraces = george.race.subraces();
+    println!("Subraces to choose from:");
+    for subrace in subraces.choices().unwrap().iter() {
+        println!(" - {}", subrace.name());
+    }
+
+    // choosing the high elf subrace (the first one)
+    george.race.choose_subrace(0);
 }
