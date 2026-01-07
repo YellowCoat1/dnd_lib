@@ -156,9 +156,9 @@ pub enum ItemCategory {
 impl std::fmt::Display for ItemCategory {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ItemCategory::Item(item) => write!(f, "{}", item.name),
-            ItemCategory::Weapon(weapon_type) => write!(f, "{}", weapon_type),
-            ItemCategory::Armor(armor_category) => write!(f, "{}", armor_category),
+            ItemCategory::Item(item) => write!(f, "a {}", item.name),
+            ItemCategory::Weapon(weapon_type) => write!(f, "any {} weapon", weapon_type),
+            ItemCategory::Armor(armor_category) => write!(f, "any {} armor", armor_category),
         }
     }
 }

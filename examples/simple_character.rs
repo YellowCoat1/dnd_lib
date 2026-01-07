@@ -43,21 +43,37 @@ async fn main() {
     // we want to select the items that george can select from his class and background.
 
     // first, we get the availible items.
-    let _unchosen_items = george.unchosen_items();
+    let unchosen_items = george.unchosen_items();
 
-    //
-    //    println!("Items to choose from:");
-    //    for item in unchosen_items.iter() {
-    //        match item {
-    //            PresentedOption::Base(b) => {
-    //                for item in b.iter() {
-    //                    print!("a {}, ", item.0.name);
-    //                }
-    //            }
-    //            PresentedOption::Choice(c) => {
-    //                for option in c.iter()
-    //            }
-    //        }
-    //    }
-    //
+    
+    println!("Items to choose from:");
+    for item in unchosen_items.iter() { // for every item choice
+        match item {
+            PresentedOption::Base(b) => { // if it's chosen,
+                for (i, item) in b.iter().enumerate() { // list all the items
+                    print!("{}", item.0);
+                    dbg!("item: {}", &item.0);
+                    if i != b.len() - 1 {
+                        print!(", ");
+                    }
+                }
+                println!();
+            }
+            PresentedOption::Choice(c) => { // if it's a choice,
+                for (i, option) in c.iter().enumerate() { // for every option
+                    for (j, item) in option.iter().enumerate() { // list the items
+                        print!("{}", item.0);
+                        dbg!("item: {}", &item.0);
+                        if j != option.len() - 1 {
+                            print!(", ");
+                        }
+                    }
+                    if i != c.len() - 1 {
+                        print!(" or ");
+                    }
+                }
+                println!();
+            }
+        }
+    }
 }
