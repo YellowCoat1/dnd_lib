@@ -8,7 +8,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// Builds a character from parts.
 ///
 /// ```rust
-/// #[cfg(feature = "dnd5eapi")] {
+/// # #[cfg(feature = "dnd5eapi")] {
 /// # use dnd_lib::prelude::*;
 /// # use tokio::runtime::Runtime;
 /// # let rt = Runtime::new().unwrap();
