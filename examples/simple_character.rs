@@ -52,7 +52,6 @@ async fn main() {
             PresentedOption::Base(b) => { // if it's chosen,
                 for (i, item) in b.iter().enumerate() { // list all the items
                     print!("{}", item.0);
-                    dbg!("item: {}", &item.0);
                     if i != b.len() - 1 {
                         print!(", ");
                     }
@@ -63,7 +62,6 @@ async fn main() {
                 for (i, option) in c.iter().enumerate() { // for every option
                     for (j, item) in option.iter().enumerate() { // list the items
                         print!("{}", item.0);
-                        dbg!("item: {}", &item.0);
                         if j != option.len() - 1 {
                             print!(", ");
                         }
