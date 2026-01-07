@@ -1,9 +1,12 @@
 use dnd_lib::{character::features::PresentedOption, prelude::*};
 
+// An example of a simple level 1 character, with all essential choices.
+
 #[tokio::main]
 async fn main() {
-    // creating an api getter.
+    // creating an api getter, which will fetch data from the 5e api
     let provider = Dnd5eapigetter::new();
+
     // fetching the race "elf"
     let elf = provider
         .get_race("elf")
@@ -54,27 +57,28 @@ async fn main() {
 
     
     println!("Items to choose from:");
+    // this prints out all the unchosen items
     for item in unchosen_items.iter() { // for every item choice
         print!(" - ");
         match item {
             PresentedOption::Base(b) => { // if it's chosen,
                 for (i, item) in b.iter().enumerate() { // list all the items
                     print!("{}", item.0);
-                    if i != b.len() - 1 {
+                    if i != b.len() - 1 { // add a comma inbetween items
                         print!(", ");
                     }
                 }
                 println!();
             }
-            PresentedOption::Choice(c) => { // if it's a choice,
-                for (i, option) in c.iter().enumerate() { // for every option
-                    for (j, item) in option.iter().enumerate() { // list the items
+            PresentedOption::Choice(choices_list) => { // if it's unchosen, (which they all should be, it is "unchosen_items" for a reason)
+                for (index, option) in choices_list.iter().enumerate() { // for every option
+                    for (index2, item) in option.iter().enumerate() { // list the items
                         print!("{}", item.0);
-                        if j != option.len() - 1 {
+                        if index2 != option.len() - 1 { // add a comma imbetween items
                             print!(", ");
                         }
                     }
-                    if i != c.len() - 1 {
+                    if index != choices_list.len() - 1 { // add an "or" inbetween options
                         print!(" or ");
                     }
                 }
@@ -113,6 +117,6 @@ async fn main() {
         println!(" - {}", subrace.name());
     }
 
-    // choosing the high elf subrace (the first one)
+    // choosing the high elf subrace (the first, and only one)
     george.race.choose_subrace(0);
 }
