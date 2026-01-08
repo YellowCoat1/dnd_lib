@@ -6,7 +6,7 @@ use crate::character::features::{Feature, FeatureEffect};
 use crate::character::stats::StatType;
 use crate::getter::DataProvider;
 
-use crate::provider;
+use crate::{CharacterBuilder, provider};
 
 #[tokio::test]
 async fn char_stats() {
@@ -112,7 +112,6 @@ async fn char_multiclassing() {
     assert_eq!(john.level_up(&fighter), None);
     john.bonus_features.push(stats_bonus_dex.clone());
 
-    dbg!(john.stats());
     // now that john's stats are boosted, john meets the minimum, and john can level up
     assert_eq!(john.level_up(&fighter), Some(1));
 
@@ -221,3 +220,72 @@ async fn barbarian_rage() {
     let rage = boko.classes[0].tracked_fields.first().unwrap();
     assert_eq!(rage.1, 5);
 }
+
+
+#[tokio::test]
+async fn builder_test() {
+    let provider = provider();
+    let human_future = provider.get_race("human");
+    let druid_future = provider.get_class("druid");
+    let acolyte_future = provider.get_background("acolyte");
+    let quarterstaff_future = provider.get_item("quarterstaff");
+
+    let human = human_future.await.expect("failed to get human race");
+    let druid = druid_future.await.expect("failed to get fighter class");
+    let acolyte = acolyte_future.await.expect("failed to get acolyte background");
+
+
+    let character = CharacterBuilder::new("TestChar")
+        .race(&human)
+        .class(&druid)
+        .background(&acolyte)
+        .stats(Stats::default())
+        .build();
+    assert!(character.is_ok(), "Failed to build character: {:?}", character.err());
+
+    let quarterstaff = quarterstaff_future.await.expect("failed to get quarterstaff item");
+    let character2_result = CharacterBuilder::new("TestChar2")
+        .race(&human)
+        .class(&druid)
+        .background(&acolyte)
+        .stats(Stats::default())
+        .choose_items(0, 0)
+        .choose_items(1, 1)
+        .set_unchosen_category(1, 0, quarterstaff);
+    let character2 = match character2_result.clone().build() {
+        Ok(c) => c,
+        Err(e) => panic!("Failed to build character with item choices: {:?}", e),
+    };
+
+    assert_eq!(character2.unchosen_items().len(), 0, "There should be no unchosen items left");
+
+
+    let character_result_race_err = CharacterBuilder::new("TestChar3")
+        .class(&druid)
+        .background(&acolyte)
+        .stats(Stats::default())
+        .build();
+    assert!(character_result_race_err.is_err(), "Building character without race should fail");
+
+    let character_result_class_err = CharacterBuilder::new("TestChar4")
+        .race(&human)
+        .background(&acolyte)
+        .stats(Stats::default())
+        .build();
+    assert!(character_result_class_err.is_err(), "Building character without class should fail");
+
+    let character_result_background_err = CharacterBuilder::new("TestChar5")
+        .race(&human)
+        .class(&druid)
+        .stats(Stats::default())
+        .build();
+    assert!(character_result_background_err.is_err(), "Building character without background should fail"); 
+
+    let character_result_stats_err = CharacterBuilder::new("TestChar6")
+        .race(&human)
+        .class(&druid)
+        .background(&acolyte)
+        .build();
+    assert!(character_result_stats_err.is_err(), "Building character without stats should fail");
+}
+

@@ -19,4 +19,7 @@ pub mod player_character;
 mod character_tests;
 
 #[cfg(test)]
+mod background_tests;
+
+#[cfg(test)]
 mod stats_tests;

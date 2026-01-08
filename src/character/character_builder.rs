@@ -70,7 +70,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 pub struct CharacterBuilder<'a, 'b, 'c> {
     name: String,
     iclass: Option<&'a Class>,
-    items: Option<Vec<ItemChoice>>,
+    items: Option<(Vec<ItemChoice>, Vec<usize>)>,
     ibackground: Option<&'b Background>,
     irace: Option<&'c Race>,
     istats: Option<Stats>,
@@ -113,60 +113,85 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
     // If items are already set, returns a mutable reference to them.
     // If not, intializes them from the class.
     // If there is no class, returns None.
-    fn set_items(&mut self) -> Option<&mut Vec<ItemChoice>> {
+    fn set_items(&mut self) -> Option<&mut (Vec<ItemChoice>, Vec<usize>)> {
         match (&mut self.items, &mut self.iclass) {
             (Some(_), Some(_)) => self.items.as_mut(),
             (None, Some(c)) => {
                 let v = c.beginning_items().clone();
-                self.items = Some(v);
+                let v2 = Self::choice_indices(&v);
+                self.items = Some((v, v2));
                 self.items.as_mut()
             }
             (_, None) => None,
         }
     }
 
+    fn choice_indices(items: &Vec<ItemChoice>) -> Vec<usize> {
+        
+        let mut ret_vec = vec![];
+
+        for (index, item) in items.iter().enumerate() {
+            match item {
+                PresentedOption::Base(_) => (),
+                PresentedOption::Choice(_) => ret_vec.push(index),
+            }
+        }
+
+        ret_vec
+    }
+
     /// Sets the chosen items, in the case that you want to choose your items while building the
     /// character.
     ///
     /// This method acts in the same way as [Character::choose_items].
-    pub fn choose_items(mut self, index: usize, choice_index: usize) -> (Self, bool) {
-        let items = match self.set_items() {
+    ///
+    /// Does nothing on an error.
+    pub fn choose_items(mut self, index: usize, choice_index: usize) -> Self {
+        let (items, indexes) = match self.set_items() {
             Some(s) => s,
-            _ => return (self, false),
+            _ => return self,
         };
 
-        if let Some(option) = items.get_mut(index) {
-            option.choose_in_place(choice_index);
-            (self, true)
-        } else {
-            (self, false)
-        }
+        let item_choice = match indexes.get(index).and_then(|&v| items.get_mut(v)) {
+            Some(choice) => choice,
+            _ => return self,
+        };
+
+        item_choice.choose_in_place(choice_index);
+        self
     }
 
     /// Chooses an unchosen [ItemCategory] directly in the unchosen item list.
     ///
     /// This method acts in the same way as [Character::set_unchosen_category].
+    ///
+    /// Does nothing on an error.
     pub fn set_unchosen_category(
         mut self,
         index: usize,
         choice_index: usize,
         item: Item,
-    ) -> (Self, bool) {
-        let items = match self.set_items() {
+    ) -> Self {
+        let (items, indexes) = match self.set_items() {
             Some(s) => s,
-            _ => return (self, false),
+            _ => return self,
+        };
+        
+        let item_choice = match indexes.get(index).and_then(|&v| items.get_mut(v)) {
+            Some(choice) => choice,
+            _ => return self,
         };
 
-        let choices = match items.get_mut(index) {
-            Some(PresentedOption::Base(choices)) => choices,
-            _ => return (self, false),
+        let choices = match item_choice {
+            PresentedOption::Base(choices) => choices,
+            _ => return self,
         };
         let category = match choices.get_mut(choice_index) {
             Some(v) => &mut v.0,
-            _ => return (self, false),
+            _ => return self,
         };
         *category = ItemCategory::Item(item);
-        (self, true)
+        self
     }
 
     /// Builds the character. Panics if one or all of the fields have not been set.
@@ -178,7 +203,7 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
 
         let mut character = Character::new(self.name, class, background, race, stats);
         if let Some(items) = self.items {
-            character.unchosen_items = items;
+            character.unchosen_items = items.0;
             character.add_chosen_items();
         }
         Ok(character)
