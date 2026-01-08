@@ -76,8 +76,14 @@ async fn level_3_druid() {
         "There were more classes returned by the spells prepared utility than there should be"
     );
     let (_, prepped_spell_list, spell_amounts) = v.into_iter().next().unwrap();
-    assert_eq!(spell_amounts.num_spells, 6, "incorrect number of spells to prepare");
-    assert_eq!(spell_amounts.num_cantrips, 2, "incorrect number of cantrips to prepare");
+    assert_eq!(
+        spell_amounts.num_spells, 6,
+        "incorrect number of spells to prepare"
+    );
+    assert_eq!(
+        spell_amounts.num_cantrips, 2,
+        "incorrect number of cantrips to prepare"
+    );
     *prepped_spell_list = try_join_all(spells).await.expect("Couldn't get spells");
 
     let spells = boopo.classes[0]

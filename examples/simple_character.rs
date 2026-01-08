@@ -17,13 +17,15 @@ async fn main() {
     println!("got race");
 
     // same for the class
-    let druid = provider.get_class("druid")
+    let druid = provider
+        .get_class("druid")
         .await
         .expect("Failed to get druid");
     println!("got class");
 
     // and the background
-    let acolyte = provider.get_background("acolyte")
+    let acolyte = provider
+        .get_background("acolyte")
         .await
         .expect("Failed to get acolyte");
 
@@ -55,30 +57,38 @@ async fn main() {
     // first, we get the availible items.
     let unchosen_items = george.unchosen_items();
 
-    
     println!("Items to choose from:");
     // this prints out all the unchosen items
-    for item in unchosen_items.iter() { // for every item choice
+    for item in unchosen_items.iter() {
+        // for every item choice
         print!(" - ");
         match item {
-            PresentedOption::Base(b) => { // if it's chosen,
-                for (i, item) in b.iter().enumerate() { // list all the items
+            PresentedOption::Base(b) => {
+                // if it's chosen,
+                for (i, item) in b.iter().enumerate() {
+                    // list all the items
                     print!("{}", item.0);
-                    if i != b.len() - 1 { // add a comma inbetween items
+                    if i != b.len() - 1 {
+                        // add a comma inbetween items
                         print!(", ");
                     }
                 }
                 println!();
             }
-            PresentedOption::Choice(choices_list) => { // if it's unchosen, (which they all should be, it is "unchosen_items" for a reason)
-                for (index, option) in choices_list.iter().enumerate() { // for every option
-                    for (index2, item) in option.iter().enumerate() { // list the items
+            PresentedOption::Choice(choices_list) => {
+                // if it's unchosen, (which they all should be, it is "unchosen_items" for a reason)
+                for (index, option) in choices_list.iter().enumerate() {
+                    // for every option
+                    for (index2, item) in option.iter().enumerate() {
+                        // list the items
                         print!("{}", item.0);
-                        if index2 != option.len() - 1 { // add a comma imbetween items
+                        if index2 != option.len() - 1 {
+                            // add a comma imbetween items
                             print!(", ");
                         }
                     }
-                    if index != choices_list.len() - 1 { // add an "or" inbetween options
+                    if index != choices_list.len() - 1 {
+                        // add an "or" inbetween options
                         print!(" or ");
                     }
                 }
@@ -93,22 +103,22 @@ async fn main() {
 
     // choose the quarterstaff for the second choice
     // this is the second choice, and within that choice "Any simple melee weapon" is the second option
-    george.choose_items(1, 1); 
+    george.choose_items(1, 1);
 
     // get the quarterstaff item
-    let quarterstaff = provider.get_item("quarterstaff")
+    let quarterstaff = provider
+        .get_item("quarterstaff")
         .await
         .expect("Failed to get quarterstaff");
 
     // set the quarterstaff as the unchosen item for the second choice
-    // notice how the choice index is now 0. 
+    // notice how the choice index is now 0.
     // Because we set the choice already, that choice is now the one and only choice, so its index is 0.
     let result = george.set_unchosen_category(1, 0, quarterstaff);
     assert!(result, "Failed to give the druid a quarterstaff");
 
     // finally, submit these choices and give the character these items.
     george.add_chosen_items();
-
 
     // selecting the subrace for george
     let subraces = george.race.subraces();

@@ -6,7 +6,7 @@ use crate::character::features::{Feature, FeatureEffect};
 use crate::character::stats::StatType;
 use crate::getter::DataProvider;
 
-use crate::{CharacterBuilder, provider};
+use crate::{provider, CharacterBuilder};
 
 #[tokio::test]
 async fn char_stats() {
@@ -221,7 +221,6 @@ async fn barbarian_rage() {
     assert_eq!(rage.1, 5);
 }
 
-
 #[tokio::test]
 async fn builder_test() {
     let provider = provider();
@@ -232,8 +231,9 @@ async fn builder_test() {
 
     let human = human_future.await.expect("failed to get human race");
     let druid = druid_future.await.expect("failed to get fighter class");
-    let acolyte = acolyte_future.await.expect("failed to get acolyte background");
-
+    let acolyte = acolyte_future
+        .await
+        .expect("failed to get acolyte background");
 
     let character = CharacterBuilder::new("TestChar")
         .race(&human)
@@ -241,9 +241,15 @@ async fn builder_test() {
         .background(&acolyte)
         .stats(Stats::default())
         .build();
-    assert!(character.is_ok(), "Failed to build character: {:?}", character.err());
+    assert!(
+        character.is_ok(),
+        "Failed to build character: {:?}",
+        character.err()
+    );
 
-    let quarterstaff = quarterstaff_future.await.expect("failed to get quarterstaff item");
+    let quarterstaff = quarterstaff_future
+        .await
+        .expect("failed to get quarterstaff item");
     let character2_result = CharacterBuilder::new("TestChar2")
         .race(&human)
         .class(&druid)
@@ -257,35 +263,49 @@ async fn builder_test() {
         Err(e) => panic!("Failed to build character with item choices: {:?}", e),
     };
 
-    assert_eq!(character2.unchosen_items().len(), 0, "There should be no unchosen items left");
-
+    assert_eq!(
+        character2.unchosen_items().len(),
+        0,
+        "There should be no unchosen items left"
+    );
 
     let character_result_race_err = CharacterBuilder::new("TestChar3")
         .class(&druid)
         .background(&acolyte)
         .stats(Stats::default())
         .build();
-    assert!(character_result_race_err.is_err(), "Building character without race should fail");
+    assert!(
+        character_result_race_err.is_err(),
+        "Building character without race should fail"
+    );
 
     let character_result_class_err = CharacterBuilder::new("TestChar4")
         .race(&human)
         .background(&acolyte)
         .stats(Stats::default())
         .build();
-    assert!(character_result_class_err.is_err(), "Building character without class should fail");
+    assert!(
+        character_result_class_err.is_err(),
+        "Building character without class should fail"
+    );
 
     let character_result_background_err = CharacterBuilder::new("TestChar5")
         .race(&human)
         .class(&druid)
         .stats(Stats::default())
         .build();
-    assert!(character_result_background_err.is_err(), "Building character without background should fail"); 
+    assert!(
+        character_result_background_err.is_err(),
+        "Building character without background should fail"
+    );
 
     let character_result_stats_err = CharacterBuilder::new("TestChar6")
         .race(&human)
         .class(&druid)
         .background(&acolyte)
         .build();
-    assert!(character_result_stats_err.is_err(), "Building character without stats should fail");
+    assert!(
+        character_result_stats_err.is_err(),
+        "Building character without stats should fail"
+    );
 }
-

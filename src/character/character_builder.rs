@@ -126,8 +126,7 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         }
     }
 
-    fn choice_indices(items: &Vec<ItemChoice>) -> Vec<usize> {
-        
+    fn choice_indices(items: &[ItemChoice]) -> Vec<usize> {
         let mut ret_vec = vec![];
 
         for (index, item) in items.iter().enumerate() {
@@ -166,17 +165,12 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
     /// This method acts in the same way as [Character::set_unchosen_category].
     ///
     /// Does nothing on an error.
-    pub fn set_unchosen_category(
-        mut self,
-        index: usize,
-        choice_index: usize,
-        item: Item,
-    ) -> Self {
+    pub fn set_unchosen_category(mut self, index: usize, choice_index: usize, item: Item) -> Self {
         let (items, indexes) = match self.set_items() {
             Some(s) => s,
             _ => return self,
         };
-        
+
         let item_choice = match indexes.get(index).and_then(|&v| items.get_mut(v)) {
             Some(choice) => choice,
             _ => return self,

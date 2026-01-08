@@ -1,17 +1,19 @@
-use crate::character::{background::BackgroundBuildError, choice::PresentedOption, features::Feature, items::{Item, ItemCount}, stats::SkillType};
-
-use super::background::{
-    BackgroundBuilder,
-    LanguageOption,
+use crate::character::{
+    background::BackgroundBuildError,
+    choice::PresentedOption,
+    features::Feature,
+    items::{Item, ItemCount},
+    stats::SkillType,
 };
 
-
+use super::background::{BackgroundBuilder, LanguageOption};
 
 #[test]
 fn test_background_builder_success() {
     use crate::character::{choice::PresentedOption, stats::SkillType};
-    
-    let lang_option_1 = LanguageOption::new_named_choice(vec!["Common".to_string(), "Elvish".to_string()]);
+
+    let lang_option_1 =
+        LanguageOption::new_named_choice(vec!["Common".to_string(), "Elvish".to_string()]);
     let lang_option_2 = LanguageOption::Fixed(String::new());
 
     let item = Item {
@@ -36,7 +38,6 @@ fn test_background_builder_success() {
         .add_proficiency(PresentedOption::Base(SkillType::Deception))
         .add_language_option(lang_option_1.clone())
         .add_language_option(lang_option_2.clone())
-
         .add_personality_trait("I don't like some things".to_string())
         .add_personality_trait("I enjoy adventures".to_string())
         .add_ideal("Freedom".to_string())
@@ -66,7 +67,10 @@ fn test_background_builder_success() {
 #[test]
 fn test_background_builder_failure() {
     let background_result = BackgroundBuilder::new("Invalid Background").build();
-    assert!(background_result.is_err(), "background build should have failed");
+    assert!(
+        background_result.is_err(),
+        "background build should have failed"
+    );
 
     let proficiency = PresentedOption::Base(SkillType::Athletics);
 
@@ -76,8 +80,13 @@ fn test_background_builder_failure() {
         .add_flaw("flaw".to_string())
         .add_ideal("ideal".to_string())
         .build();
-    let no_prof_err = background_result_no_prof.expect_err("Expected error due to no proficiencies");
-    assert_eq!(no_prof_err, BackgroundBuildError::EmptyProficiencies, "Expected EmptyProficiencies error");
+    let no_prof_err =
+        background_result_no_prof.expect_err("Expected error due to no proficiencies");
+    assert_eq!(
+        no_prof_err,
+        BackgroundBuildError::EmptyProficiencies,
+        "Expected EmptyProficiencies error"
+    );
 
     let background_result_no_bond = BackgroundBuilder::new("No Bond Background")
         .add_personality_traits(vec!["trait1".to_string(), "trait2".to_string()])
@@ -86,7 +95,11 @@ fn test_background_builder_failure() {
         .add_proficiency(proficiency.clone())
         .build();
     let no_bond_err = background_result_no_bond.expect_err("Expected error due to no bond");
-    assert_eq!(no_bond_err, BackgroundBuildError::EmptyBonds, "Expected EmptyBond error");
+    assert_eq!(
+        no_bond_err,
+        BackgroundBuildError::EmptyBonds,
+        "Expected EmptyBond error"
+    );
 
     let background_result_no_flaw = BackgroundBuilder::new("No Flaw Background")
         .add_personality_traits(vec!["trait1".to_string(), "trait2".to_string()])
@@ -95,7 +108,11 @@ fn test_background_builder_failure() {
         .add_proficiency(proficiency.clone())
         .build();
     let no_flaw_err = background_result_no_flaw.expect_err("Expected error due to no flaw");
-    assert_eq!(no_flaw_err, BackgroundBuildError::EmptyFlaws, "Expected EmptyFlaw error");
+    assert_eq!(
+        no_flaw_err,
+        BackgroundBuildError::EmptyFlaws,
+        "Expected EmptyFlaw error"
+    );
 
     let background_result_no_ideal = BackgroundBuilder::new("No Ideal Background")
         .add_personality_traits(vec!["trait1".to_string(), "trait2".to_string()])
@@ -104,7 +121,11 @@ fn test_background_builder_failure() {
         .add_proficiency(proficiency.clone())
         .build();
     let no_ideal_err = background_result_no_ideal.expect_err("Expected error due to no ideal");
-    assert_eq!(no_ideal_err, BackgroundBuildError::EmptyIdeals, "Expected EmptyIdeal error");
+    assert_eq!(
+        no_ideal_err,
+        BackgroundBuildError::EmptyIdeals,
+        "Expected EmptyIdeal error"
+    );
 
     let background_result_no_traits = BackgroundBuilder::new("No Traits Background")
         .add_bond("bond".to_string())
@@ -112,8 +133,13 @@ fn test_background_builder_failure() {
         .add_ideal("ideal".to_string())
         .add_proficiency(proficiency)
         .build();
-    let no_traits_err = background_result_no_traits.expect_err("Expected error due to no personality traits");
-    assert_eq!(no_traits_err, BackgroundBuildError::NotEnoughPersonalityTraits, "Expected EmptyPersonalityTraits error");
+    let no_traits_err =
+        background_result_no_traits.expect_err("Expected error due to no personality traits");
+    assert_eq!(
+        no_traits_err,
+        BackgroundBuildError::NotEnoughPersonalityTraits,
+        "Expected EmptyPersonalityTraits error"
+    );
 
     let background_result_one_trait = BackgroundBuilder::new("One Trait Background")
         .add_personality_trait("Only one trait".to_string())
@@ -122,6 +148,11 @@ fn test_background_builder_failure() {
         .add_ideal("ideal".to_string())
         .add_proficiency(PresentedOption::Base(SkillType::Arcana))
         .build();
-    let one_trait_err = background_result_one_trait.expect_err("Expected error due to only one personality trait");
-    assert_eq!(one_trait_err, BackgroundBuildError::NotEnoughPersonalityTraits, "Expected InsufficientPersonalityTraits error");
+    let one_trait_err =
+        background_result_one_trait.expect_err("Expected error due to only one personality trait");
+    assert_eq!(
+        one_trait_err,
+        BackgroundBuildError::NotEnoughPersonalityTraits,
+        "Expected InsufficientPersonalityTraits error"
+    );
 }

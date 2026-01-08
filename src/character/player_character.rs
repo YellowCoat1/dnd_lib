@@ -1647,7 +1647,7 @@ impl Character {
     /// the character.)
     ///
     /// The first field is the prepared spell list of that spellcaster. If you want to access it directly
-    /// instead, just do `character.classes[class_index].spellcasting.unwrap().1` 
+    /// instead, just do `character.classes[class_index].spellcasting.unwrap().1`
     ///
     /// If you instead just need the number of spells and cantrips to prepare, use
     /// [Character::num_spells].
@@ -1707,7 +1707,7 @@ impl Character {
         Some((&mut casting.1, spells_available))
     }
 
-    /// Gets the amount of spells the class at the index can prepare or know. 
+    /// Gets the amount of spells the class at the index can prepare or know.
     ///
     /// Returns [None] if the class does not exist, or if the class is not a spellcaster.
     pub fn num_spells(&mut self, class_index: usize) -> Option<SpellsAvailable> {
@@ -1727,7 +1727,7 @@ impl Character {
 
         let spells_available = SpellsAvailable {
             num_spells,
-            num_cantrips
+            num_cantrips,
         };
 
         Some(spells_available)
