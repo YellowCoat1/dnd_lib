@@ -1125,7 +1125,6 @@ impl Character {
         for specced_class in self.classes.iter_mut() {
             let level_before = specced_class.level - 1;
             let level_after = specced_class.level;
-            dbg!((&level_before, &level_after));
             for etc_field in specced_class.tracked_fields.iter_mut() {
                 let max_before = self::get_etc_field_max(
                     &etc_field.0,
