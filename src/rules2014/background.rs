@@ -1,5 +1,4 @@
-use crate::character::items::Item;
-
+use super::items::Item;
 use super::choice::PresentedOption;
 use super::features::Feature;
 use super::items::ItemCount;
@@ -32,7 +31,7 @@ impl Background {
     /// Returns the proficiencies granted by the background.
     ///
     /// ## Proficiency Representation
-    /// [Classes](crate::character::class::Class), which you may be more familiar with, represent
+    /// [Classes](crate::rules2014::class::Class), which you may be more familiar with, represent
     /// skill proficiencies as a tuple of `(usize, PresentedOption<SkillType>)`, where the `usize`
     /// indicates how many skills you may choose from the presented options. This is because
     /// classes have a list to choose n skills from, but do not provide any base proficiencies.
@@ -81,7 +80,7 @@ impl Background {
 ///
 ///
 /// ```
-/// use dnd_lib::character::background::LanguageOption;
+/// use dnd_lib::rules2014::background::LanguageOption;
 ///
 /// let choices = vec![
 ///   "Elvish".to_string(),
@@ -179,7 +178,7 @@ pub enum BackgroundBuildError {
 /// Builds a [Background] with a builder pattern.
 ///
 /// ```rust
-/// use dnd_lib::character::{
+/// use dnd_lib::rules2014::{
 ///     background::BackgroundBuilder,
 ///     background::LanguageOption,
 ///     stats::SkillType,

@@ -7,7 +7,7 @@
 //! Another major part of this module is the [PresentedOption] enum, which is used throughout the
 //! crate to describe a choice between options that the character can pick.
 
-use crate::character::background::LanguageOption;
+use super::background::LanguageOption;
 
 use super::{
     items::{Action, ArmorCategory, DamageRoll, WeaponType},
@@ -187,7 +187,7 @@ pub enum FeatureEffect {
 
 #[cfg(test)]
 mod tests {
-    use crate::character::{features::CustomAction, items::{DamageRoll, DamageType}};
+    use crate::rules2014::{features::CustomAction, items::{DamageRoll, DamageType}};
 
 
 

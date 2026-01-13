@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
-use dnd_lib::character::features::{AbilityScoreIncrease, FeatureEffect};
-use dnd_lib::character::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
+use dnd_lib::rules2014::features::{AbilityScoreIncrease, FeatureEffect};
+use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
 use dnd_lib::prelude::*;
 
 #[tokio::test]

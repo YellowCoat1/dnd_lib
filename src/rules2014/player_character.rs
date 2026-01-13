@@ -18,14 +18,15 @@ use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
-use crate::character::background::LanguageOption;
-use crate::character::choice::chosen_ref;
-use crate::character::class::ItemCategory;
-use crate::character::items::{is_proficient_with, ArmorCategory, HeldEquipment, Item};
-use crate::character::spells::{SpellCastingPreperation, SpellsAvailable};
-use crate::character::Subrace;
+use super::{
+    background::{LanguageOption, Background},
+    choice::chosen_ref,
+    class::ItemCategory,
+    items::{is_proficient_with, ArmorCategory, HeldEquipment, Item},
+    spells::{SpellCastingPreperation, SpellsAvailable},
+    Subrace,
+};
 
-use super::background::Background;
 use super::choice::chosen;
 use super::class::{Class, Subclass, TrackedField, UNARMORED_MOVEMENT};
 use super::features::{
@@ -458,7 +459,7 @@ impl Character {
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
-    /// # use dnd_lib::character::stats::StatType;
+    /// # use dnd_lib::rules2014::stats::StatType;
     /// # let provider = Dnd5eapigetter::new();
     /// # let fighter = provider.get_class("fighter").await.unwrap();
     /// # let human = provider.get_race("human").await.unwrap();
@@ -690,8 +691,8 @@ impl Character {
     ///   # let rt = Runtime::new().unwrap();
     ///   # rt.block_on(async {
     ///   # use dnd_lib::prelude::*;
-    ///   # use dnd_lib::character::spells::PactSlots;
-    ///   # use dnd_lib::character::player_character::CharacterBuilder;
+    ///   # use dnd_lib::rules2014::spells::PactSlots;
+    ///   # use dnd_lib::rules2014::player_character::CharacterBuilder;
     ///   #
     ///   # let provider = Dnd5eapigetter::new();
     ///   # let warlock = provider.get_class("warlock").await.unwrap();

@@ -1,7 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{string_array, value_name, ValueExt};
-use crate::character::items::{DamageRoll, DamageType};
-use crate::character::spells::Spell;
+use crate::rules2014::items::{DamageRoll, DamageType};
+use crate::rules2014::spells::Spell;
 use crate::get::json_tools::parse_string;
 use crate::getter::CharacterDataError;
 use serde_json::Value;
@@ -155,7 +155,7 @@ fn leveled_spell_damage(
 
 #[cfg(test)]
 mod tests {
-    use crate::character::items::{DamageRoll, DamageType};
+    use crate::rules2014::items::{DamageRoll, DamageType};
 
     use super::get_spell;
 

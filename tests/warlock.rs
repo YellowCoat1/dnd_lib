@@ -1,9 +1,10 @@
 #![cfg(feature = "network-intensive-tests")]
-
-use dnd_lib::character::features::FeatureEffect;
-use dnd_lib::character::spells::PactSlots;
-use dnd_lib::character::stats::StatType;
 use dnd_lib::prelude::*;
+use dnd_lib::rules2014::{
+    features::FeatureEffect,
+    spells::PactSlots,
+    stats::StatType,
+};
 
 use futures::future::try_join_all;
 

@@ -1,4 +1,4 @@
-use crate::character::stats::{Size, StatType};
+use crate::rules2014::stats::{Size, StatType};
 use crate::{prelude::*, provider};
 
 #[tokio::test]

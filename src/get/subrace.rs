@@ -1,8 +1,8 @@
 use super::feature::get_feature_from_trait;
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
-use crate::character::stats::StatType;
-use crate::character::{Subrace, SubraceBuilder};
+use crate::rules2014::stats::StatType;
+use crate::rules2014::{Subrace, SubraceBuilder};
 use crate::get::json_tools::parse_string;
 use crate::getter::CharacterDataError;
 use serde_json::Value;

@@ -2,8 +2,8 @@ use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, string_array, ValueExt},
 };
-use crate::character::features::Feature;
-use crate::character::{class::Subclass, features::PresentedOption};
+use crate::rules2014::features::Feature;
+use crate::rules2014::{class::Subclass, features::PresentedOption};
 use crate::get::json_tools::value_name;
 use crate::getter::CharacterDataError;
 
@@ -46,7 +46,7 @@ pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::character::features::PresentedOption;
+    use crate::rules2014::features::PresentedOption;
 
     use super::get_subclass;
 

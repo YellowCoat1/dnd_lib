@@ -2,7 +2,7 @@ use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, ValueExt},
 };
-use crate::character::items::{
+use crate::rules2014::items::{
     Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties,
     WeaponType,
 };
@@ -175,7 +175,7 @@ fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
 #[cfg(test)]
 mod tests {
 
-    use crate::character::items::{ArmorCategory, ItemType, WeaponType};
+    use crate::rules2014::items::{ArmorCategory, ItemType, WeaponType};
 
     use super::get_item;
     #[tokio::test]

@@ -23,7 +23,7 @@ impl<T> PresentedOption<T> {
     /// - If this is a `Choice`, returns the child at `index`, or `None` if out of bounds.
     ///
     /// ```
-    /// use dnd_lib::character::features::PresentedOption;
+    /// use dnd_lib::rules2014::features::PresentedOption;
     /// let choice = PresentedOption::Choice(vec!["a", "b"]);
     /// assert_eq!(*choice.choose(1).unwrap(), "b");
     /// ```
@@ -39,7 +39,7 @@ impl<T> PresentedOption<T> {
     /// Returns `true` if the replacement could be made, or `false` otherwise.
     ///
     /// ```
-    /// use dnd_lib::character::features::PresentedOption;
+    /// use dnd_lib::rules2014::features::PresentedOption;
     ///
     /// let mut choice = PresentedOption::Choice(vec![
     ///     "Apples",
@@ -171,7 +171,7 @@ impl<T, U> PresentedOption<Result<T, U>> {
 /// Returns references to all [PresentedOption::Base] values within a slice of [PresentedOption]s.
 ///
 /// ```
-/// use dnd_lib::character::features::{PresentedOption, chosen};
+/// use dnd_lib::rules2014::features::{PresentedOption, chosen};
 ///
 /// let presented = vec![
 ///     PresentedOption::Base(1),

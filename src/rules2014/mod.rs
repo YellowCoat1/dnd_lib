@@ -1,4 +1,4 @@
-//! A module that contains the needed rules and etc factors to make a character.
+//! A module that contains the needed rules and etc factors to make a character in 5e 2014 D&D.
 //!
 //! Every struct here implements serde serialize and deserialize, allowing for easy sending or
 //! saving.

@@ -1,6 +1,5 @@
 #![cfg(feature = "network-intensive-tests")]
-use dnd_lib::character::spells::SpellSlots;
-use dnd_lib::character::spells::CASTER_SLOTS;
+use dnd_lib::rules2014::spells::{SpellSlots, CASTER_SLOTS};
 use dnd_lib::prelude::*;
 
 use futures::future::try_join_all;

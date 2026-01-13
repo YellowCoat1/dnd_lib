@@ -3,7 +3,7 @@
 //! ```
 //! # #[cfg(feature = "dnd5eapi")] {
 //! use dnd_lib::prelude::*;
-//! use dnd_lib::character::items::Item;
+//! use dnd_lib::rules2014::items::Item;
 //! use dnd_lib::save::{save_serialized, get_serialized};
 //! use std::path::Path;
 //!

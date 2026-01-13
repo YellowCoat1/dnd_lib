@@ -1,10 +1,10 @@
 //! shared tools for handling incoming json from the api.
 use std::str::FromStr;
 
-use crate::{character::stats::SkillType, getter::CharacterDataError};
+use crate::{rules2014::stats::SkillType, getter::CharacterDataError};
 use serde_json::{Map, Number, Value};
 
-use crate::character::features::PresentedOption;
+use crate::rules2014::features::PresentedOption;
 pub trait ValueExt {
     fn as_string(&self, name: &str) -> Result<String, CharacterDataError>;
     fn get_str(&self, key: &str) -> Result<String, CharacterDataError>;

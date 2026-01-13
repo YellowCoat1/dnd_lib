@@ -1,4 +1,4 @@
-use crate::character::{
+use super::{
     features::{Feature, FeatureEffect, PresentedOption},
     stats::StatType,
 };

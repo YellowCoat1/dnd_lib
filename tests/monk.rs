@@ -1,5 +1,5 @@
 #![cfg(feature = "network-intensive-tests")]
-use dnd_lib::character::stats::{SkillModifiers, SkillType};
+use dnd_lib::rules2014::stats::{SkillModifiers, SkillType};
 use dnd_lib::prelude::*;
 
 #[tokio::test]

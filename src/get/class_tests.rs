@@ -1,5 +1,5 @@
 use crate::{
-    character::{
+    rules2014::{
         class::{Class, ItemCategory},
         features::PresentedOption,
         stats::SkillType,
@@ -35,7 +35,7 @@ async fn wizard_retrieval() {
 }
 
 fn wizard_multiclassing(class: &Class) {
-    use crate::character::stats::{EquipmentProficiencies, StatType};
+    use crate::rules2014::stats::{EquipmentProficiencies, StatType};
 
     assert_eq!(
         *class.multiclassing_proficiency_gain(),
@@ -206,7 +206,7 @@ async fn fighter_items() {
     let two_martial_weapons = &second_choice[1][0];
     assert_eq!(
         two_martial_weapons.0,
-        ItemCategory::Weapon(crate::character::items::WeaponType::Martial),
+        ItemCategory::Weapon(crate::rules2014::items::WeaponType::Martial),
         "Fighter should be able to choose martial weapons"
     );
     assert_eq!(

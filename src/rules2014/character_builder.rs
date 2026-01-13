@@ -1,7 +1,5 @@
-use crate::{
-    character::{choice::PresentedOption, class::ItemCategory, items::Item},
-    prelude::*,
-};
+use crate::prelude::*;
+use super::{choice::PresentedOption, class::ItemCategory, items::Item};
 
 type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 

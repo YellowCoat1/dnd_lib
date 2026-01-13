@@ -1,5 +1,5 @@
 use super::raw_getters::*;
-use crate::character::{items::Item, spells::Spell};
+use crate::rules2014::{items::Item, spells::Spell};
 use crate::getter::CharacterDataError;
 use crate::prelude::*;
 use std::{

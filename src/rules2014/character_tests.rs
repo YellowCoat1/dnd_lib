@@ -1,9 +1,11 @@
 #![cfg(feature = "network-intensive-tests")]
 use super::player_character::Character;
 use super::stats::Stats;
-use crate::character::class::TrackedField;
-use crate::character::features::{Feature, FeatureEffect};
-use crate::character::stats::StatType;
+use super::{
+    class::TrackedField,
+    features::{Feature, FeatureEffect},
+    stats::StatType,
+};
 use crate::getter::DataProvider;
 
 use crate::{provider, CharacterBuilder};

@@ -1,7 +1,7 @@
 //! A library to assist in creating and managing D&D 5e characters.
 //!
 //! The main feature of this crate is the [Character] struct. Most of the
-//! other datastructures in this crate (found in the [character] module) are centered around it,
+//! other datastructures in this crate (found in the [rules2014] module) are centered around it,
 //! building the foundations for a complete D&D character.
 //!
 //! ```
@@ -53,7 +53,7 @@
 //! ```
 //!
 //! This crate stores different choices for a character as different structs. For example, a
-//! [character::class::Class] would be a Wizard, or a Figter, or a Monk. If you wanted to store every D&D class a
+//! [rules2014::class::Class] would be a Wizard, or a Figter, or a Monk. If you wanted to store every D&D class a
 //! character could take, you'd need a `Vec<Class>`. These rules must be parsed from an api and constructed.
 //!
 //! This is what [get::Dnd5eapigetter] is for. You first get the required rules (class, background,
@@ -67,14 +67,14 @@
 //!   through the dnd5eapi.co api, seen at [get::ITEM_NAMES]. This is delegated to a features, as it is ~2.5 kb of data by
 //!   itself.
 
-pub mod character;
+pub mod rules2014;
 #[cfg(feature = "dnd5eapi")]
 pub mod get;
 mod getter;
 pub mod save;
 
 // re-exports
-pub use character::player_character::{Character, CharacterBuilder};
+pub use rules2014::player_character::{Character, CharacterBuilder};
 pub use getter::*;
 
 #[cfg_attr(not(test), allow(dead_code))]
@@ -97,9 +97,9 @@ pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
     pub use crate::get::Dnd5eapigetter;
     pub use crate::{
-        character::class::Class,
-        character::stats::Stats,
-        character::{
+        rules2014::class::Class,
+        rules2014::stats::Stats,
+        rules2014::{
             background::Background,
             player_character::{Character, CharacterBuilder},
             Race,

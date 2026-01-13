@@ -51,7 +51,7 @@ use race::get_race as get_race_inner;
 use spell::get_spell as get_spell_inner;
 
 use crate::{
-    character::{
+    rules2014::{
         background::Background, class::Class, features::Feature, items::Item, spells::Spell,
     },
     prelude::Race,
@@ -75,7 +75,7 @@ pub use item_list::ITEM_NAMES;
 /// ```rust
 /// use dnd_lib::get::Dnd5eapigetter;
 /// use dnd_lib::DataProvider;
-/// use dnd_lib::character::{items::Item, spells::Spell};
+/// use dnd_lib::rules2014::{items::Item, spells::Spell};
 ///
 /// #[tokio::main]
 /// async fn main() {
@@ -187,8 +187,8 @@ fn capitalize(s: &mut String) {
 
 #[cfg(test)]
 mod test {
-    use crate::character::features::PresentedOption;
-    use crate::character::stats::SkillType;
+    use crate::rules2014::features::PresentedOption;
+    use crate::rules2014::stats::SkillType;
     use crate::getter::DataProvider;
     use crate::provider;
 

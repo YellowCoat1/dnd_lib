@@ -1,4 +1,4 @@
-use crate::character::{
+use super::{
     background::BackgroundBuildError,
     choice::PresentedOption,
     features::Feature,
@@ -10,7 +10,7 @@ use super::background::{BackgroundBuilder, LanguageOption};
 
 #[test]
 fn test_background_builder_success() {
-    use crate::character::{choice::PresentedOption, stats::SkillType};
+    use super::{choice::PresentedOption, stats::SkillType};
 
     let lang_option_1 =
         LanguageOption::new_named_choice(vec!["Common".to_string(), "Elvish".to_string()]);
@@ -19,7 +19,7 @@ fn test_background_builder_success() {
     let item = Item {
         name: "Test Item".to_string(),
         description: None,
-        item_type: crate::character::items::ItemType::Misc,
+        item_type: super::items::ItemType::Misc,
         features: vec![],
     };
 
