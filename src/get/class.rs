@@ -9,6 +9,7 @@ use crate::{
     get::json_tools::parse_skilltype,
     getter::DataProvider,
 };
+use heck::ToTitleCase;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 
@@ -478,7 +479,7 @@ fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], CharacterDataE
     let spells_input_array = spells.get_array("results")?;
     let mut spells_stored_array: [Vec<String>; 10] = Default::default();
     for spell_input in spells_input_array.iter() {
-        let name = spell_input.get_str("index")?.clone();
+        let name = spell_input.get_str("index")?.clone().to_title_case();
         let level = spell_input.get_usize("level")?;
         spells_stored_array[level].push(name);
     }
