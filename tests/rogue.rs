@@ -26,6 +26,10 @@ async fn level_5_halfling_rogue() {
 
     let mut bingus = Character::new("bingus".to_string(), &rogue, &acolyte, &halfling, stats);
 
+    // check bingus's starting items
+    assert_eq!(bingus.unchosen_items().len(), 3);
+    assert_eq!(bingus.get_unchosen_categories().len(), 0);
+
     // add bingus's items
     bingus.choose_items(0, 0); // rapier
     bingus.choose_items(1, 0); // shortbow
