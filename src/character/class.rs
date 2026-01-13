@@ -158,7 +158,7 @@ impl std::fmt::Display for ItemCategory {
         match self {
             ItemCategory::Item(item) => write!(f, "a {}", item.name),
             ItemCategory::Weapon(weapon_type) => write!(f, "any {} weapon", weapon_type),
-            ItemCategory::Armor(armor_category) => write!(f, "any {} armor", armor_category),
+            ItemCategory::Armor(armor_category) => write!(f, "any {} armor", armor_category.to_string().to_lowercase()),
         }
     }
 }
@@ -414,6 +414,8 @@ impl Default for ClassBuilder {
 
 #[cfg(test)]
 mod tests {
+    use crate::character::items::ItemType;
+
     use super::*;
 
     // tests the "get all features at level" and "get specific features at level"
@@ -480,5 +482,21 @@ mod tests {
             ],
             "{error_msg}"
         );
+    }
+
+    #[test]
+    fn item_formatting() {
+        let longbow = ItemCategory::Item(Item {
+            name: "Longbow".to_string(),
+            description: None,
+            features: vec![],
+            item_type: ItemType::Misc,
+        });
+        let simple_weapon = ItemCategory::Weapon(WeaponType::Simple);
+        let light_armor = ItemCategory::Armor(ArmorCategory::Light);
+
+        assert_eq!(longbow.to_string(), "a Longbow");
+        assert_eq!(simple_weapon.to_string(), "any simple weapon");
+        assert_eq!(light_armor.to_string(), "any light armor");
     }
 }

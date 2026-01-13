@@ -51,12 +51,12 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 ///    .stats(Stats::default())
 ///    // The first item choice for barbarians is between "a greataxe" and "any martial melee weapon"
 ///    // We want the first option, so we choose index 0
-///    .choose_items(0, 0).0
+///    .choose_items(0, 0)
 ///    // The second item choice is between "two handaxes" and "any simple weapon"
 ///    // We want the second option, so we choose index 1
-///    .choose_items(1, 1).0
+///    .choose_items(1, 1)
 ///    // Now, we need to set what "any simple weapon" is. Let's make it a spear.
-///    .set_unchosen_category(1, 0, spear).0
+///    .set_unchosen_category(1, 0, spear)
 ///    // Now that we've chosen our weapons, we can build the character.
 ///    .build().unwrap();
 /// # })
