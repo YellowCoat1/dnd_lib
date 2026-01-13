@@ -35,12 +35,6 @@ async fn main() {
     // leveling them up to level 3
     spellcaster.level_up_to_level(&druid, 3);
     assert_eq!(spellcaster.level(), 3);
-
-    // let's take a look at the spells available to our druid at level 3
-    let spell_slots = spellcaster.spell_slots().unwrap();
-    println!("At level 1, {} can cast {} 1st level spells", spellcaster.name, spell_slots.0[0]);
-    println!("At level 2, {} can cast {} 2nd level spells", spellcaster.name, spell_slots.0[1]);
-
     // getting the spell save dc and the spell attack bonus
     let (spell_save_dc, spell_attack_bonus) = spellcaster.spellcasting_scores(0).unwrap();
     println!("{} has a spell save DC of {} and a spell attack bonus of {}", spellcaster.name, spell_save_dc, spell_attack_bonus);
@@ -61,10 +55,45 @@ async fn main() {
         println!("- {}", spell);
     }
 
-    // how many spells can the druid prepare?
-    let spells_to_prepare = spellcaster.num_spells(0).unwrap(); 
-    println!("At level 3, {} can prepare {} spells and {} cantrips ", spellcaster.name, spells_to_prepare.num_spells, spells_to_prepare.num_cantrips);
+    println!("First 5 Druid Level 2 Spells:");
+    let level_2_spells = &druid_spellcasting.spell_list[2];
+    for spell in level_2_spells[..5].iter() {
+        println!("- {}", spell);
+    }
+   // we want to get the spells we want to prepare
+    println!("Getting spells...");
+    let spells = vec![
+        // cantrips
+        provider.get_spell("guidance"),
+        provider.get_spell("produce flame"),
+        // level 1 spells
+        provider.get_spell("charm person"),
+        provider.get_spell("cure wounds"),
+        provider.get_spell("detect magic"),
+        // level 3 spells
+        provider.get_spell("barkskin"),
+        provider.get_spell("darkvision"),
+        provider.get_spell("enhance ability"),
+    ];
+    let spell_results = futures::future::try_join_all(spells)
+        .await
+        .expect("Failed to fetch spells");
+    println!("Fetched spells.");
 
-    // we want to get the spells we want to prepare
+    // getting the info for preparing spells
+    let (spell_list, max_spells) = spellcaster.prepare_spells(0).unwrap();
+    println!("They can prepare {} spells and {} cantrips", max_spells.num_spells, max_spells.num_cantrips);
 
+    // add the fetched spells to the spell list
+    spell_list.extend(spell_results.clone());
+
+    // list the prepared spells
+    println!("Prepared Spells:");
+    for (spell, _) in spellcaster.spells() {
+        println!("- {}", spell.name);
+    }
+
+    // let's take a look at the spells available to our druid at level 3
+    let spell_slots = spellcaster.spell_slots().unwrap();
+    println!("{} has {} 1st level slots and {} 2nd level slots.", spellcaster.name, spell_slots.0[0], spell_slots.0[1]);
 }
