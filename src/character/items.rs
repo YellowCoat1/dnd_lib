@@ -440,3 +440,140 @@ impl From<HeldEquipment> for ItemCount {
         }
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn const_weapons() {
+        let simple = simple_weapons();
+        assert_eq!(simple.len(), 13);
+        for weapon in SIMPLE_WEAPONS_MELEE.iter() {
+            assert!(simple.contains(weapon));
+        }
+        for weapon in SIMPLE_WEAPONS_RANGED.iter() {
+            assert!(simple.contains(weapon));
+        }
+
+        let martial = martial_weapons();
+        assert_eq!(martial.len(), 23);
+        for weapon in MARTIAL_WEAPONS_MELEE.iter() {
+            assert!(martial.contains(weapon));
+        }
+        for weapon in MARTIAL_WEAPONS_RANGED.iter() {
+            assert!(martial.contains(weapon));
+        }
+    }
+
+    #[test]
+    fn conversions() {
+        let base_item = Item {
+            name: "Test Item".to_string(),
+            description: None,
+            item_type: ItemType::Misc,
+            features: vec![],
+        };
+        let item_count = ItemCount::from(base_item.clone());
+        assert_eq!(item_count.count, 1);
+        assert_eq!(item_count.item, base_item);
+    }
+
+    #[test]
+    fn armor() {
+        let plate = Armor {
+            ac: 18,
+            category: ArmorCategory::Heavy,
+            strength_minimum: Some(15),
+            stealth_disadvantage: true,
+        };
+        assert_eq!(plate.total_ac(4), 18);
+        assert_eq!(plate.total_ac(0), 18);
+        let splint = Armor {
+            ac: 17,
+            category: ArmorCategory::Medium,
+            strength_minimum: Some(13),
+            stealth_disadvantage: true,
+        };
+        assert_eq!(splint.total_ac(4), 19);
+        assert_eq!(splint.total_ac(2), 19);
+        assert_eq!(splint.total_ac(0), 17);
+    }
+
+    #[test]
+    fn proficient_with() {
+        let result = is_proficient_with(
+            &WeaponType::Martial,
+            &EquipmentProficiencies {
+                simple_weapons: true,
+                martial_weapons: false,
+                ..Default::default()
+            },
+        );
+        assert!(!result);
+
+        let result = is_proficient_with(
+            &WeaponType::SimpleRanged,
+            &EquipmentProficiencies {
+                simple_weapons: true,
+                martial_weapons: false,
+                ..Default::default()
+            },
+        );
+        assert!(result);
+    }
+
+    #[test]
+    fn weapon_actions() {
+        let action = WeaponAction {
+            name: "Longsword Attack".to_string(),
+            attack_bonus: 5,
+            damage_roll: DamageRoll {
+                number: 1,
+                dice: 8,
+                damage_type: DamageType::Slashing,
+            },
+            damage_roll_bonus: 3,
+            two_handed: false,
+            second_attack: false,
+        };
+
+        assert_eq!(action.name(), "Longsword Attack");
+        assert_eq!(action.attack_bonus(), 5);
+        assert_eq!(action.damage_roll(), DamageRoll {
+            number: 1,
+            dice: 8,
+            damage_type: DamageType::Slashing,
+        });
+        assert_eq!(action.damage_roll_bonus(), 3);
+    }
+
+    #[test]
+    fn held_equipment() {
+        let base_item = Item {
+            name: "Shield".to_string(),
+            description: None,
+            item_type: ItemType::Shield,
+            features: vec![],
+        };
+
+        let mut held = HeldEquipment::from((base_item.clone(), 1, false));
+        assert_eq!(held.item, base_item);
+        assert_eq!(held.quantity, 1);
+        assert!(!held.equipped);
+
+        held.equip();
+        assert!(held.equipped);
+
+        held.unequip();
+        assert!(!held.equipped);
+        let held_other = HeldEquipment::new(base_item.clone(), 2, true);
+        assert_eq!(held_other.item, base_item);
+        let held_other_2 = HeldEquipment::from((base_item.clone(), 2));
+        assert_eq!(held_other_2.item, base_item);
+        assert_eq!(held_other_2.quantity, 2);
+        let held_other_3 = HeldEquipment::from(base_item);
+        assert_eq!(held_other_3.item.name, "Shield");
+    }
+}

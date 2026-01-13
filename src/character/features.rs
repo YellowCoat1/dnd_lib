@@ -184,3 +184,61 @@ pub enum FeatureEffect {
     /// Grants an extra language
     AddedLanguage(LanguageOption),
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::character::{features::CustomAction, items::{DamageRoll, DamageType}};
+
+
+
+    fn null_custom_action() -> CustomAction {
+        CustomAction {
+            name: "Null Action".to_string(),
+            static_attack_bonus: 0,
+            attack_bonus_stats: vec![],
+            add_prof_to_attack: false,
+            damage_roll: DamageRoll {
+                number: 0,
+                dice: 0,
+                damage_type: DamageType::Cold,
+            },
+            static_damage_bonus: 0,
+            damage_bonus_stats: vec![],
+            add_prof_to_damage: false,
+        }
+    }
+
+    fn null_computed_action() -> super::ComputedCustomAction {
+        super::ComputedCustomAction {
+            name: "Null Action".to_string(),
+            attack_bonus: 0,
+            damage_roll: DamageRoll {
+                number: 0,
+                dice: 0,
+                damage_type: DamageType::Cold,
+            },
+            damage_roll_bonus: 0,
+        }
+    }
+
+    #[test]
+    fn custom_actions() {
+        use super::Action;
+        let action1 = null_custom_action();
+        let mut action2 = null_custom_action();
+        assert_eq!(action1, action2);
+        action2.name = "Different Name".to_string();
+        assert_ne!(action1, action2);
+
+        let computed1 = null_computed_action();
+        let mut computed2 = null_computed_action();
+        assert_eq!(computed1, computed2);
+        computed2.name = "Different Name".to_string();
+        assert_ne!(computed1, computed2);
+
+        assert_eq!(computed1.name(), "Null Action");
+        assert_eq!(computed1.attack_bonus(), 0);
+        assert_eq!(computed1.damage_roll(), action1.damage_roll);
+        assert_eq!(computed1.damage_roll_bonus(), 0);
+    }
+}
