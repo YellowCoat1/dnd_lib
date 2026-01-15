@@ -70,7 +70,7 @@ async fn main() {
         provider.get_spell("charm person"),
         provider.get_spell("cure wounds"),
         provider.get_spell("detect magic"),
-        // level 3 spells
+        // level 2 spells
         provider.get_spell("barkskin"),
         provider.get_spell("darkvision"),
         provider.get_spell("enhance ability"),
@@ -96,4 +96,12 @@ async fn main() {
     // let's take a look at the spells available to our druid at level 3
     let spell_slots = spellcaster.spell_slots().unwrap();
     println!("{} has {} 1st level slots and {} 2nd level slots.", spellcaster.name, spell_slots.0[0], spell_slots.0[1]);
+
+    // casting a spell
+    spellcaster.cast_prepared(0, "detect magic", None, None);
+    spellcaster.cast_prepared(0, "cure wounds", Some(2), None);
+    println!("{} casts detect magic, and cure wounds upcasted to level 2.", spellcaster.name);
+
+    let new_spell_slots = spellcaster.available_spell_slots.as_ref().unwrap();
+    println!("After casting, {} has {} 1st level slots and {} 2nd level slot left.", spellcaster.name, new_spell_slots.0[0], new_spell_slots.0[1]);
 }
