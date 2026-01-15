@@ -55,6 +55,12 @@ async fn char_spells() {
     let acolyte_future = provider.get_background("acolyte");
     let elf_future = provider.get_race("elf");
 
+    let spells_futures = vec![
+        provider.get_spell("fire bolt"),
+        provider.get_spell("shield"),
+        provider.get_spell("mage armor"),
+    ];
+
     let (wizard, acolyte, elf) = (
         wizard_future.await.unwrap(),
         acolyte_future.await.unwrap(),
@@ -76,6 +82,28 @@ async fn char_spells() {
         .expect("wizard character should be a spellcaster");
     assert_eq!(spell_save, 12);
     assert_eq!(spell_mod, 4);
+
+    let spells = futures::future::try_join_all(spells_futures)
+        .await
+        .expect("failed to get spells");
+
+    
+    let (list, spell_amounts) = john.prepare_spells(0).expect("wizard should be able to prepare spells");
+    assert_eq!(spell_amounts.num_cantrips, 3, "wizards get 3 cantrips at level 1");
+    assert_eq!(spell_amounts.num_spells, 3, "This wizard can prepare 3 spells");
+    list.extend(spells);
+
+    assert!(list.iter().any(|s| s.name == "Fire Bolt"));
+    assert!(list.iter().any(|s| s.name == "Shield"));
+    assert!(list.iter().any(|s| s.name == "Mage Armor"));
+
+    assert_eq!(john.available_spell_slots, john.spell_slots());
+    let spell_slots = john.available_spell_slots.as_ref().expect("wizard should have spell slots");
+    assert_eq!(spell_slots.0, [2, 0, 0, 0, 0, 0, 0, 0, 0]);
+    let result = john.cast_prepared(0, "mage armor", None, None);
+    assert!(result, "john should be able to cast mage armor");
+    let new_spell_slots = john.available_spell_slots.as_ref().expect("wizard should have spell slots");
+    assert_eq!(new_spell_slots.0, [1, 0, 0, 0, 0, 0, 0, 0, 0]);
 }
 
 #[tokio::test]
