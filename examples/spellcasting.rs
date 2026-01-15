@@ -1,6 +1,6 @@
 use dnd_lib::prelude::*;
 
-// Demonstrating a very simple spellcaster
+// A level 3 druid spellcaster example
 
 #[tokio::main]
 async fn main() {
@@ -98,7 +98,10 @@ async fn main() {
     println!("{} has {} 1st level slots and {} 2nd level slots.", spellcaster.name, spell_slots.0[0], spell_slots.0[1]);
 
     // casting a spell
+    // The class we're casting with is at index 0, or the first class.
+    // detect magic isn't upcasted, so we pass None for the upcast level.
     spellcaster.cast_prepared(0, "detect magic", None, None);
+    // cure wounds is being upcasted to level 2, so we pass Some(2) for the upcast level.
     spellcaster.cast_prepared(0, "cure wounds", Some(2), None);
     println!("{} casts detect magic, and cure wounds upcasted to level 2.", spellcaster.name);
 
