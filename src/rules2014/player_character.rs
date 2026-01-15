@@ -748,13 +748,7 @@ impl Character {
     /// Note that this only decrements the spell slot at the spell's level.
     pub fn cast<T: Castable>(&mut self, casted: &T, spell_list: Option<bool>) -> bool {
         if spell_list.is_none() {
-            let v = self
-                .classes
-                .iter()
-                .find(|c| c.spellcasting.is_some())
-                .and_then(|v| v.spellcasting.as_ref())
-                .map(|v| v.0.spellcaster_type);
-
+            let v = self.first_caster_class();
             match v {
                 None => false,
                 Some(SpellCasterType::Warlock) => self.cast_with_pact(casted.level()),
@@ -768,6 +762,61 @@ impl Character {
             }
         } else {
             false
+        }
+    }
+
+    fn first_caster_class(&self) -> Option<SpellCasterType> {
+        self.classes
+            .iter()
+            .find(|c|  c.spellcasting.is_some())
+            .and_then(|v| v.spellcasting.as_ref())
+            .map(|v| v.0.spellcaster_type)
+    }
+
+    /// Casts a prepared spell, expending a spell slot.
+    /// Takes the class index, spell name, the upcast level, and which spell list to use.
+    ///
+    /// If upcasting, set the upcast level to Some(level). If not upcasting, set it to None. The
+    /// method will fail if the upcast level is lower than the spell's base level.
+    ///
+    /// The spell list is whether to use pact magic (Some(true))
+    /// or regular spell slots (Some(false)). If None, it uses whichever came first. See
+    /// [Character::cast].
+    ///
+    /// Returns false if the spell could not be cast. For example, if the spell is not prepared,
+    /// or if there are no spell slots left of the specified type.
+    pub fn cast_prepared(&mut self, class: usize, name: &str, upcast: Option<usize>, spell_list: Option<bool>) -> bool {
+        let name = name.to_lowercase();
+
+        let casting_option = self.classes.get(class)
+            .and_then(|c| c.spellcasting.as_ref());
+        let casting = match casting_option {
+            Some(v) => v,
+            None => return false,
+        };
+        let spell = casting.1.iter()
+            .find(|s| s.name.to_lowercase() == name);
+        let spell = match spell {
+            Some(s) => s,
+            None => return false,
+        };
+        let level = match upcast {
+            Some(l) if l >= spell.level() => l,
+            Some(_) => return false,
+            None => spell.level(),
+        };
+
+        match spell_list {
+            Some(true) => self.cast_with_pact(level),
+            Some(false) => self.cast_with_slots(level),
+            None =>  {
+                let v = self.first_caster_class();
+                match v {
+                    None => false,
+                    Some(SpellCasterType::Warlock) => self.cast_with_pact(level),
+                    Some(_) => self.cast_with_slots(level),
+                }
+            }
         }
     }
 
