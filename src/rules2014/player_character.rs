@@ -1222,12 +1222,6 @@ impl Character {
 
         for (stat, min_value) in class.multiclassing_prerequisites().iter() {
             let condition = *stats.get_stat_type(stat) >= *min_value as isize;
-            dbg!((
-                &stat,
-                &min_value,
-                &able_to_multiclass,
-                stats.get_stat_type(stat)
-            ));
             match or {
                 false => able_to_multiclass = able_to_multiclass && condition,
                 true => able_to_multiclass = able_to_multiclass || condition,
