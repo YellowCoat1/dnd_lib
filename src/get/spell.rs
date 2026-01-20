@@ -38,7 +38,8 @@ pub async fn get_spell(name: &str) -> Result<Spell, CharacterDataError> {
         .map(|v| v.chars().next().unwrap())
         .collect();
     let material = json.get_str("material").ok();
-    let (damage, leveled_damage) = spell_damage(json.get_map("damage").ok())?;
+    let (damage, leveled_damage) = spell_damage(json.get_map("damage").ok())
+        .unwrap_or((None, None));
     let duration = json.get_str("duration")?;
 
     Ok(Spell {
@@ -196,5 +197,20 @@ mod tests {
                 (17, DamageRoll::new(4, 12, Poison))
             ]
         );
+    }
+
+    #[tokio::test]
+    async fn sleep() {
+        let sleep = get_spell("sleep").await.expect("failed to get sleep spell");
+        assert!(sleep.damage.is_none(), "sleep should not have damage");
+        assert!(sleep.leveled_damage.is_none(), "sleep should not have leveled damage");
+    }
+
+    #[tokio::test]
+    async fn magic_missile() {
+        let magic_missile = get_spell("magic-missile")
+            .await
+            .expect("failed to get magic missile spell");
+        assert!(magic_missile.name == "Magic Missile");
     }
 }
