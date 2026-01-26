@@ -17,14 +17,14 @@ In the crate, there's many places where a choice must be made, such as choosing 
 
 ## Fetching
 The library provide the Dnd5eapigetter, which can fetch data from the [5e DnD API](https://www.dnd5eapi.co/) and parse it into the library's datastructures. The interface for this is through the DataProvider trait, which provides async methods for fetching each type of data.
-> **Note:** Fetching from this api (particularly fetching classes) requires a large amount of https requests, so it is recommended to use a local cache or database to store fetched data for later use. These requests can be quite slow, and can run into the pitfalls of regular web requests. (Hanging, rate limiting, etc.)
+> **Note:** Fetching from this api (particularly fetching classes) requires a large amount of http requests, so it is recommended to use a local cache or database to store fetched data for later use. These requests can be quite slow, and can run into the pitfalls of regular web requests. (Hanging, rate limiting, etc.)
 
 ### Datastore
 To provide another option for data fetching, the library also provides the Dnd5eapiDatastore struct. Instead of a single async function, you can request data to add to a local hashmap datastore, and request it later at little cost. Requests are done on seperate threads.
 
 
 ## Future Plans
-- More efficient getter functions for less https requests
+- More efficient getter functions for less http requests
 - Integrations with popular VTTs
 - 2024 D&D support
 - Higher test coverage and more examples
