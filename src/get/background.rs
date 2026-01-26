@@ -1,11 +1,11 @@
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
-use crate::rules2014::background::{BackgroundBuilder, LanguageOption};
-use crate::rules2014::features::Feature;
-use crate::rules2014::{background::Background, features::PresentedOption, stats::SkillType};
 use crate::get::json_tools::{parse_skilltype, parse_string};
 use crate::getter::CharacterDataError;
 use crate::getter::DataProvider;
+use crate::rules2014::background::{BackgroundBuilder, LanguageOption};
+use crate::rules2014::features::Feature;
+use crate::rules2014::{background::Background, features::PresentedOption, stats::SkillType};
 use serde_json::Value;
 
 pub const BACKGROUND_NAMES: [&str; 1] = ["acolyte"];

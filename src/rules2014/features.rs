@@ -181,9 +181,10 @@ pub enum FeatureEffect {
 
 #[cfg(test)]
 mod tests {
-    use crate::rules2014::{features::CustomAction, items::{DamageRoll, DamageType}};
-
-
+    use crate::rules2014::{
+        features::CustomAction,
+        items::{DamageRoll, DamageType},
+    };
 
     fn null_custom_action() -> CustomAction {
         CustomAction {

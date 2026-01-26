@@ -67,15 +67,15 @@
 //!   through the dnd5eapi.co api, seen at [get::ITEM_NAMES]. This is delegated to a features, as it is ~2.5 kb of data by
 //!   itself.
 
-pub mod rules2014;
 #[cfg(feature = "dnd5eapi")]
 pub mod get;
 mod getter;
+pub mod rules2014;
 pub mod save;
 
 // re-exports
-pub use rules2014::player_character::{Character, CharacterBuilder};
 pub use getter::*;
+pub use rules2014::player_character::{Character, CharacterBuilder};
 
 #[cfg_attr(not(test), allow(dead_code))]
 #[cfg(feature = "dnd5eapi")]
@@ -97,6 +97,7 @@ pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
     pub use crate::get::Dnd5eapigetter;
     pub use crate::{
+        getter::{CharacterDataError, DataProvider},
         rules2014::class::Class,
         rules2014::stats::Stats,
         rules2014::{
@@ -104,6 +105,5 @@ pub mod prelude {
             player_character::{Character, CharacterBuilder},
             Race,
         },
-        getter::{CharacterDataError, DataProvider},
     };
 }

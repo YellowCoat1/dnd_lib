@@ -1,7 +1,7 @@
 use super::raw_getters::*;
-use crate::rules2014::{items::Item, spells::Spell};
 use crate::getter::CharacterDataError;
 use crate::prelude::*;
+use crate::rules2014::{items::Item, spells::Spell};
 use std::{
     collections::HashMap,
     future::Future,

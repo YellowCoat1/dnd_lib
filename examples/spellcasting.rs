@@ -7,7 +7,6 @@ async fn main() {
     // Initialize the api getter
     let provider = Dnd5eapigetter::new();
 
-
     // The race will be human, and the background will be acolyte
     let human = provider.get_race("human").await.unwrap();
     println!("Got human race");
@@ -37,8 +36,11 @@ async fn main() {
     assert_eq!(spellcaster.level(), 3);
     // getting the spell save dc and the spell attack bonus
     let (spell_save_dc, spell_attack_bonus) = spellcaster.spellcasting_scores(0).unwrap();
-    println!("{} has a spell save DC of {} and a spell attack bonus of {}", spellcaster.name, spell_save_dc, spell_attack_bonus);
-    
+    println!(
+        "{} has a spell save DC of {} and a spell attack bonus of {}",
+        spellcaster.name, spell_save_dc, spell_attack_bonus
+    );
+
     // What's the druid spell list?
     let druid_spellcasting = druid.spellcasting().unwrap();
     let cantrips = &druid_spellcasting.spell_list[0];
@@ -60,7 +62,7 @@ async fn main() {
     for spell in level_2_spells[..5].iter() {
         println!("- {}", spell);
     }
-   // we want to get the spells we want to prepare
+    // we want to get the spells we want to prepare
     println!("Getting spells...");
     let spells = vec![
         // cantrips
@@ -82,7 +84,10 @@ async fn main() {
 
     // getting the info for preparing spells
     let (spell_list, max_spells) = spellcaster.prepare_spells(0).unwrap();
-    println!("They can prepare {} spells and {} cantrips", max_spells.num_spells, max_spells.num_cantrips);
+    println!(
+        "They can prepare {} spells and {} cantrips",
+        max_spells.num_spells, max_spells.num_cantrips
+    );
 
     // add the fetched spells to the spell list
     spell_list.extend(spell_results.clone());
@@ -95,7 +100,10 @@ async fn main() {
 
     // let's take a look at the spells available to our druid at level 3
     let spell_slots = spellcaster.spell_slots().unwrap();
-    println!("{} has {} 1st level slots and {} 2nd level slots.", spellcaster.name, spell_slots.0[0], spell_slots.0[1]);
+    println!(
+        "{} has {} 1st level slots and {} 2nd level slots.",
+        spellcaster.name, spell_slots.0[0], spell_slots.0[1]
+    );
 
     // casting a spell
     // The class we're casting with is at index 0, or the first class.
@@ -103,8 +111,14 @@ async fn main() {
     spellcaster.cast_prepared(0, "detect magic", None, None);
     // cure wounds is being upcasted to level 2, so we pass Some(2) for the upcast level.
     spellcaster.cast_prepared(0, "cure wounds", Some(2), None);
-    println!("{} casts detect magic, and cure wounds upcasted to level 2.", spellcaster.name);
+    println!(
+        "{} casts detect magic, and cure wounds upcasted to level 2.",
+        spellcaster.name
+    );
 
     let new_spell_slots = spellcaster.available_spell_slots.as_ref().unwrap();
-    println!("After casting, {} has {} 1st level slots and {} 2nd level slot left.", spellcaster.name, new_spell_slots.0[0], new_spell_slots.0[1]);
+    println!(
+        "After casting, {} has {} 1st level slots and {} 2nd level slot left.",
+        spellcaster.name, new_spell_slots.0[0], new_spell_slots.0[1]
+    );
 }

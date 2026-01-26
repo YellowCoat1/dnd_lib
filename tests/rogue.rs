@@ -1,7 +1,7 @@
 #![cfg(feature = "network-intensive-tests")]
+use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{AbilityScoreIncrease, FeatureEffect};
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
-use dnd_lib::prelude::*;
 
 #[tokio::test]
 async fn level_5_halfling_rogue() {

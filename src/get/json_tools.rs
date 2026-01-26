@@ -1,7 +1,7 @@
 //! shared tools for handling incoming json from the api.
 use std::str::FromStr;
 
-use crate::{rules2014::stats::SkillType, getter::CharacterDataError};
+use crate::{getter::CharacterDataError, rules2014::stats::SkillType};
 use serde_json::{Map, Number, Value};
 
 use crate::rules2014::features::PresentedOption;

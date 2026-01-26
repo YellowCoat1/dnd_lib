@@ -2,10 +2,10 @@ use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, string_array, ValueExt},
 };
-use crate::rules2014::features::Feature;
-use crate::rules2014::{class::Subclass, features::PresentedOption};
 use crate::get::json_tools::value_name;
 use crate::getter::CharacterDataError;
+use crate::rules2014::features::Feature;
+use crate::rules2014::{class::Subclass, features::PresentedOption};
 
 pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
     let index = parse_string(name);

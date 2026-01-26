@@ -19,7 +19,7 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 
 use super::{
-    background::{LanguageOption, Background},
+    background::{Background, LanguageOption},
     choice::chosen_ref,
     class::ItemCategory,
     items::{is_proficient_with, ArmorCategory, HeldEquipment, Item},
@@ -768,7 +768,7 @@ impl Character {
     fn first_caster_class(&self) -> Option<SpellCasterType> {
         self.classes
             .iter()
-            .find(|c|  c.spellcasting.is_some())
+            .find(|c| c.spellcasting.is_some())
             .and_then(|v| v.spellcasting.as_ref())
             .map(|v| v.0.spellcaster_type)
     }
@@ -785,17 +785,24 @@ impl Character {
     ///
     /// Returns false if the spell could not be cast. For example, if the spell is not prepared,
     /// or if there are no spell slots left of the specified type.
-    pub fn cast_prepared(&mut self, class: usize, name: &str, upcast: Option<usize>, spell_list: Option<bool>) -> bool {
+    pub fn cast_prepared(
+        &mut self,
+        class: usize,
+        name: &str,
+        upcast: Option<usize>,
+        spell_list: Option<bool>,
+    ) -> bool {
         let name = name.to_lowercase();
 
-        let casting_option = self.classes.get(class)
+        let casting_option = self
+            .classes
+            .get(class)
             .and_then(|c| c.spellcasting.as_ref());
         let casting = match casting_option {
             Some(v) => v,
             None => return false,
         };
-        let spell = casting.1.iter()
-            .find(|s| s.name.to_lowercase() == name);
+        let spell = casting.1.iter().find(|s| s.name.to_lowercase() == name);
         let spell = match spell {
             Some(s) => s,
             None => return false,
@@ -809,7 +816,7 @@ impl Character {
         match spell_list {
             Some(true) => self.cast_with_pact(level),
             Some(false) => self.cast_with_slots(level),
-            None =>  {
+            None => {
                 let v = self.first_caster_class();
                 match v {
                     None => false,

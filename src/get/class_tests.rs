@@ -1,10 +1,10 @@
 use crate::{
+    get::Dnd5eapigetter,
     rules2014::{
         class::{Class, ItemCategory},
         features::PresentedOption,
         stats::SkillType,
     },
-    get::Dnd5eapigetter,
     CharacterDataError,
 };
 

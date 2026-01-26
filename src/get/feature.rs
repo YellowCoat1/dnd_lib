@@ -1,8 +1,8 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{choice, parse_string, value_name, ValueExt};
+use crate::getter::CharacterDataError;
 use crate::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use crate::rules2014::stats::StatType;
-use crate::getter::CharacterDataError;
 use regex::Regex;
 use serde_json::Value;
 

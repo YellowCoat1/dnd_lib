@@ -452,7 +452,6 @@ impl From<HeldEquipment> for ItemCount {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -552,12 +551,15 @@ mod tests {
 
         assert_eq!(action.name(), "Longsword Attack");
         assert_eq!(action.attack_bonus(), 5);
-        assert_eq!(action.damage_roll(), DamageRoll {
-            number: 1,
-            dice: 8,
-            bonus: 3,
-            damage_type: DamageType::Slashing,
-        });
+        assert_eq!(
+            action.damage_roll(),
+            DamageRoll {
+                number: 1,
+                dice: 8,
+                bonus: 3,
+                damage_type: DamageType::Slashing,
+            }
+        );
     }
 
     #[test]

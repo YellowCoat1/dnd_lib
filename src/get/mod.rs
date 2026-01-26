@@ -51,10 +51,10 @@ use race::get_race as get_race_inner;
 use spell::get_spell as get_spell_inner;
 
 use crate::{
+    prelude::Race,
     rules2014::{
         background::Background, class::Class, features::Feature, items::Item, spells::Spell,
     },
-    prelude::Race,
     CharacterDataError,
 };
 
@@ -187,10 +187,10 @@ fn capitalize(s: &mut String) {
 
 #[cfg(test)]
 mod test {
-    use crate::rules2014::features::PresentedOption;
-    use crate::rules2014::stats::SkillType;
     use crate::getter::DataProvider;
     use crate::provider;
+    use crate::rules2014::features::PresentedOption;
+    use crate::rules2014::stats::SkillType;
 
     #[tokio::test]
     async fn get_acolyte() {

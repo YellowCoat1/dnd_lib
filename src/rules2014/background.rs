@@ -1,6 +1,6 @@
-use super::items::Item;
 use super::choice::PresentedOption;
 use super::features::Feature;
+use super::items::Item;
 use super::items::ItemCount;
 use super::stats::SkillType;
 use heck::ToTitleCase;

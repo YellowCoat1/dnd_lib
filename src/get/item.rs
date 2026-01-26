@@ -2,11 +2,11 @@ use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, ValueExt},
 };
+use crate::getter::CharacterDataError;
 use crate::rules2014::items::{
     Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties,
     WeaponType,
 };
-use crate::getter::CharacterDataError;
 use serde_json::Value;
 
 pub async fn get_item(name: &str) -> Result<Item, CharacterDataError> {

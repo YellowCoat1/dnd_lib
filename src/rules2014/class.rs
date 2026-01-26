@@ -158,7 +158,9 @@ impl std::fmt::Display for ItemCategory {
         match self {
             ItemCategory::Item(item) => write!(f, "a {}", item.name),
             ItemCategory::Weapon(weapon_type) => write!(f, "any {} weapon", weapon_type),
-            ItemCategory::Armor(armor_category) => write!(f, "any {} armor", armor_category.to_string().to_lowercase()),
+            ItemCategory::Armor(armor_category) => {
+                write!(f, "any {} armor", armor_category.to_string().to_lowercase())
+            }
         }
     }
 }

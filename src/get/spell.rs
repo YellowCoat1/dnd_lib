@@ -1,9 +1,9 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{string_array, value_name, ValueExt};
-use crate::rules2014::items::{DamageRoll, DamageType};
-use crate::rules2014::spells::Spell;
 use crate::get::json_tools::parse_string;
 use crate::getter::CharacterDataError;
+use crate::rules2014::items::{DamageRoll, DamageType};
+use crate::rules2014::spells::Spell;
 use serde_json::Value;
 
 type StandardDamage = Vec<Vec<DamageRoll>>;
@@ -38,8 +38,8 @@ pub async fn get_spell(name: &str) -> Result<Spell, CharacterDataError> {
         .map(|v| v.chars().next().unwrap())
         .collect();
     let material = json.get_str("material").ok();
-    let (damage, leveled_damage) = spell_damage(json.get_map("damage").ok())
-        .unwrap_or((None, None));
+    let (damage, leveled_damage) =
+        spell_damage(json.get_map("damage").ok()).unwrap_or((None, None));
     let duration = json.get_str("duration")?;
 
     Ok(Spell {
@@ -203,7 +203,10 @@ mod tests {
     async fn sleep() {
         let sleep = get_spell("sleep").await.expect("failed to get sleep spell");
         assert!(sleep.damage.is_none(), "sleep should not have damage");
-        assert!(sleep.leveled_damage.is_none(), "sleep should not have leveled damage");
+        assert!(
+            sleep.leveled_damage.is_none(),
+            "sleep should not have leveled damage"
+        );
     }
 
     #[tokio::test]

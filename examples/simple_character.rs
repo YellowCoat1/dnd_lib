@@ -1,4 +1,4 @@
-use dnd_lib::{rules2014::features::PresentedOption, prelude::*};
+use dnd_lib::{prelude::*, rules2014::features::PresentedOption};
 
 // An example of a simple level 1 character, with all essential choices.
 

@@ -1,4 +1,6 @@
 use crate::{
+    get::json_tools::parse_skilltype,
+    getter::DataProvider,
     rules2014::{
         class::{Class, ClassBuilder, ItemCategory, Subclass, TrackedField},
         features::{Feature, PresentedOption},
@@ -6,8 +8,6 @@ use crate::{
         spells::{SpellCasterType, SpellCastingPreperation, Spellcasting},
         stats::{EquipmentProficiencies, SkillType, StatType},
     },
-    get::json_tools::parse_skilltype,
-    getter::DataProvider,
 };
 use heck::ToTitleCase;
 use serde_json::{Map, Value};
