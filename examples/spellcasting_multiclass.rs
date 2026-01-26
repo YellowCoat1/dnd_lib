@@ -66,25 +66,26 @@ async fn main() {
     let healing_word_future = provider.get_spell("mass healing word");
 
     // sorcerer spells
-    //let sleep_future = provider.get_spell("sleep");
+    let sleep_future = provider.get_spell("sleep");
 
-    //TODO: Fix sleep
     
     let lesser_restoration = lesser_restoration_future.await.unwrap();
     let mass_healing_word = healing_word_future.await.unwrap();
+    let sleep = sleep_future.await.unwrap();
     println!("Spells fetched.");
 
     let (cleric_prepared_list, _) = spellcaster.prepare_spells(0).expect("Cleric should be able to prepare spells");
     cleric_prepared_list.push(lesser_restoration);
     cleric_prepared_list.push(mass_healing_word);
-    //let (sorcerer_known_list, _) = spellcaster.prepare_spells(1).expect("Sorcerer should be able to learn spells");
+    let (sorcerer_known_list, _) = spellcaster.prepare_spells(1).expect("Sorcerer should be able to learn spells");
+    sorcerer_known_list.push(sleep);
 
     // cast lesser restoration from the cleric spell list
     let result = spellcaster.cast_prepared(0, "lesser restoration", None, None);
     assert!(result, "Failed to cast lesser restoration");
     // cast sleep from the sorcerer spell list
-    //let result = spellcaster.cast_prepared(1, "sleep", None, None);
-    //assert!(result, "Failed to cast sleep");
+    let result = spellcaster.cast_prepared(1, "sleep", None, None);
+    assert!(result, "Failed to cast sleep");
 
 
 
