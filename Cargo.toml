@@ -8,7 +8,7 @@ description = "Dungeons & Dragons character building and management library"
 repository = "https://github.com/YellowCoat1/dnd_lib"
 readme = "README.md"
 keywords = ["dnd", "dnd-character", "dungeons-and-dragons",  "dnd5eapi", "character-sheet"]
-categories = ["libraries", "data-structures", "game-development", "api-bindings"]
+categories = ["data-structures", "game-development", "api-bindings"]
 
 [dependencies]
 async-trait = "0.1.89"
