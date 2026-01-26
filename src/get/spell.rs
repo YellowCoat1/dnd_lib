@@ -170,11 +170,11 @@ mod tests {
         let second_level_damage = damage
             .first()
             .expect("acid arrow should have 2nd level damage!");
-        assert_eq!(second_level_damage[0], DamageRoll::new(4, 4, acid));
+        assert_eq!(second_level_damage[0], DamageRoll::new(4, 4, 0, acid));
         let ninth_level_damage = damage
             .get(7)
             .expect("acid arrow should have 9th level damage!");
-        assert_eq!(ninth_level_damage[0], DamageRoll::new(11, 4, acid));
+        assert_eq!(ninth_level_damage[0], DamageRoll::new(11, 4, 0, acid));
     }
 
     #[tokio::test]
@@ -191,10 +191,10 @@ mod tests {
         assert_eq!(
             poison_spray_damage,
             vec![
-                (1, DamageRoll::new(1, 12, Poison)),
-                (5, DamageRoll::new(2, 12, Poison)),
-                (11, DamageRoll::new(3, 12, Poison)),
-                (17, DamageRoll::new(4, 12, Poison))
+                (1, DamageRoll::new(1, 12, 0, Poison)),
+                (5, DamageRoll::new(2, 12, 0, Poison)),
+                (11, DamageRoll::new(3, 12, 0, Poison)),
+                (17, DamageRoll::new(4, 12, 0, Poison))
             ]
         );
     }

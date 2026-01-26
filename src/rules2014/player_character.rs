@@ -1412,11 +1412,11 @@ impl Character {
             }
         }
         // Unarmed Strike
+        let bonus = modifiers.stats.strength + self.proficiency_bonus();
         weapon_actions_vec.push(WeaponAction {
             name: "Unarmed Strike".to_string(),
             attack_bonus: self.proficiency_bonus(),
-            damage_roll: DamageRoll::new(0, 4, DamageType::Bludgeoning),
-            damage_roll_bonus: modifiers.stats.strength + self.proficiency_bonus(),
+            damage_roll: DamageRoll::new(1, 4, bonus, DamageType::Bludgeoning),
             two_handed: false,
             second_attack: false,
         });
@@ -1518,13 +1518,17 @@ impl Character {
             .iter()
             .map(|v| modifiers.stats.get_stat_type(v))
             .sum::<isize>();
-        let damage_roll_bonus = (c.static_damage_bonus as isize + stats_damage_bonus).max(0);
+        let damage_roll_bonus = (c.damage_roll.bonus as isize + stats_damage_bonus).max(0);
+
+        let damage_roll = DamageRoll {
+            bonus: damage_roll_bonus,
+            ..c.damage_roll.clone()
+        };
 
         ComputedCustomAction {
             name: c.name.clone(),
             attack_bonus,
-            damage_roll: c.damage_roll,
-            damage_roll_bonus,
+            damage_roll: damage_roll,
         }
     }
 
@@ -1858,14 +1862,13 @@ fn weapon_actions_inner(
     let bonus = if proficient { proficiency_mod } else { 0 };
 
     let attack_bonus = modifier + bonus + (w.attack_roll_bonus as isize);
-    let damage_roll = w.damage;
-    let damage_roll_bonus = modifier + bonus;
+    let mut damage_roll = w.damage;
+    damage_roll.bonus = modifier + bonus;
 
     let base_attack = WeaponAction {
         name: name.clone(),
         attack_bonus,
         damage_roll,
-        damage_roll_bonus,
         two_handed,
         second_attack: false,
     };
@@ -1874,11 +1877,14 @@ fn weapon_actions_inner(
 
     // add second attack
     if light {
+        let damage_roll = DamageRoll {
+            bonus: (damage_roll.bonus - modifier) as isize,
+            ..damage_roll
+        };
         attacks.push(WeaponAction {
             name: name.clone(),
             attack_bonus,
             damage_roll,
-            damage_roll_bonus: modifier,
             two_handed: false,
             second_attack: true,
         });
@@ -1890,7 +1896,6 @@ fn weapon_actions_inner(
             name: name.clone(),
             attack_bonus,
             damage_roll: d,
-            damage_roll_bonus,
             two_handed: true,
             second_attack: false,
         });

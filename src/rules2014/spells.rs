@@ -84,9 +84,6 @@ impl Action for SpellAction {
     fn attack_bonus(&self) -> isize {
         self.spell_attack_mod
     }
-    fn damage_roll_bonus(&self) -> isize {
-        0
-    } // spells don't typically have a damage roll bonus
 }
 
 /// A school of magic.

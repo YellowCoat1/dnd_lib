@@ -64,7 +64,7 @@ impl AbilityScoreIncrease {
 
 /// An action granted by a feature.
 ///
-/// This is meant to be a wildcard action, describing anything that isn't already in the domain of
+/// This is meant to be a wildcard action, describing any attack that isn't already in the domain of
 /// this crate. Its fields reflect this, covering every possibility.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomAction {
@@ -77,8 +77,6 @@ pub struct CustomAction {
     pub add_prof_to_attack: bool,
     /// the base damage roll and type
     pub damage_roll: DamageRoll,
-    /// The number that is always added to the damage roll
-    pub static_damage_bonus: usize,
     /// Stats that are always added to the damage roll
     pub damage_bonus_stats: Vec<StatType>,
     /// If proficiency is added to the damage
@@ -99,7 +97,6 @@ pub struct ComputedCustomAction {
     pub name: String,
     pub attack_bonus: isize,
     pub damage_roll: DamageRoll,
-    pub damage_roll_bonus: isize,
 }
 
 impl Action for ComputedCustomAction {
@@ -112,9 +109,6 @@ impl Action for ComputedCustomAction {
     }
     fn attack_bonus(&self) -> isize {
         self.attack_bonus
-    }
-    fn damage_roll_bonus(&self) -> isize {
-        self.damage_roll_bonus
     }
 }
 
@@ -200,9 +194,9 @@ mod tests {
             damage_roll: DamageRoll {
                 number: 0,
                 dice: 0,
+                bonus: 0,
                 damage_type: DamageType::Cold,
             },
-            static_damage_bonus: 0,
             damage_bonus_stats: vec![],
             add_prof_to_damage: false,
         }
@@ -215,9 +209,9 @@ mod tests {
             damage_roll: DamageRoll {
                 number: 0,
                 dice: 0,
+                bonus: 0,
                 damage_type: DamageType::Cold,
             },
-            damage_roll_bonus: 0,
         }
     }
 
@@ -239,6 +233,5 @@ mod tests {
         assert_eq!(computed1.name(), "Null Action");
         assert_eq!(computed1.attack_bonus(), 0);
         assert_eq!(computed1.damage_roll(), action1.damage_roll);
-        assert_eq!(computed1.damage_roll_bonus(), 0);
     }
 }

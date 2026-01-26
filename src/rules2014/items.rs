@@ -296,6 +296,8 @@ pub struct DamageRoll {
     pub number: usize,
     /// The numer of faces in the die (e.g. 4, 8, 20)
     pub dice: usize,
+    /// the constant bonus added to the damage roll
+    pub bonus: isize,
     /// The type of damage the roll causes.
     pub damage_type: DamageType,
 }
@@ -314,7 +316,6 @@ pub trait Action {
     fn name(&self) -> &str;
     fn attack_bonus(&self) -> isize;
     fn damage_roll(&self) -> DamageRoll;
-    fn damage_roll_bonus(&self) -> isize;
 }
 
 /// An attack you can take with a weapon.
@@ -326,7 +327,6 @@ pub struct WeaponAction {
     pub name: String,
     pub attack_bonus: isize,
     pub damage_roll: DamageRoll,
-    pub damage_roll_bonus: isize,
     pub two_handed: bool,
     pub second_attack: bool,
 }
@@ -341,17 +341,15 @@ impl Action for WeaponAction {
     fn damage_roll(&self) -> DamageRoll {
         self.damage_roll
     }
-    fn damage_roll_bonus(&self) -> isize {
-        self.damage_roll_bonus
-    }
 }
 
 impl DamageRoll {
-    pub fn new(number: usize, dice: usize, damage_type: DamageType) -> DamageRoll {
+    pub fn new(number: usize, dice: usize, bonus: isize, damage_type: DamageType) -> DamageRoll {
         DamageRoll {
             number,
             dice,
             damage_type,
+            bonus,
         }
     }
 
@@ -360,9 +358,22 @@ impl DamageRoll {
     /// For example, "2d10" would be turned into a DamageRoll with 2 dice and 10 faces.
     pub fn from_str(s: &str, damage_type: DamageType) -> Option<DamageRoll> {
         let (a, b) = s.split_once('d')?;
+        let number = a.parse().ok()?;
+        let dice;
+        let bonus;
+        if b.contains('+') || b.contains('-') {
+            let (c, d) = b.split_once(|c| c == '+' || c == '-')?;
+            dice = c.parse().ok()?;
+            bonus = d.parse().ok()?;
+        } else {
+            dice = b.parse().ok()?;
+            bonus = 0;
+        }
+
         Some(Self {
-            number: a.parse().ok()?,
-            dice: b.parse().ok()?,
+            number,
+            dice,
+            bonus,
             damage_type,
         })
     }
@@ -532,9 +543,9 @@ mod tests {
             damage_roll: DamageRoll {
                 number: 1,
                 dice: 8,
+                bonus: 3,
                 damage_type: DamageType::Slashing,
             },
-            damage_roll_bonus: 3,
             two_handed: false,
             second_attack: false,
         };
@@ -544,9 +555,9 @@ mod tests {
         assert_eq!(action.damage_roll(), DamageRoll {
             number: 1,
             dice: 8,
+            bonus: 3,
             damage_type: DamageType::Slashing,
         });
-        assert_eq!(action.damage_roll_bonus(), 3);
     }
 
     #[test]
