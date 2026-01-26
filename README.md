@@ -28,3 +28,4 @@ To provide another option for data fetching, the library also provides the Dnd5e
 - Integrations with popular VTTs
 - 2024 D&D support
 - Higher test coverage and more examples
+If you'd like to build a tool to expand this library, particularly in one of the above areas, that would be greatly appreciated. Also, if you're building an application using this library, i'd love to hear about it.
