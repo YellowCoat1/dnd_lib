@@ -1525,17 +1525,17 @@ impl Character {
             .iter()
             .map(|v| modifiers.stats.get_stat_type(v))
             .sum::<isize>();
-        let damage_roll_bonus = (c.damage_roll.bonus as isize + stats_damage_bonus).max(0);
+        let damage_roll_bonus = (c.damage_roll.bonus + stats_damage_bonus).max(0);
 
         let damage_roll = DamageRoll {
             bonus: damage_roll_bonus,
-            ..c.damage_roll.clone()
+            ..c.damage_roll
         };
 
         ComputedCustomAction {
             name: c.name.clone(),
             attack_bonus,
-            damage_roll: damage_roll,
+            damage_roll,
         }
     }
 
@@ -1885,7 +1885,7 @@ fn weapon_actions_inner(
     // add second attack
     if light {
         let damage_roll = DamageRoll {
-            bonus: (damage_roll.bonus - modifier) as isize,
+            bonus: (damage_roll.bonus - modifier),
             ..damage_roll
         };
         attacks.push(WeaponAction {
