@@ -102,30 +102,27 @@ async fn level_10_warlock() {
         .1;
     *warlock_spells = try_join_all(spells).await.expect("Couldn't get spells");
 
-    let warlock_spells = baroopa.classes[0]
-        .spellcasting
-        .as_ref()
-        .expect("Warlock should be a spellcaster")
-        .1
-        .iter()
-        .map(|spell| spell.name.to_lowercase())
-        .collect::<Vec<_>>();
+    let warlock_spells = baroopa.spells();
+
+    let spell_names: Vec<_> = warlock_spells.into_iter()
+        .map(|v| v.0.name.as_str())
+        .collect();
 
     assert_eq!(
-        warlock_spells,
+        spell_names,
         vec![
-            "eldritch blast",
-            "minor illusion",
-            "hellish rebuke",
-            "charm person",
-            "darkness",
-            "invisibility",
-            "counterspell",
-            "dispel magic",
-            "blight",
-            "banishment",
-            "hold monster",
-            "dream",
+            "Eldritch Blast",
+            "Minor Illusion",
+            "Hellish Rebuke",
+            "Charm Person",
+            "Darkness",
+            "Invisibility",
+            "Counterspell",
+            "Dispel Magic",
+            "Blight",
+            "Banishment",
+            "Hold Monster",
+            "Dream",
         ]
     );
 
