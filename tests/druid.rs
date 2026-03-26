@@ -161,22 +161,31 @@ async fn level_3_druid() {
         "Spell slots after long rest did not match expected value"
     );
 
-
     // testing languages
 
     let language_feature = Feature {
         name: "extra language".to_string(),
         description: vec![],
-        effects: vec![FeatureEffect::AddedLanguage(LanguageOption::Fixed("Dwarvish".to_string()))]
+        effects: vec![FeatureEffect::AddedLanguage(LanguageOption::Fixed(
+            "Dwarvish".to_string(),
+        ))],
     };
 
     boopo.bonus_features.push(language_feature);
 
-    let mut boopo_languages: Vec<_> = boopo.total_languages()
+    let mut boopo_languages: Vec<_> = boopo
+        .total_languages()
         .into_iter()
         .map(|v| v.to_lowercase())
         .collect();
-    assert_eq!(boopo_languages.pop(), Some("common".to_string()), "character did not have the basic common language");
-    assert_eq!(boopo_languages.pop(), Some("dwarvish".to_string()), "character did not have the added feature language");
-
+    assert_eq!(
+        boopo_languages.pop(),
+        Some("common".to_string()),
+        "character did not have the basic common language"
+    );
+    assert_eq!(
+        boopo_languages.pop(),
+        Some("dwarvish".to_string()),
+        "character did not have the added feature language"
+    );
 }

@@ -223,7 +223,13 @@ async fn level_5_halfling_rogue() {
     let speeds = bingus.speeds();
     assert_eq!(speeds.walking, Some(25));
     assert_eq!(
-        (speeds.flying, speeds.hovering, speeds.burrowing, speeds.climbing, speeds.swimming),
+        (
+            speeds.flying,
+            speeds.hovering,
+            speeds.burrowing,
+            speeds.climbing,
+            speeds.swimming
+        ),
         (None, None, None, None, None),
         "rogue should have no special speeds"
     );
@@ -231,14 +237,16 @@ async fn level_5_halfling_rogue() {
     let swimming_speed_feature = Feature {
         name: String::from("Swimmer"),
         description: vec![],
-        effects: vec![FeatureEffect::SwimmingSpeed(30)]
+        effects: vec![FeatureEffect::SwimmingSpeed(30)],
     };
     bingus.bonus_features.push(swimming_speed_feature);
-    assert_eq!(bingus.speeds().swimming, Some(30), "rogue should have a swim speed");
+    assert_eq!(
+        bingus.speeds().swimming,
+        Some(30),
+        "rogue should have a swim speed"
+    );
 
-
-
-    // damage 
+    // damage
     bingus.damage(30);
     assert_eq!(bingus.hp, 8, "Character had not taken damage properly");
 
