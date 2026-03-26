@@ -91,6 +91,8 @@ async fn level_10_warlock() {
 
     assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 20]));
 
+    // the warlock has no armor, so the ac should be 10+dex
+    assert_eq!(baroopa.ac(), 10+2);
     // There should be no spells to prepare for warlock, as they know their spells.
     assert_eq!(baroopa.prepare_spells_multiple().len(), 0);
 
