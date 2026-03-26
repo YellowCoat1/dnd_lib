@@ -642,7 +642,7 @@ impl Character {
         Some((spell_save_dc, spell_attack_mod))
     }
 
-    /// Gets every spell availiable to the character.
+    /// Gets every spell actively prepared or known by the character.
     /// Returns a list of spells, and the indexes to the [SpeccedClass]es that they come from.
     ///
     /// If the character is not a spellcaster, this returns an empty [Vec].
