@@ -1124,7 +1124,10 @@ impl Character {
 
         macro_rules! add_speed {
             ($speed_field: expr, $applying: expr) => {
-                $speed_field = $speed_field.map(|s| s.max($applying))
+                $speed_field = match $speed_field {
+                    Some(v) => Some(v.max($applying)),
+                    None => Some($applying),
+                }
             };
         }
 
