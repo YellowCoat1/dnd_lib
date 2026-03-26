@@ -747,21 +747,18 @@ impl Character {
     ///
     /// Note that this only decrements the spell slot at the spell's level.
     pub fn cast<T: Castable>(&mut self, casted: &T, spell_list: Option<bool>) -> bool {
-        if spell_list.is_none() {
-            let v = self.first_caster_class();
-            match v {
-                None => false,
-                Some(SpellCasterType::Warlock) => self.cast_with_pact(casted.level()),
-                Some(_) => self.cast_with_slots(casted.level()),
-            }
-        } else if let Some(b) = spell_list {
-            if b {
-                self.cast_with_pact(casted.level())
-            } else {
-                self.cast_with_slots(casted.level())
-            }
-        } else {
-            false
+        match spell_list {
+
+            None => {
+                let v = self.first_caster_class();
+                match v {
+                    None => false,
+                    Some(SpellCasterType::Warlock) => self.cast_with_pact(casted.level()),
+                    Some(_) => self.cast_with_slots(casted.level()),
+                }
+            },
+            Some(true) =>  self.cast_with_pact(casted.level()),
+            Some(false) => self.cast_with_slots(casted.level())
         }
     }
 
@@ -792,21 +789,29 @@ impl Character {
         upcast: Option<usize>,
         spell_list: Option<bool>,
     ) -> bool {
+
+
+
+        macro_rules! unwrap_or_return {
+            ($e: expr) => {
+                match $e {
+                    Some(v) => v,
+                    None => return false,
+                }
+            };
+        }
+
         let name = name.to_lowercase();
 
         let casting_option = self
             .classes
             .get(class)
             .and_then(|c| c.spellcasting.as_ref());
-        let casting = match casting_option {
-            Some(v) => v,
-            None => return false,
-        };
+        let casting = unwrap_or_return!(casting_option);
+
         let spell = casting.1.iter().find(|s| s.name.to_lowercase() == name);
-        let spell = match spell {
-            Some(s) => s,
-            None => return false,
-        };
+        let spell = unwrap_or_return!(spell);
+
         let level = match upcast {
             Some(l) if l >= spell.level() => l,
             Some(_) => return false,
@@ -1152,10 +1157,7 @@ impl Character {
             .find(|v| v.class == "Monk")
             .expect("Unarmored defense without monk levels. Did you add it manually?")
             .level;
-        if !(1..=20).contains(&level) {
-            return 0;
-        }
-        UNARMORED_MOVEMENT[level - 1]
+        UNARMORED_MOVEMENT.get(level - 1).cloned().unwrap_or(0)
     }
 
     /// Attempts to increase the character's level by 1 in the given class.
@@ -1195,9 +1197,8 @@ impl Character {
                     class.class_specific_leveled(),
                     level_after,
                 );
-                match (max_before, max_after) {
-                    (Some(b), Some(a)) => etc_field.1 += a.saturating_sub(b),
-                    _ => continue,
+                if let (Some(b), Some(a)) = (max_before, max_after) {
+                    etc_field.1 += a.saturating_sub(b);
                 }
             }
         }
