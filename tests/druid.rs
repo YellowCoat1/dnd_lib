@@ -173,19 +173,12 @@ async fn level_3_druid() {
 
     boopo.bonus_features.push(language_feature);
 
-    let mut boopo_languages: Vec<_> = boopo
+    let boopo_languages: Vec<_> = boopo
         .total_languages()
         .into_iter()
         .map(|v| v.to_lowercase())
         .collect();
-    assert_eq!(
-        boopo_languages.pop(),
-        Some("common".to_string()),
-        "character did not have the basic common language"
-    );
-    assert_eq!(
-        boopo_languages.pop(),
-        Some("dwarvish".to_string()),
-        "character did not have the added feature language"
-    );
+
+    assert_eq!(boopo_languages.len(), 2);
+    assert_eq!(boopo_languages, vec![String::from("common"), String::from("dwarvish")])
 }

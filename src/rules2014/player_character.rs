@@ -1044,6 +1044,18 @@ impl Character {
     pub fn total_languages(&self) -> HashSet<&str> {
         let mut languages: HashSet<&str> = HashSet::new();
 
+        // race languages
+        for lang in self.race.languages.iter() {
+            languages.insert(lang.as_str());
+        }
+        for lang in self.race.wildcard_languages.iter().flatten() {
+            languages.insert(lang.as_str());
+        }
+
+
+        // background languages
+        languages.extend(self.background.languages());
+
         // feature granted languages
         // e.g. druidic, or extra language from high elf subrace
         let features = self
@@ -1057,17 +1069,6 @@ impl Character {
                 languages.insert(l.as_str());
             }
         }
-
-        // race languages
-        for lang in self.race.languages.iter() {
-            languages.insert(lang.as_str());
-        }
-        for lang in self.race.wildcard_languages.iter().flatten() {
-            languages.insert(lang.as_str());
-        }
-
-        // background languages
-        languages.extend(self.background.languages());
 
         languages
     }
