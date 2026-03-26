@@ -158,6 +158,9 @@ async fn level_3_elf_monk() {
     let ac = georg.ac();
     assert_eq!(ac, 15);
     
+    // speed
+    let speed = georg.speed();
+    assert_eq!(speed, 40);
 
     // damage
     let hp = georg.hp;
@@ -169,5 +172,4 @@ async fn level_3_elf_monk() {
     assert_eq!(georg.hp, 1, "wrong hp after taking damage");
     let is_dead_now = georg.damage(3);
     assert!(is_dead_now, "character should have died to sufficient damage.");
-    
 }
