@@ -449,6 +449,40 @@ impl Character {
         new_stats
     }
 
+    /// Mutable version of [ability_score_increases]
+    pub fn ability_score_increases_mut(&mut self) -> Vec<&mut AbilityScoreIncrease> {
+        // see comments for ability_score_increases 
+        self.classes.iter_mut()
+            .flat_map(|v| v.current_class_features.iter_mut())
+            .flat_map(|v| v) 
+            .filter_map(|v| v.as_base_mut())
+            .flat_map(|v| v.effects.iter_mut())
+            .filter_map(|v| match v {
+                FeatureEffect::AbilityScoreIncrease(a) => Some(a),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// A helper for getting the ability scores increases of a character
+    pub fn ability_score_increases(&mut self) -> Vec<&AbilityScoreIncrease> {
+        self.classes.iter()
+            // iter over each class's feature list
+            .flat_map(|v| v.current_class_features.iter())
+            // then over each feature
+            .flat_map(|v| v) 
+            // and each chosen feature
+            .filter_map(|v| v.as_base())
+            // then each effect in those features
+            .flat_map(|v| v.effects.iter())
+            // filter for only ability score increases
+            .filter_map(|v| match v {
+                FeatureEffect::AbilityScoreIncrease(a) => Some(a),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// Returns the proficiencies the character has in each saving throw.
     ///
     /// This is not saving throw modifiers. For that, see [Character::save_mods].
