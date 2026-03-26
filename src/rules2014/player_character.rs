@@ -1263,8 +1263,6 @@ impl Character {
                     for (i, v) in new_slots.iter().enumerate() {
                         current_slots.0[i] += *v;
                     }
-                } else {
-                    self.available_spell_slots = Some(SpellSlots(new_slots.try_into().unwrap()));
                 }
             }
             (None, Some(after)) => {
