@@ -146,6 +146,7 @@ fn feature_effects(index_name: &str) -> Vec<FeatureEffect> {
             FeatureEffect::UnarmoredDefense(13, StatType::Dexterity, None),
         ],
         "dwarven-toughness" => vec![FeatureEffect::LeveledHpIncrease],
+        "unarmored-movement-1" => vec![FeatureEffect::UnarmoredMovement],
         _ => vec![],
     }
 }
