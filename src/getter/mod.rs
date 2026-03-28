@@ -1,4 +1,6 @@
 //! Traits and errors for retrieving D&D Character data.
+use std::error::Error;
+
 use async_trait::async_trait;
 use thiserror::Error;
 
@@ -51,12 +53,12 @@ use crate::rules2014::{background::Background, class::Class, items::Item, spells
 /// defined as get_class_raw(&impl DataProvider, name: &str) -> Result<Class, CharacterDataError>, then another crate can pass a different DataProvider to it
 /// in order to change where the class retrieves items from.
 #[async_trait]
-pub trait DataProvider: Send + Sync {
-    async fn get_race(&self, name: &str) -> Result<Race, CharacterDataError>;
-    async fn get_background(&self, name: &str) -> Result<Background, CharacterDataError>;
-    async fn get_item(&self, name: &str) -> Result<Item, CharacterDataError>;
-    async fn get_class(&self, name: &str) -> Result<Class, CharacterDataError>;
-    async fn get_spell(&self, name: &str) -> Result<Spell, CharacterDataError>;
+pub trait DataProvider<E: Error>: Send + Sync {
+    async fn get_race(&self, name: &str) -> Result<Race, E>;
+    async fn get_background(&self, name: &str) -> Result<Background, E>;
+    async fn get_item(&self, name: &str) -> Result<Item, E>;
+    async fn get_class(&self, name: &str) -> Result<Class, E>;
+    async fn get_spell(&self, name: &str) -> Result<Spell, E>;
 }
 
 /// Errors that can occur when retrieving or parsing character data

@@ -11,7 +11,7 @@ use serde_json::Value;
 pub const BACKGROUND_NAMES: [&str; 1] = ["acolyte"];
 
 pub async fn get_background(
-    getter: &impl DataProvider,
+    getter: &impl DataProvider<CharacterDataError>,
     name: &str,
 ) -> Result<Background, CharacterDataError> {
     let index = parse_string(name);

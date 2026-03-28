@@ -44,7 +44,7 @@ pub const CLASS_NAMES: [&str; 12] = [
 /// Note that this function takes a large amount of time, anywhere from 2 to 15 seconds. Try to run
 /// it in the background when you can.
 pub async fn get_class(
-    getter: &impl DataProvider,
+    getter: &impl DataProvider<CharacterDataError>,
     class_name: &str,
 ) -> Result<Class, CharacterDataError> {
     let c = parse_string(class_name);
@@ -183,7 +183,7 @@ fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), Character
 }
 
 async fn items(
-    getter: &impl DataProvider,
+    getter: &impl DataProvider<CharacterDataError>,
     map: &Value,
 ) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, CharacterDataError> {
     let given_equipment = map.get_array("starting_equipment")?;
@@ -219,7 +219,7 @@ async fn items(
 }
 
 async fn class_item_choice(
-    getter: &impl DataProvider,
+    getter: &impl DataProvider<CharacterDataError>,
     equipment_option: &Value,
 ) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
     let map_option = choice_multi(equipment_option)?;
@@ -336,7 +336,7 @@ fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
 }
 
 async fn process_equipment(
-    getter: &impl DataProvider,
+    getter: &impl DataProvider<CharacterDataError>,
     val: &Value,
 ) -> Result<Item, CharacterDataError> {
     let index = val.get_str("index")?;
@@ -732,7 +732,7 @@ fn etc_class_field_option(name: &str) -> Option<TrackedField> {
 }
 
 async fn json_to_class(
-    getter: &impl DataProvider,
+    getter: &impl DataProvider<CharacterDataError>,
     json: Value,
     levels: Value,
 ) -> Result<Class, CharacterDataError> {
