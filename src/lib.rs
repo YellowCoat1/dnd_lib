@@ -73,8 +73,8 @@ mod getter;
 pub mod rules2014;
 pub mod save;
 
-// re-exports
-pub use getter::*;
+// re-export trait
+pub use getter::DataProvider;
 pub use rules2014::player_character::{Character, CharacterBuilder};
 
 #[cfg_attr(not(test), allow(dead_code))]
@@ -95,9 +95,12 @@ pub(crate) fn provider() -> Arc<get::Dnd5eapiGetter> {
 
 pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
-    pub use crate::get::Dnd5eapiGetter;
+    pub use crate::get::{
+        Dnd5eapiGetter,
+        CharacterDataError
+    };
     pub use crate::{
-        getter::{CharacterDataError, DataProvider},
+        getter::DataProvider,
         rules2014::class::Class,
         rules2014::stats::Stats,
         rules2014::{

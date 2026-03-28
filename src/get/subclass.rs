@@ -3,7 +3,7 @@ use super::{
     json_tools::{parse_string, string_array, ValueExt},
 };
 use crate::get::json_tools::value_name;
-use crate::getter::CharacterDataError;
+use super::CharacterDataError;
 use crate::rules2014::features::Feature;
 use crate::rules2014::{class::Subclass, features::PresentedOption};
 

@@ -1,7 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
 use crate::get::json_tools::{parse_skilltype, parse_string};
-use crate::getter::CharacterDataError;
+use super::CharacterDataError;
 use crate::getter::DataProvider;
 use crate::rules2014::background::{BackgroundBuilder, LanguageOption};
 use crate::rules2014::features::Feature;

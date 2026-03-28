@@ -5,8 +5,8 @@ use crate::{
         features::PresentedOption,
         stats::SkillType,
     },
-    CharacterDataError,
 };
+use super::CharacterDataError;
 
 use crate::provider;
 

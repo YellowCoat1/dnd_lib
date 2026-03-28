@@ -3,7 +3,7 @@ use super::get_page::get_raw_json;
 use super::json_tools::{parse_string, ValueExt};
 use super::subrace::get_subrace;
 use crate::get::subrace::ability_bonus_choice;
-use crate::getter::CharacterDataError;
+use super::CharacterDataError;
 use crate::rules2014::stats::Size;
 use crate::rules2014::{Race, RaceBuilder, Subrace};
 use serde_json::Value;

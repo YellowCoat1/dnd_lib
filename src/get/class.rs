@@ -21,7 +21,7 @@ use crate::get::{
     },
     subclass::get_subclass,
 };
-use crate::getter::CharacterDataError;
+use super::CharacterDataError;
 
 /// All class names available in the api.
 pub const CLASS_NAMES: [&str; 12] = [

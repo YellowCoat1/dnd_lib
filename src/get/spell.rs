@@ -1,7 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{string_array, value_name, ValueExt};
 use crate::get::json_tools::parse_string;
-use crate::getter::CharacterDataError;
+use super::CharacterDataError;
 use crate::rules2014::items::{DamageRoll, DamageType};
 use crate::rules2014::spells::Spell;
 use serde_json::Value;

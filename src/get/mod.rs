@@ -55,7 +55,6 @@ use crate::{
     rules2014::{
         background::Background, class::Class, features::Feature, items::Item, spells::Spell,
     },
-    CharacterDataError,
 };
 
 pub use background::BACKGROUND_NAMES;
@@ -63,6 +62,10 @@ pub use class::CLASS_NAMES;
 pub use race::RACE_NAMES;
 mod item_list;
 pub use item_list::ITEM_NAMES;
+
+
+mod error;
+pub use error::CharacterDataError;
 
 /// Gets D&D data from dnd5eapi.co
 ///
@@ -102,13 +105,13 @@ pub struct Dnd5eapiGetter {
 
 #[async_trait]
 impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapiGetter {
-    async fn get_race(&self, name: &str) -> Result<Race, crate::getter::CharacterDataError> {
+    async fn get_race(&self, name: &str) -> Result<Race, CharacterDataError> {
         get_race_inner(name).await
     }
     async fn get_background(
         &self,
         name: &str,
-    ) -> Result<Background, crate::getter::CharacterDataError> {
+    ) -> Result<Background, CharacterDataError> {
         if let Some(cached) = self.background_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
@@ -119,7 +122,7 @@ impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapiGetter {
             .insert(name.to_string(), background.clone());
         Ok(background)
     }
-    async fn get_class(&self, name: &str) -> Result<Class, crate::getter::CharacterDataError> {
+    async fn get_class(&self, name: &str) -> Result<Class, CharacterDataError> {
         if let Some(cached) = self.class_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
@@ -130,7 +133,7 @@ impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapiGetter {
             .insert(name.to_string(), class.clone());
         Ok(class)
     }
-    async fn get_item(&self, name: &str) -> Result<Item, crate::getter::CharacterDataError> {
+    async fn get_item(&self, name: &str) -> Result<Item, CharacterDataError> {
         if let Some(cached) = self.item_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
@@ -142,7 +145,7 @@ impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapiGetter {
             .insert(name.to_string(), item.clone());
         Ok(item)
     }
-    async fn get_spell(&self, name: &str) -> Result<Spell, crate::getter::CharacterDataError> {
+    async fn get_spell(&self, name: &str) -> Result<Spell, CharacterDataError> {
         let mut s = get_spell_inner(name).await?;
         capitalize(&mut s.name);
         Ok(s)

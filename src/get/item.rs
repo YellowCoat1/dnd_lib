@@ -2,7 +2,7 @@ use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, ValueExt},
 };
-use crate::getter::CharacterDataError;
+use super::CharacterDataError;
 use crate::rules2014::items::{
     Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties,
     WeaponType,
