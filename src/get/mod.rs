@@ -1,6 +1,6 @@
 //! Gets data from dnd5eapi.co
 //!
-//! The main feature of this module is the [Dnd5eapigetter], which implements [DataProvider](crate::getter::DataProvider)
+//! The main feature of this module is the [Dnd5eapiGetter], which implements [DataProvider](crate::getter::DataProvider)
 //! trait.
 //!
 //! There's also utility consts availible that lists the names of availiable data.
@@ -20,7 +20,7 @@ pub mod raw_getters {
     //! Raw getters for dnd5eapi.co data.
     //!
     //! These are the individual functions used by the
-    //! [Dnd5eapigetter](super::Dnd5eapigetter) to get data. Regular users should prefer using the [Dnd5eapigetter](super::Dnd5eapigetter)
+    //! [Dnd5eapiGetter](super::Dnd5eapiGetter) to get data. Regular users should prefer using the [Dnd5eapiGetter](super::Dnd5eapiGetter)
     //! directly.
     //!
     //! These functions are exposed primarily for users who want to implement their own
@@ -76,13 +76,13 @@ pub use error::Dnd5eapiError;
 /// - races: Dragonborn, Dwarf, Elf, Gnome, Half-elf, Half-orc, Halfing, Human, Tiefling
 ///
 /// ```rust
-/// use dnd_lib::get::Dnd5eapigetter;
+/// use dnd_lib::get::Dnd5eapiGetter;
 /// use dnd_lib::DataProvider;
 /// use dnd_lib::rules2014::{items::Item, spells::Spell};
 ///
 /// #[tokio::main]
 /// async fn main() {
-///     let provider = Dnd5eapigetter::new();
+///     let provider = Dnd5eapiGetter::new();
 ///
 ///     let item: Item = provider.get_item("shortsword")
 ///         .await.expect("failed to get shortsword");

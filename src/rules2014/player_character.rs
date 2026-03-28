@@ -140,7 +140,7 @@ use super::stats::{
 ///
 /// Then, you choose the category, (if there is any) so "any simple melee weapon" could be chosen as a "dagger".
 /// This is done with [Character::set_unchosen_category]. Do note that you would need to retrieve
-/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [Dnd5eapigetter](crate::prelude::Dnd5eapigetter))  once you know the simple weapon you want is a dagger.
+/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [Dnd5eapigetter](crate::prelude::Dnd5eapiGetter))  once you know the simple weapon you want is a dagger.
 ///
 /// Finally, you call [Character::add_chosen_items] to add the chosen items to the character's item
 /// list.
@@ -449,7 +449,7 @@ impl Character {
         new_stats
     }
 
-    /// Mutable version of [ability_score_increases]
+    /// Mutable version of [Character::ability_score_increases]
     pub fn ability_score_increases_mut(&mut self) -> Vec<&mut AbilityScoreIncrease> {
         // see comments for ability_score_increases 
         self.classes.iter_mut()

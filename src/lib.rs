@@ -13,7 +13,7 @@
 //!     let mut rng = rand::thread_rng();
 //!
 //!     // first, we construct the api getter.
-//!     let provider = Dnd5eapigetter::new();
+//!     let provider = Dnd5eapiGetter::new();
 //!
 //!     // then, we get all the things we need to create a character.
 //!     let rogue = provider.get_class("rogue").await.unwrap();
@@ -56,7 +56,7 @@
 //! [rules2014::class::Class] would be a Wizard, or a Figter, or a Monk. If you wanted to store every D&D class a
 //! character could take, you'd need a `Vec<Class>`. These rules must be parsed from an api and constructed.
 //!
-//! This is what [get::Dnd5eapigetter] is for. You first get the required rules (class, background,
+//! This is what [get::Dnd5eapiGetter] is for. You first get the required rules (class, background,
 //! race) from the api, then you build a character with that.
 //!
 //! ## Feature flags

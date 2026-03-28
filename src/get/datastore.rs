@@ -63,7 +63,7 @@ type SpellRequester = InternalRequester<
     >,
 >;
 
-/// A different model for retrieving Dnd5e data from the api. Usually, you should use [Dnd5eapiGetter](super::Dnd5eapigetter) instead.
+/// A different model for retrieving Dnd5e data from the api. Usually, you should use [Dnd5eapiGetter](super::Dnd5eapiGetter) instead.
 ///
 /// This datastore allows you to request data to be loaded in the background, and then check later
 /// if it's ready. Data is requested on a sepearate thread using a Tokio runtime.
