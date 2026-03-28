@@ -6,7 +6,7 @@ use crate::{
         stats::SkillType,
     },
 };
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 
 use crate::provider;
 
@@ -221,7 +221,7 @@ async fn fighter_items() {
 async fn get_with_class_context(
     class_name: &str,
     provider: &Dnd5eapiGetter,
-) -> Result<Class, CharacterDataError> {
+) -> Result<Class, Dnd5eapiError> {
     provider
         .get_class(class_name)
         .await

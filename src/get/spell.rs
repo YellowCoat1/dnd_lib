@@ -1,7 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{string_array, value_name, ValueExt};
 use crate::get::json_tools::parse_string;
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::rules2014::items::{DamageRoll, DamageType};
 use crate::rules2014::spells::Spell;
 use serde_json::Value;
@@ -9,7 +9,7 @@ use serde_json::Value;
 type StandardDamage = Vec<Vec<DamageRoll>>;
 type LeveledDamage = Vec<(usize, DamageRoll)>;
 
-pub async fn get_spell(name: &str) -> Result<Spell, CharacterDataError> {
+pub async fn get_spell(name: &str) -> Result<Spell, Dnd5eapiError> {
     let index = parse_string(name);
 
     let json = get_raw_json(format!("spells/{index}")).await?;
@@ -27,7 +27,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, CharacterDataError> {
         .as_str()
         .parse()
         .map_err(|_| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "spell school",
                 "Valid spell school name",
                 "Invalid spell school name",
@@ -62,11 +62,11 @@ pub async fn get_spell(name: &str) -> Result<Spell, CharacterDataError> {
 
 fn spell_damage(
     v: Option<&Value>,
-) -> Result<(Option<StandardDamage>, Option<LeveledDamage>), CharacterDataError> {
+) -> Result<(Option<StandardDamage>, Option<LeveledDamage>), Dnd5eapiError> {
     v.map(|v| {
         let damage_type_name = v.get_map("damage_type")?.get_str("name")?;
         let damage_type: DamageType = damage_type_name.parse().map_err(|_| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "spell damage type",
                 "Valid DamageType string",
                 "Invalid DamageType string",
@@ -98,21 +98,21 @@ fn spell_damage(
 fn standard_spell_damage(
     damage_type: DamageType,
     json: &Value,
-) -> Result<StandardDamage, CharacterDataError> {
+) -> Result<StandardDamage, Dnd5eapiError> {
     json.as_object()
-        .ok_or_else(|| CharacterDataError::mismatch("spell damage", "Object", value_name(json)))?
+        .ok_or_else(|| Dnd5eapiError::mismatch("spell damage", "Object", value_name(json)))?
         .values()
         .map(|v| {
             v.as_str().ok_or_else(|| {
-                CharacterDataError::mismatch("spell damage", "string", value_name(v))
+                Dnd5eapiError::mismatch("spell damage", "string", value_name(v))
             })
         })
-        .collect::<Result<Vec<_>, CharacterDataError>>()?
+        .collect::<Result<Vec<_>, Dnd5eapiError>>()?
         .into_iter()
         .map(|v| {
             DamageRoll::from_str(v, damage_type)
                 .ok_or_else(|| {
-                    CharacterDataError::mismatch(
+                    Dnd5eapiError::mismatch(
                         "spell damage",
                         "valid DamageRoll string",
                         "invalid DamageRoll string",
@@ -126,24 +126,24 @@ fn standard_spell_damage(
 fn leveled_spell_damage(
     damage_type: DamageType,
     json: &Value,
-) -> Result<LeveledDamage, CharacterDataError> {
+) -> Result<LeveledDamage, Dnd5eapiError> {
     json.as_object()
-        .ok_or_else(|| CharacterDataError::mismatch("spell damage", "Object", value_name(json)))?
+        .ok_or_else(|| Dnd5eapiError::mismatch("spell damage", "Object", value_name(json)))?
         .iter()
         .map(|(level, damage)| {
             let level_num: usize = level.parse().map_err(|_| {
-                CharacterDataError::mismatch(
+                Dnd5eapiError::mismatch(
                     "Cantrip damage level",
                     "number",
                     "invalid string to parse",
                 )
             })?;
             let damage_string = damage.as_str().ok_or_else(|| {
-                CharacterDataError::mismatch("Cantrip damage", "String", value_name(damage))
+                Dnd5eapiError::mismatch("Cantrip damage", "String", value_name(damage))
             })?;
             let damage_roll =
                 DamageRoll::from_str(damage_string, damage_type).ok_or_else(|| {
-                    CharacterDataError::mismatch(
+                    Dnd5eapiError::mismatch(
                         "Cantrip damage roll",
                         "DamageRoll valid string",
                         "DamageRoll invalid string",

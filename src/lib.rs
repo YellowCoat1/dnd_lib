@@ -97,7 +97,7 @@ pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
     pub use crate::get::{
         Dnd5eapiGetter,
-        CharacterDataError
+        Dnd5eapiError
     };
     pub use crate::{
         getter::DataProvider,

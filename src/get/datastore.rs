@@ -1,5 +1,5 @@
 use super::raw_getters::*;
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::prelude::*;
 use crate::rules2014::{items::Item, spells::Spell};
 use std::{
@@ -18,7 +18,7 @@ enum LoadState<T> {
 type ClassRequester = InternalRequester<
     Class,
     Box<
-        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Class, CharacterDataError>> + Send>>
+        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Class, Dnd5eapiError>> + Send>>
             + Send
             + Sync,
     >,
@@ -30,7 +30,7 @@ type BackgroundRequester = InternalRequester<
         dyn Fn(
                 String,
             )
-                -> Pin<Box<dyn Future<Output = Result<Background, CharacterDataError>> + Send>>
+                -> Pin<Box<dyn Future<Output = Result<Background, Dnd5eapiError>> + Send>>
             + Send
             + Sync,
     >,
@@ -39,7 +39,7 @@ type BackgroundRequester = InternalRequester<
 type RaceRequester = InternalRequester<
     Race,
     Box<
-        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Race, CharacterDataError>> + Send>>
+        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Race, Dnd5eapiError>> + Send>>
             + Send
             + Sync,
     >,
@@ -48,7 +48,7 @@ type RaceRequester = InternalRequester<
 type ItemRequester = InternalRequester<
     Item,
     Box<
-        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Item, CharacterDataError>> + Send>>
+        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Item, Dnd5eapiError>> + Send>>
             + Send
             + Sync,
     >,
@@ -57,7 +57,7 @@ type ItemRequester = InternalRequester<
 type SpellRequester = InternalRequester<
     Spell,
     Box<
-        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Spell, CharacterDataError>> + Send>>
+        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Spell, Dnd5eapiError>> + Send>>
             + Send
             + Sync,
     >,
@@ -152,7 +152,7 @@ impl Default for Dnd5eapiDatastore {
 
 struct InternalRequester<T, U>
 where
-    U: Fn(String) -> Pin<Box<dyn Future<Output = Result<T, CharacterDataError>> + Send>>
+    U: Fn(String) -> Pin<Box<dyn Future<Output = Result<T, Dnd5eapiError>> + Send>>
         + Send
         + Sync
         + 'static,
@@ -164,7 +164,7 @@ where
 
 impl<T, U> InternalRequester<T, U>
 where
-    U: Fn(String) -> Pin<Box<dyn Future<Output = Result<T, CharacterDataError>> + Send>>
+    U: Fn(String) -> Pin<Box<dyn Future<Output = Result<T, Dnd5eapiError>> + Send>>
         + Send
         + Sync
         + 'static,
@@ -222,7 +222,7 @@ impl<T>
     InternalRequester<
         T,
         Box<
-            dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<T, CharacterDataError>> + Send>>
+            dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<T, Dnd5eapiError>> + Send>>
                 + Send
                 + Sync,
         >,
@@ -233,7 +233,7 @@ where
     fn new_async<F, Fut>(f: F) -> Self
     where
         F: Fn(String) -> Fut + Send + Sync + 'static,
-        Fut: Future<Output = Result<T, CharacterDataError>> + Send + 'static,
+        Fut: Future<Output = Result<T, Dnd5eapiError>> + Send + 'static,
     {
         Self::new(Box::new(move |name| Box::pin(f(name))))
     }

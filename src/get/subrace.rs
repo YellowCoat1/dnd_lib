@@ -2,12 +2,12 @@ use super::feature::get_feature_from_trait;
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
 use crate::get::json_tools::parse_string;
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::rules2014::stats::StatType;
 use crate::rules2014::{Subrace, SubraceBuilder};
 use serde_json::Value;
 
-pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
+pub async fn get_subrace(name: &str) -> Result<Subrace, Dnd5eapiError> {
     let index = parse_string(name);
 
     let json = get_raw_json(format!("subraces/{index}")).await?;
@@ -35,7 +35,7 @@ pub async fn get_subrace(name: &str) -> Result<Subrace, CharacterDataError> {
 
 pub fn process_ability_bonuses(
     arr: &[Value],
-) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
+) -> Result<Vec<(Option<StatType>, isize)>, Dnd5eapiError> {
     let mut ability_bonuses: Vec<(Option<StatType>, isize)> = vec![];
 
     for ability_bonus in arr.iter() {
@@ -44,7 +44,7 @@ pub fn process_ability_bonuses(
         let ability_score_bonus: isize = ability_bonus.get_usize("bonus")?.try_into().unwrap();
 
         let stat_type = StatType::from_shorthand(ability_score_name.as_str()).ok_or_else(|| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "ability score name",
                 "StatType string",
                 "improper StatType string",
@@ -59,7 +59,7 @@ pub fn process_ability_bonuses(
 
 pub fn ability_bonus_choice(
     val: &Value,
-) -> Result<Vec<(Option<StatType>, isize)>, CharacterDataError> {
+) -> Result<Vec<(Option<StatType>, isize)>, Dnd5eapiError> {
     let num = val.get_usize("choose")?;
     Ok(vec![(None, 1); num])
 }

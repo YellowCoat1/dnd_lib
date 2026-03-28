@@ -3,7 +3,7 @@ use super::get_page::get_raw_json;
 use super::json_tools::{parse_string, ValueExt};
 use super::subrace::get_subrace;
 use crate::get::subrace::ability_bonus_choice;
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::rules2014::stats::Size;
 use crate::rules2014::{Race, RaceBuilder, Subrace};
 use serde_json::Value;
@@ -11,7 +11,7 @@ use serde_json::Value;
 // the func to run through ability bonuses is in subrace, since that module isn't publicly exported
 use super::subrace::process_ability_bonuses;
 
-pub async fn get_race(name: &str) -> Result<Race, CharacterDataError> {
+pub async fn get_race(name: &str) -> Result<Race, Dnd5eapiError> {
     let index = parse_string(name);
     get_race_raw(index).await
 }
@@ -28,14 +28,14 @@ pub const RACE_NAMES: &[&str] = &[
     "tiefling",
 ];
 
-async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
+async fn get_race_raw(index_name: String) -> Result<Race, Dnd5eapiError> {
     let race_json = get_raw_json(format!("races/{index_name}")).await?;
 
     let name = race_json.get_str("name")?;
     let speed: usize = race_json.get_usize("speed")?;
     let size_string = race_json.get_str("size")?;
     let size = process_size(&size_string).ok_or_else(|| {
-        CharacterDataError::mismatch("size", "Valid size string", "Invalid size string")
+        Dnd5eapiError::mismatch("size", "Valid size string", "Invalid size string")
     })?;
 
     let ability_bonuses_array = process_ability_bonuses(race_json.get_array("ability_bonuses")?)?;
@@ -83,7 +83,7 @@ async fn get_race_raw(index_name: String) -> Result<Race, CharacterDataError> {
         .build())
 }
 
-fn process_languages(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {
+fn process_languages(arr: &[Value]) -> Result<Vec<String>, Dnd5eapiError> {
     let mut languages = vec![];
 
     for language in arr.iter() {
@@ -94,7 +94,7 @@ fn process_languages(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {
     Ok(languages)
 }
 
-async fn process_subraces(arr: &[Value]) -> Result<Vec<Subrace>, CharacterDataError> {
+async fn process_subraces(arr: &[Value]) -> Result<Vec<Subrace>, Dnd5eapiError> {
     let mut subraces = Vec::with_capacity(arr.len());
     for val in arr {
         let name = val.get_str("index")?;

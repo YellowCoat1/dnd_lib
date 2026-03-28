@@ -3,11 +3,11 @@ use super::{
     json_tools::{parse_string, string_array, ValueExt},
 };
 use crate::get::json_tools::value_name;
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::rules2014::features::Feature;
 use crate::rules2014::{class::Subclass, features::PresentedOption};
 
-pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
+pub async fn get_subclass(name: &str) -> Result<Subclass, Dnd5eapiError> {
     let index = parse_string(name);
     let json = get_raw_json(format!("subclasses/{index}")).await?;
     let levels = get_raw_json(format!("subclasses/{index}/levels")).await?;
@@ -19,7 +19,7 @@ pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
 
     let levels_arr = levels
         .as_array()
-        .ok_or_else(|| CharacterDataError::mismatch("levels json", "array", value_name(&levels)))?;
+        .ok_or_else(|| Dnd5eapiError::mismatch("levels json", "array", value_name(&levels)))?;
 
     let mut features: [Vec<PresentedOption<Feature>>; 20] = Default::default();
 

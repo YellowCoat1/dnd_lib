@@ -21,7 +21,7 @@ use crate::get::{
     },
     subclass::get_subclass,
 };
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 
 /// All class names available in the api.
 pub const CLASS_NAMES: [&str; 12] = [
@@ -44,9 +44,9 @@ pub const CLASS_NAMES: [&str; 12] = [
 /// Note that this function takes a large amount of time, anywhere from 2 to 15 seconds. Try to run
 /// it in the background when you can.
 pub async fn get_class(
-    getter: &impl DataProvider<CharacterDataError>,
+    getter: &impl DataProvider<Dnd5eapiError>,
     class_name: &str,
-) -> Result<Class, CharacterDataError> {
+) -> Result<Class, Dnd5eapiError> {
     let c = parse_string(class_name);
     let class_json = get_raw_json(format!("classes/{}", c)).await?;
 
@@ -55,7 +55,7 @@ pub async fn get_class(
     json_to_class(getter, class_json, levels_json).await
 }
 
-async fn subclasses(map: &Value) -> Result<Vec<Subclass>, CharacterDataError> {
+async fn subclasses(map: &Value) -> Result<Vec<Subclass>, Dnd5eapiError> {
     let subclass_val_array = map.get_array("subclasses")?;
 
     let mut subclasses: Vec<Subclass> = Vec::with_capacity(subclass_val_array.len());
@@ -107,7 +107,7 @@ fn equipment_proficiencies_inner(proficiency_strings: Vec<String>) -> EquipmentP
     equipment
 }
 
-fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, CharacterDataError> {
+fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Dnd5eapiError> {
     let proficiencies_json = json.get_array("proficiencies")?;
     let mut proficiency_strings_vec: Vec<String> = vec![];
     for proficiency_json in proficiencies_json.iter() {
@@ -120,10 +120,10 @@ fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Chara
     Ok(equipment_proficiencies_inner(proficiency_strings_vec))
 }
 
-fn saves(json: &Value) -> Result<Vec<StatType>, CharacterDataError> {
+fn saves(json: &Value) -> Result<Vec<StatType>, Dnd5eapiError> {
     let saving_throws = json
         .get("saving_throws")
-        .ok_or_else(|| CharacterDataError::not_found("Object", "character saving throws"))?;
+        .ok_or_else(|| Dnd5eapiError::not_found("Object", "character saving throws"))?;
 
     array_index_values(saving_throws, "name")
         .unwrap_or_default()
@@ -131,7 +131,7 @@ fn saves(json: &Value) -> Result<Vec<StatType>, CharacterDataError> {
         .map(|s| StatType::from_shorthand(s.as_str()))
         .map(|s| {
             s.ok_or_else(|| {
-                CharacterDataError::mismatch(
+                Dnd5eapiError::mismatch(
                     "saving throw",
                     "vaild StatType string",
                     "invalid StatType string",
@@ -141,12 +141,12 @@ fn saves(json: &Value) -> Result<Vec<StatType>, CharacterDataError> {
         .collect::<Result<Vec<_>, _>>()
 }
 
-fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), CharacterDataError> {
+fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), Dnd5eapiError> {
     let proficiency_choice_array = map.get_array("proficiency_choices")?;
 
     let first_choice = proficiency_choice_array
         .first()
-        .ok_or_else(|| CharacterDataError::mismatch("array", "array", "empty array"))?;
+        .ok_or_else(|| Dnd5eapiError::mismatch("array", "array", "empty array"))?;
 
     // gets the choices in json values
     let options = choice(first_choice)?;
@@ -161,7 +161,7 @@ fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), Character
             let name_full = val.get_str("name")?;
 
             let name = name_full.get(7..).ok_or_else(|| {
-                CharacterDataError::not_found("Proficiency name", "skill name after 'Skill: '")
+                Dnd5eapiError::not_found("Proficiency name", "skill name after 'Skill: '")
             })?;
 
             parse_skilltype("Proficiency choice", name)
@@ -170,7 +170,7 @@ fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), Character
 
     let proficiency_options_vec = match proficiency_options {
         PresentedOption::Base(_) => {
-            return Err(CharacterDataError::mismatch(
+            return Err(Dnd5eapiError::mismatch(
                 "proficiency options",
                 "choice",
                 "single value",
@@ -183,9 +183,9 @@ fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), Character
 }
 
 async fn items(
-    getter: &impl DataProvider<CharacterDataError>,
+    getter: &impl DataProvider<Dnd5eapiError>,
     map: &Value,
-) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, CharacterDataError> {
+) -> Result<Vec<PresentedOption<Vec<(ItemCategory, usize)>>>, Dnd5eapiError> {
     let given_equipment = map.get_array("starting_equipment")?;
 
     // essentially a map without the async bs
@@ -194,7 +194,7 @@ async fn items(
 
     for equipment_value in given_equipment.iter() {
         if !equipment_value.is_object() {
-            return Err(CharacterDataError::mismatch(
+            return Err(Dnd5eapiError::mismatch(
                 "equipment instance",
                 "Object",
                 value_name(equipment_value),
@@ -219,11 +219,11 @@ async fn items(
 }
 
 async fn class_item_choice(
-    getter: &impl DataProvider<CharacterDataError>,
+    getter: &impl DataProvider<Dnd5eapiError>,
     equipment_option: &Value,
-) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, CharacterDataError> {
+) -> Result<PresentedOption<Vec<(ItemCategory, usize)>>, Dnd5eapiError> {
     let map_option = choice_multi(equipment_option)?;
-    let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, CharacterDataError>> = map_option
+    let v: PresentedOption<Result<Vec<(ItemCategory, usize)>, Dnd5eapiError>> = map_option
         .map_async(|v| async move {
             let mut new_vec = Vec::with_capacity(v.len());
 
@@ -238,7 +238,7 @@ async fn class_item_choice(
                 if let Some(Value::String(s)) = m.get("option_set_type") {
                     if s == "equipment_category" {
                         let v = m.get("equipment_category").ok_or_else(|| {
-                            CharacterDataError::not_found("Object", "equipment category")
+                            Dnd5eapiError::not_found("Object", "equipment category")
                         })?;
                         let category =
                             equipment_category(v).map_err(|v| v.prepend("equipment category "))?;
@@ -251,7 +251,7 @@ async fn class_item_choice(
                 if let Some(Value::String(s)) = m.get("option_type") {
                     if s == "choice" {
                         let v = m.get("choice").ok_or_else(|| {
-                            CharacterDataError::not_found("Object", "equipment category")
+                            Dnd5eapiError::not_found("Object", "equipment category")
                         })?;
                         let category = equipment_category_choice(v)
                             .map_err(|v| v.prepend("equipment category "))?;
@@ -273,7 +273,7 @@ async fn class_item_choice(
                 }
 
                 let equipment = m.get("of").ok_or_else(|| {
-                    CharacterDataError::not_found("Object", "equipment 'of' field")
+                    Dnd5eapiError::not_found("Object", "equipment 'of' field")
                 })?;
 
                 let item = process_equipment(getter, equipment).await?;
@@ -288,9 +288,9 @@ async fn class_item_choice(
     v.collect_result()
 }
 
-fn equipment_category_choice(map: &Value) -> Result<ItemCategory, CharacterDataError> {
+fn equipment_category_choice(map: &Value) -> Result<ItemCategory, Dnd5eapiError> {
     if !map.is_object() {
-        return Err(CharacterDataError::mismatch(
+        return Err(Dnd5eapiError::mismatch(
             "Equipment category choice",
             "Object",
             value_name(map),
@@ -299,7 +299,7 @@ fn equipment_category_choice(map: &Value) -> Result<ItemCategory, CharacterDataE
 
     let desc = map.get_str("desc")?;
     str_to_cat(&desc).ok_or_else(|| {
-        CharacterDataError::mismatch(
+        Dnd5eapiError::mismatch(
             "Choice description",
             "Valid weapon category name",
             format!("string {}", desc).as_str(),
@@ -318,7 +318,7 @@ fn str_to_cat(s: &str) -> Option<ItemCategory> {
     }
 }
 
-fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
+fn equipment_category(map: &Value) -> Result<ItemCategory, Dnd5eapiError> {
     let equipment_name = map.get_str("name")?;
 
     if let Some(c) = str_to_cat(&equipment_name) {
@@ -336,16 +336,16 @@ fn equipment_category(map: &Value) -> Result<ItemCategory, CharacterDataError> {
 }
 
 async fn process_equipment(
-    getter: &impl DataProvider<CharacterDataError>,
+    getter: &impl DataProvider<Dnd5eapiError>,
     val: &Value,
-) -> Result<Item, CharacterDataError> {
+) -> Result<Item, Dnd5eapiError> {
     let index = val.get_str("index")?;
     getter.get_item(&index).await
 }
 
 async fn class_features(
     levels_arr: [&Value; 20],
-) -> Result<[Vec<PresentedOption<Feature>>; 20], CharacterDataError> {
+) -> Result<[Vec<PresentedOption<Feature>>; 20], Dnd5eapiError> {
     let mut levels_vec = Vec::with_capacity(20);
 
     for level in levels_arr.iter() {
@@ -353,7 +353,7 @@ async fn class_features(
     }
 
     levels_vec.try_into().map_err(|v: Vec<_>| {
-        CharacterDataError::mismatch(
+        Dnd5eapiError::mismatch(
             "features per level vec",
             "array of size 20",
             &format!("array of size {}", v.len()),
@@ -363,7 +363,7 @@ async fn class_features(
 
 async fn get_features_from_class_level(
     level: &Value,
-) -> Result<Vec<PresentedOption<Feature>>, CharacterDataError> {
+) -> Result<Vec<PresentedOption<Feature>>, Dnd5eapiError> {
     let features_vals = level.get_array("features")?;
 
     let mut features_vec = Vec::with_capacity(features_vals.len());
@@ -377,15 +377,15 @@ async fn get_features_from_class_level(
     Ok(features_vec)
 }
 
-fn spell_slots_from_map(json: &Value) -> Result<usize, CharacterDataError> {
+fn spell_slots_from_map(json: &Value) -> Result<usize, Dnd5eapiError> {
     let slot_vals = json
         .as_object()
-        .ok_or_else(|| CharacterDataError::mismatch("slots_vals", "Object", value_name(json)))?
+        .ok_or_else(|| Dnd5eapiError::mismatch("slots_vals", "Object", value_name(json)))?
         .values()
         .map(|v| v.as_number().and_then(|v| v.as_u64().map(|m| m as usize)))
         .collect::<Option<Vec<usize>>>()
         .ok_or_else(|| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "Slots vals",
                 "Usize applicable number",
                 "Non-usize applicable value",
@@ -393,7 +393,7 @@ fn spell_slots_from_map(json: &Value) -> Result<usize, CharacterDataError> {
         })?;
 
     if slot_vals.is_empty() {
-        return Err(CharacterDataError::mismatch(
+        return Err(Dnd5eapiError::mismatch(
             "spell slot values",
             "filled spell slots",
             "empty spell slots",
@@ -433,7 +433,7 @@ fn spellcasting_type(name: &str) -> Option<SpellCasterType> {
     }
 }
 
-fn spell_slots(levels_arr: [&Value; 20]) -> Result<[usize; 20], CharacterDataError> {
+fn spell_slots(levels_arr: [&Value; 20]) -> Result<[usize; 20], Dnd5eapiError> {
     let mut spell_slots_vec = Vec::with_capacity(20);
 
     for level in levels_arr {
@@ -444,7 +444,7 @@ fn spell_slots(levels_arr: [&Value; 20]) -> Result<[usize; 20], CharacterDataErr
     }
 
     let cantrip_slots = spell_slots_vec.try_into().map_err(|e: Vec<usize>| {
-        CharacterDataError::mismatch(
+        Dnd5eapiError::mismatch(
             "cantrip slots array",
             "array of size 20",
             &format!("array of size {}", e.len()),
@@ -454,7 +454,7 @@ fn spell_slots(levels_arr: [&Value; 20]) -> Result<[usize; 20], CharacterDataErr
     Ok(cantrip_slots)
 }
 
-fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, CharacterDataError> {
+fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, Dnd5eapiError> {
     if val.get("spellcasting").is_none() {
         return Ok(None);
     }
@@ -465,7 +465,7 @@ fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, CharacterDataEr
         .get_str("index")?;
 
     let ability_score = StatType::from_shorthand(&ability_score_string).ok_or_else(|| {
-        CharacterDataError::mismatch(
+        Dnd5eapiError::mismatch(
             "ability score type",
             "valid StatType string",
             "invalid StatType string",
@@ -475,7 +475,7 @@ fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, CharacterDataEr
     Ok(Some(ability_score))
 }
 
-fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], CharacterDataError> {
+fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], Dnd5eapiError> {
     let spells_input_array = spells.get_array("results")?;
     let mut spells_stored_array: [Vec<String>; 10] = Default::default();
     for spell_input in spells_input_array.iter() {
@@ -489,27 +489,27 @@ fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], CharacterDataE
 fn class_specific_map_parse(
     key: &str,
     map: &Map<String, Value>,
-) -> Result<String, CharacterDataError> {
+) -> Result<String, Dnd5eapiError> {
     match key {
         "martial_arts" => {
             let count = map.get("dice_count").ok_or_else(|| {
-                CharacterDataError::not_found("string", "martial arts dice count")
+                Dnd5eapiError::not_found("string", "martial arts dice count")
             })?;
             let value = map.get("dice_value").ok_or_else(|| {
-                CharacterDataError::not_found("string", "martial arts dice value")
+                Dnd5eapiError::not_found("string", "martial arts dice value")
             })?;
             Ok(format!("{}d{}", count, value))
         }
         "sneak_attack" => {
             let count = map.get("dice_count").ok_or_else(|| {
-                CharacterDataError::not_found("string", "sneak attack dice count")
+                Dnd5eapiError::not_found("string", "sneak attack dice count")
             })?;
             let value = map.get("dice_value").ok_or_else(|| {
-                CharacterDataError::not_found("string", "sneak attack dice count")
+                Dnd5eapiError::not_found("string", "sneak attack dice count")
             })?;
             Ok(format!("{}d{}", count, value))
         }
-        _ => Err(CharacterDataError::mismatch(
+        _ => Err(Dnd5eapiError::mismatch(
             " Map value",
             "Valid map",
             &format!("Invalid map of the key name {}", key),
@@ -519,14 +519,14 @@ fn class_specific_map_parse(
 
 fn class_specific(
     levels: [&Value; 20],
-) -> Result<HashMap<String, [String; 20]>, CharacterDataError> {
+) -> Result<HashMap<String, [String; 20]>, Dnd5eapiError> {
     // for now we'll use vecs, we'll convert it to an array once we're done
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
     let level_1 = levels[0].get_map("class_specific")?;
     let level_1_obj = level_1
         .as_object()
-        .ok_or_else(|| CharacterDataError::mismatch("level 1", "Object", value_name(level_1)))?;
+        .ok_or_else(|| Dnd5eapiError::mismatch("level 1", "Object", value_name(level_1)))?;
 
     for key in level_1_obj.keys() {
         if key == "creating_spell_slots" {
@@ -538,7 +538,7 @@ fn class_specific(
     for level in levels {
         let class_specific = level.get_map("class_specific")?;
         let class_specific_map = class_specific.as_object().ok_or_else(|| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "class specific field",
                 "Object",
                 value_name(class_specific),
@@ -550,14 +550,14 @@ fn class_specific(
             };
             let other_val = class_specific_map
                 .get(key)
-                .ok_or_else(|| CharacterDataError::not_found("Any", "Class specific field key"))?;
+                .ok_or_else(|| Dnd5eapiError::not_found("Any", "Class specific field key"))?;
             let other_as_string: String = match other_val {
                 Value::Number(n) => n.as_f64().unwrap().to_string(),
                 Value::Bool(b) => b.to_string(),
                 Value::String(s) => s.clone(),
                 Value::Object(o) => class_specific_map_parse(key, o)?,
                 v => {
-                    return Err(CharacterDataError::mismatch(
+                    return Err(Dnd5eapiError::mismatch(
                         "Class specific value",
                         "Value that can be parsed into a string",
                         value_name(v),
@@ -567,7 +567,7 @@ fn class_specific(
 
             map.get_mut(&key.replace("_", " "))
                 .ok_or_else(|| {
-                    CharacterDataError::not_found(
+                    Dnd5eapiError::not_found(
                         "Vec of class specific values",
                         &format!("class specific field of key {}", key),
                     )
@@ -594,7 +594,7 @@ fn class_specific(
 async fn process_spellcasting(
     json: &Value,
     levels_arr: [&Value; 20],
-) -> Result<Option<Spellcasting>, CharacterDataError> {
+) -> Result<Option<Spellcasting>, Dnd5eapiError> {
     let name = json.get_str("index")?;
 
     let spells = get_raw_json(format!("classes/{}/spells", name)).await?;
@@ -609,7 +609,7 @@ async fn process_spellcasting(
             // This just returns the cantrips, since spell slots are handled elsewhere
             let cantrips_per_level = spell_slots(levels_arr)?;
             let preperation_type = preperation_type(name.as_ref()).ok_or_else(|| {
-                CharacterDataError::mismatch(
+                Dnd5eapiError::mismatch(
                     "spellcaster preperation type",
                     "name within bounds to be parsed for preperation",
                     "unrecognized class name",
@@ -682,13 +682,13 @@ fn multiclassing_prerequisites(name: &str) -> (HashMap<StatType, usize>, bool) {
     (prerequisites_map, or_flag)
 }
 
-fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, CharacterDataError> {
+fn multiclassing_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Dnd5eapiError> {
     let multiclassing_map = json.get_map("multi_classing")?;
     let proficiency_strings = multiclassing_map
         .get_array("proficiencies")?
         .iter()
         .map(|v| v.get_str("name"))
-        .collect::<Result<Vec<String>, CharacterDataError>>()?;
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()?;
 
     Ok(equipment_proficiencies_inner(proficiency_strings))
 }
@@ -732,10 +732,10 @@ fn etc_class_field_option(name: &str) -> Option<TrackedField> {
 }
 
 async fn json_to_class(
-    getter: &impl DataProvider<CharacterDataError>,
+    getter: &impl DataProvider<Dnd5eapiError>,
     json: Value,
     levels: Value,
-) -> Result<Class, CharacterDataError> {
+) -> Result<Class, Dnd5eapiError> {
     let name: String = json
         .get_str("index")
         .map_err(|v| v.prepend("class name "))?;
@@ -757,12 +757,12 @@ async fn json_to_class(
 
     let levels_arr: [&Value; 20] = levels
         .as_array()
-        .ok_or_else(|| CharacterDataError::mismatch("levels json", "array", value_name(&levels)))?
+        .ok_or_else(|| Dnd5eapiError::mismatch("levels json", "array", value_name(&levels)))?
         .iter()
         .collect::<Vec<_>>()
         .try_into()
         .map_err(|v: Vec<&Value>| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "levels json",
                 "array of size 20",
                 &format!("array of size {}", v.len()),
@@ -803,7 +803,7 @@ async fn json_to_class(
         .add_tracked_fields(etc_fields)
         .build()
         .map_err(|v| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "Character Build",
                 "Valid build",
                 &format!("Invalid build with error {}", v),

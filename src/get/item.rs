@@ -2,19 +2,19 @@ use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, ValueExt},
 };
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::rules2014::items::{
     Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties,
     WeaponType,
 };
 use serde_json::Value;
 
-pub async fn get_item(name: &str) -> Result<Item, CharacterDataError> {
+pub async fn get_item(name: &str) -> Result<Item, Dnd5eapiError> {
     let index = parse_string(name);
     get_item_raw(index).await
 }
 
-async fn get_item_raw(index_name: String) -> Result<Item, CharacterDataError> {
+async fn get_item_raw(index_name: String) -> Result<Item, Dnd5eapiError> {
     let item_json = get_raw_json(format!("equipment/{index_name}")).await?;
 
     let name = item_json.get_str("name")?;
@@ -45,13 +45,13 @@ async fn get_item_raw(index_name: String) -> Result<Item, CharacterDataError> {
     Ok(item)
 }
 
-fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
+fn weapon(map: &Value) -> Result<Weapon, Dnd5eapiError> {
     let damage_map = map.get_map("damage")?;
 
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
     let damage_type = damage_type.parse().map_err(|_| {
-        CharacterDataError::mismatch(
+        Dnd5eapiError::mismatch(
             "damage_type",
             "DamageType",
             "irregular string for damage type",
@@ -60,7 +60,7 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
         .ok_or_else(|| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "damage roll",
                 "Damage roll string",
                 "irregular string for damage roll",
@@ -75,7 +75,7 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
         "Martial Melee" => WeaponType::Martial,
         "Martial Ranged" => WeaponType::MartialRanged,
         _ => {
-            return Err(CharacterDataError::mismatch(
+            return Err(Dnd5eapiError::mismatch(
                 "weapon type",
                 "weapon string",
                 "irregular string",
@@ -98,7 +98,7 @@ fn weapon(map: &Value) -> Result<Weapon, CharacterDataError> {
 fn properties(
     map: &Value,
     damage_type: DamageType,
-) -> Result<WeaponProperties, CharacterDataError> {
+) -> Result<WeaponProperties, Dnd5eapiError> {
     let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
     let mut properties = WeaponProperties::default();
@@ -117,7 +117,7 @@ fn properties(
             "two_handed" => properties.two_handed = true,
             "versitile" => {
                 let damage_val = two_handed_damage.ok_or_else(|| {
-                    CharacterDataError::mismatch(
+                    Dnd5eapiError::mismatch(
                         "versitile damage",
                         "two_handed_damage",
                         "no two handed damage",
@@ -125,7 +125,7 @@ fn properties(
                 })?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
                     .ok_or_else(|| {
-                        CharacterDataError::mismatch(
+                        Dnd5eapiError::mismatch(
                             "versitile damage roll",
                             "two handed damage string",
                             "irregular damage string",
@@ -138,7 +138,7 @@ fn properties(
     }
     Ok(properties)
 }
-fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
+fn armor(map: &Value) -> Result<Armor, Dnd5eapiError> {
     let armor_class_map = map.get_map("armor_class")?;
     let ac = armor_class_map.get_usize("base")? as isize;
 
@@ -147,7 +147,7 @@ fn armor(map: &Value) -> Result<Armor, CharacterDataError> {
         "Medium" => ArmorCategory::Medium,
         "Heavy" => ArmorCategory::Heavy,
         _ => {
-            return Err(CharacterDataError::mismatch(
+            return Err(Dnd5eapiError::mismatch(
                 "armor category",
                 "armor category string",
                 "irregular string",

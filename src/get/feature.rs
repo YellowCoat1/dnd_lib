@@ -1,17 +1,17 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{choice, parse_string, value_name, ValueExt};
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
 use crate::rules2014::stats::StatType;
 use regex::Regex;
 use serde_json::Value;
 
-pub async fn get_feature(name: &str) -> Result<Feature, CharacterDataError> {
+pub async fn get_feature(name: &str) -> Result<Feature, Dnd5eapiError> {
     let index = parse_string(name);
     get_feature_raw(index).await
 }
 
-pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDataError> {
+pub async fn get_feature_raw(index_name: String) -> Result<Feature, Dnd5eapiError> {
     let item_json = get_raw_json(format!("features/{index_name}")).await?;
 
     let name = item_json.get_str("name")?;
@@ -22,13 +22,13 @@ pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDat
         .iter()
         .map(|v| match v {
             Value::String(s) => Ok(s.clone()),
-            o => Err(CharacterDataError::mismatch(
+            o => Err(Dnd5eapiError::mismatch(
                 "description",
                 "string",
                 value_name(o),
             )),
         })
-        .collect::<Result<Vec<String>, CharacterDataError>>()?;
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()?;
 
     let effects = feature_effects(&index_name);
 
@@ -43,7 +43,7 @@ pub async fn get_feature_raw(index_name: String) -> Result<Feature, CharacterDat
 
 pub async fn get_feature_from_trait(
     index_name: &str,
-) -> Result<PresentedOption<Feature>, CharacterDataError> {
+) -> Result<PresentedOption<Feature>, Dnd5eapiError> {
     let trait_json = get_raw_json(format!("traits/{index_name}")).await?;
 
     // draconic ancestry is another beast, and it deserves it's own function.
@@ -57,7 +57,7 @@ pub async fn get_feature_from_trait(
     let description: Vec<String> = description_arr
         .iter()
         .map(|v| v.as_string("description"))
-        .collect::<Result<Vec<String>, CharacterDataError>>()?;
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()?;
 
     let feature = Feature {
         name,
@@ -70,12 +70,12 @@ pub async fn get_feature_from_trait(
 
 async fn get_draconic_ancestry(
     json: Value,
-) -> Result<PresentedOption<Feature>, CharacterDataError> {
+) -> Result<PresentedOption<Feature>, Dnd5eapiError> {
     let trait_specific = json.get_map("trait_specific")?;
 
     let subtrait_options = trait_specific
         .get("subtrait_options")
-        .ok_or_else(|| CharacterDataError::not_found("Object", "subtrait_options"))?;
+        .ok_or_else(|| Dnd5eapiError::not_found("Object", "subtrait_options"))?;
 
     let trait_option = choice(subtrait_options).map_err(|v| v.prepend("subtrait_options "))?;
 
@@ -83,7 +83,7 @@ async fn get_draconic_ancestry(
         .map_async(|(_, m)| async {
             let item_map = m
                 .get("item")
-                .ok_or_else(|| CharacterDataError::not_found("Object", "item"))?;
+                .ok_or_else(|| Dnd5eapiError::not_found("Object", "item"))?;
 
             let index = item_map.get_str("index")?;
 
@@ -95,7 +95,7 @@ async fn get_draconic_ancestry(
                 .get_array("desc")?
                 .iter()
                 .map(|v| v.as_string("description"))
-                .collect::<Result<Vec<String>, CharacterDataError>>()?;
+                .collect::<Result<Vec<String>, Dnd5eapiError>>()?;
 
             let trait_specific_map = json.get_map("trait_specific")?;
 

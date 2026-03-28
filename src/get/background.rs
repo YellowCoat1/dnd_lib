@@ -1,7 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
 use crate::get::json_tools::{parse_skilltype, parse_string};
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use crate::getter::DataProvider;
 use crate::rules2014::background::{BackgroundBuilder, LanguageOption};
 use crate::rules2014::features::Feature;
@@ -11,9 +11,9 @@ use serde_json::Value;
 pub const BACKGROUND_NAMES: [&str; 1] = ["acolyte"];
 
 pub async fn get_background(
-    getter: &impl DataProvider<CharacterDataError>,
+    getter: &impl DataProvider<Dnd5eapiError>,
     name: &str,
-) -> Result<Background, CharacterDataError> {
+) -> Result<Background, Dnd5eapiError> {
     let index = parse_string(name);
     let json = get_raw_json(format!("backgrounds/{index}")).await?;
 
@@ -26,7 +26,7 @@ pub async fn get_background(
             let name = &v.get_str("name")?[7..];
             parse_skilltype("Background proficiencies", name).map(PresentedOption::Base)
         })
-        .collect::<Result<Vec<PresentedOption<SkillType>>, CharacterDataError>>()?;
+        .collect::<Result<Vec<PresentedOption<SkillType>>, Dnd5eapiError>>()?;
 
     let equipment_array = json.get_array("starting_equipment")?;
     let mut equipment = Vec::with_capacity(equipment_array.len());
@@ -43,7 +43,7 @@ pub async fn get_background(
         .get_array("desc")?
         .iter()
         .map(|v| v.as_string("feature description"))
-        .collect::<Result<Vec<String>, CharacterDataError>>()?;
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()?;
     let feature = Feature {
         name: feature_map.get_str("name")?,
         description: feature_desc,
@@ -60,7 +60,7 @@ pub async fn get_background(
         .get_array("options")?
         .iter()
         .map(|v| v.get_str("desc"))
-        .collect::<Result<Vec<String>, CharacterDataError>>()?;
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()?;
 
     // hardcoding languages. Acolyte background gives two languages of choice.
     let language_options: Vec<LanguageOption> =
@@ -77,7 +77,7 @@ pub async fn get_background(
         .add_language_options(language_options)
         .build()
         .map_err(|e| {
-            CharacterDataError::mismatch(
+            Dnd5eapiError::mismatch(
                 "Background Building",
                 "Valid background",
                 &format!("Building Error {:?}", e),
@@ -85,10 +85,10 @@ pub async fn get_background(
         })
 }
 
-fn process_personality(json: &Value) -> Result<Vec<String>, CharacterDataError> {
+fn process_personality(json: &Value) -> Result<Vec<String>, Dnd5eapiError> {
     json.get_map("from")?
         .get_array("options")?
         .iter()
         .map(|v| v.get_str("string"))
-        .collect::<Result<Vec<String>, CharacterDataError>>()
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()
 }

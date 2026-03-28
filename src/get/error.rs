@@ -2,7 +2,7 @@ use thiserror::Error;
 
 /// Errors that can occur when retrieving or parsing character data
 #[derive(Debug, Error)]
-pub enum CharacterDataError {
+pub enum Dnd5eapiError {
     // Could not successfully connect to the api
     #[error("network request failed: {0}")]
     Network(#[from] reqwest::Error),
@@ -26,23 +26,23 @@ pub enum CharacterDataError {
     },
 }
 
-impl CharacterDataError {
+impl Dnd5eapiError {
     /// Adds context by prefixing the `ValueMismatch` message.
-    pub fn prepend(self, s: &str) -> CharacterDataError {
+    pub fn prepend(self, s: &str) -> Dnd5eapiError {
         match self {
-            CharacterDataError::NotFound { val_type, name } => {
+            Dnd5eapiError::NotFound { val_type, name } => {
                 let mut s = s.to_string();
                 s.push_str(&name);
-                CharacterDataError::NotFound { val_type, name: s }
+                Dnd5eapiError::NotFound { val_type, name: s }
             }
-            CharacterDataError::TypeMismatch {
+            Dnd5eapiError::TypeMismatch {
                 field,
                 expected,
                 found,
             } => {
                 let mut s = s.to_string();
                 s.push_str(&field);
-                CharacterDataError::TypeMismatch {
+                Dnd5eapiError::TypeMismatch {
                     field: s,
                     expected,
                     found,
@@ -53,12 +53,12 @@ impl CharacterDataError {
     }
 
     /// Adds trailing context to a `ValueMismatch` message.
-    pub fn append(mut self, s: &str) -> CharacterDataError {
+    pub fn append(mut self, s: &str) -> Dnd5eapiError {
         match &mut self {
-            CharacterDataError::NotFound { name, .. } => {
+            Dnd5eapiError::NotFound { name, .. } => {
                 name.push_str(s);
             }
-            CharacterDataError::TypeMismatch { field, .. } => {
+            Dnd5eapiError::TypeMismatch { field, .. } => {
                 field.push_str(s);
             }
             _ => (),
@@ -68,8 +68,8 @@ impl CharacterDataError {
     }
 
     /// Constructs a `ValueMismatch` with the given string.
-    pub fn mismatch(field: &str, expected: &'static str, found: &str) -> CharacterDataError {
-        CharacterDataError::TypeMismatch {
+    pub fn mismatch(field: &str, expected: &'static str, found: &str) -> Dnd5eapiError {
+        Dnd5eapiError::TypeMismatch {
             field: field.to_string(),
             expected,
             found: found.to_string(),
@@ -77,8 +77,8 @@ impl CharacterDataError {
     }
 
     /// Constructs a `NotFound` with the given type and name.
-    pub fn not_found(val_type: &'static str, name: &str) -> CharacterDataError {
-        CharacterDataError::NotFound {
+    pub fn not_found(val_type: &'static str, name: &str) -> Dnd5eapiError {
+        Dnd5eapiError::NotFound {
             val_type,
             name: name.to_string(),
         }

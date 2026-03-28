@@ -2,17 +2,17 @@
 use std::str::FromStr;
 
 use crate::rules2014::stats::SkillType;
-use super::CharacterDataError;
+use super::Dnd5eapiError;
 use serde_json::{Map, Number, Value};
 
 use crate::rules2014::features::PresentedOption;
 pub trait ValueExt {
-    fn as_string(&self, name: &str) -> Result<String, CharacterDataError>;
-    fn get_str(&self, key: &str) -> Result<String, CharacterDataError>;
-    fn get_usize(&self, key: &str) -> Result<usize, CharacterDataError>;
-    fn get_bool(&self, key: &str) -> Result<bool, CharacterDataError>;
-    fn get_map(&self, key: &str) -> Result<&Value, CharacterDataError>;
-    fn get_array(&self, key: &str) -> Result<&[Value], CharacterDataError>;
+    fn as_string(&self, name: &str) -> Result<String, Dnd5eapiError>;
+    fn get_str(&self, key: &str) -> Result<String, Dnd5eapiError>;
+    fn get_usize(&self, key: &str) -> Result<usize, Dnd5eapiError>;
+    fn get_bool(&self, key: &str) -> Result<bool, Dnd5eapiError>;
+    fn get_map(&self, key: &str) -> Result<&Value, Dnd5eapiError>;
+    fn get_array(&self, key: &str) -> Result<&[Value], Dnd5eapiError>;
 }
 
 pub fn value_name(v: &Value) -> &str {
@@ -26,16 +26,16 @@ pub fn value_name(v: &Value) -> &str {
     }
 }
 
-pub fn parse_skilltype(f: &str, s: &str) -> Result<SkillType, CharacterDataError> {
+pub fn parse_skilltype(f: &str, s: &str) -> Result<SkillType, Dnd5eapiError> {
     SkillType::from_str(s).map_err(|_| {
-        CharacterDataError::mismatch(f, "Valid SkillType", &format!("Invalid SkillType: {}", s))
+        Dnd5eapiError::mismatch(f, "Valid SkillType", &format!("Invalid SkillType: {}", s))
     })
 }
 
 impl ValueExt for Value {
-    fn as_string(&self, name: &str) -> Result<String, CharacterDataError> {
+    fn as_string(&self, name: &str) -> Result<String, Dnd5eapiError> {
         self.as_str()
-            .ok_or(CharacterDataError::mismatch(
+            .ok_or(Dnd5eapiError::mismatch(
                 name,
                 "String",
                 value_name(self),
@@ -43,53 +43,53 @@ impl ValueExt for Value {
             .map(|v| v.to_string())
     }
 
-    fn get_str(&self, key: &str) -> Result<String, CharacterDataError> {
+    fn get_str(&self, key: &str) -> Result<String, Dnd5eapiError> {
         Ok(self
             .get(key)
-            .ok_or_else(|| CharacterDataError::not_found("String", key))?
+            .ok_or_else(|| Dnd5eapiError::not_found("String", key))?
             .as_str()
-            .ok_or_else(|| CharacterDataError::mismatch(key, "String", value_name(self)))?
+            .ok_or_else(|| Dnd5eapiError::mismatch(key, "String", value_name(self)))?
             .to_string())
     }
 
-    fn get_usize(&self, key: &str) -> Result<usize, CharacterDataError> {
+    fn get_usize(&self, key: &str) -> Result<usize, Dnd5eapiError> {
         Ok(self
             .get(key)
-            .ok_or_else(|| CharacterDataError::not_found("Number", key))?
+            .ok_or_else(|| Dnd5eapiError::not_found("Number", key))?
             .as_number()
-            .ok_or_else(|| CharacterDataError::mismatch(key, "Number", value_name(self)))?
+            .ok_or_else(|| Dnd5eapiError::mismatch(key, "Number", value_name(self)))?
             .as_u64()
             .ok_or_else(|| {
-                CharacterDataError::mismatch(key, "unsigned integer", "signed int or float")
+                Dnd5eapiError::mismatch(key, "unsigned integer", "signed int or float")
             })?
             .try_into()
             .expect("number too large"))
     }
 
-    fn get_bool(&self, key: &str) -> Result<bool, CharacterDataError> {
+    fn get_bool(&self, key: &str) -> Result<bool, Dnd5eapiError> {
         self.get(key)
-            .ok_or_else(|| CharacterDataError::not_found("Bool", key))?
+            .ok_or_else(|| Dnd5eapiError::not_found("Bool", key))?
             .as_bool()
-            .ok_or_else(|| CharacterDataError::mismatch(key, "Bool", value_name(self)))
+            .ok_or_else(|| Dnd5eapiError::mismatch(key, "Bool", value_name(self)))
     }
 
-    fn get_map(&self, key: &str) -> Result<&Value, CharacterDataError> {
+    fn get_map(&self, key: &str) -> Result<&Value, Dnd5eapiError> {
         let v = self
             .get(key)
-            .ok_or_else(|| CharacterDataError::not_found("Map", key))?;
+            .ok_or_else(|| Dnd5eapiError::not_found("Map", key))?;
         if !v.is_object() {
-            return Err(CharacterDataError::mismatch(key, "Map", value_name(self)));
+            return Err(Dnd5eapiError::mismatch(key, "Map", value_name(self)));
         }
         Ok(v)
     }
 
-    fn get_array(&self, key: &str) -> Result<&[Value], CharacterDataError> {
+    fn get_array(&self, key: &str) -> Result<&[Value], Dnd5eapiError> {
         Ok(self
             .get(key)
-            .ok_or_else(|| CharacterDataError::not_found("Array", key))?
+            .ok_or_else(|| Dnd5eapiError::not_found("Array", key))?
             .as_array()
             .ok_or_else(|| {
-                CharacterDataError::mismatch(key, "unsigned integer", "signed int or float")
+                Dnd5eapiError::mismatch(key, "unsigned integer", "signed int or float")
             })?
             .as_ref())
     }
@@ -100,17 +100,17 @@ pub fn parse_string(s: &str) -> String {
     s.to_lowercase().replace(" ", "-")
 }
 
-pub fn string_array(arr: &[Value]) -> Result<Vec<String>, CharacterDataError> {
+pub fn string_array(arr: &[Value]) -> Result<Vec<String>, Dnd5eapiError> {
     arr.iter()
         .map(|v| match v {
             Value::String(s) => Ok(s.to_string()),
-            o => Err(CharacterDataError::mismatch(
+            o => Err(Dnd5eapiError::mismatch(
                 "Description field",
                 "String",
                 value_name(o),
             )),
         })
-        .collect::<Result<Vec<String>, CharacterDataError>>()
+        .collect::<Result<Vec<String>, Dnd5eapiError>>()
 }
 
 pub fn object_index_value<'a>(object: &'a Value, index_name: &str) -> Result<&'a String, ()> {
@@ -139,11 +139,11 @@ pub fn unwrap_number(num: &Number) -> usize {
 
 // A choice between single values
 type NameCountMapSingle<'a> = PresentedOption<(usize, &'a Map<String, Value>)>;
-pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMapSingle<'a>, CharacterDataError> {
+pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMapSingle<'a>, Dnd5eapiError> {
     choice_multi(map_value)?
         .map(|v| {
             if v.is_empty() {
-                return Err(CharacterDataError::not_found("Map", "First Choice"));
+                return Err(Dnd5eapiError::not_found("Map", "First Choice"));
             }
             Ok(v[0])
         })
@@ -152,7 +152,7 @@ pub fn choice<'a>(map_value: &'a Value) -> Result<NameCountMapSingle<'a>, Charac
 
 // description, count, value_choices
 type NameCountMap<'a> = PresentedOption<Vec<(usize, &'a Map<String, Value>)>>;
-pub fn choice_multi<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, CharacterDataError> {
+pub fn choice_multi<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, Dnd5eapiError> {
     let count = map_value.get_usize("choose")?;
     let choice_arr = map_value.get_map("from")?;
 
@@ -162,9 +162,9 @@ pub fn choice_multi<'a>(map_value: &'a Value) -> Result<NameCountMap<'a>, Charac
 fn process_bare_choice<'a>(
     num: usize,
     choice_array: &'a Value,
-) -> Result<NameCountMap<'a>, CharacterDataError> {
+) -> Result<NameCountMap<'a>, Dnd5eapiError> {
     let choice_array = choice_array.as_object().ok_or_else(|| {
-        CharacterDataError::mismatch("choice", "Object", value_name(choice_array))
+        Dnd5eapiError::mismatch("choice", "Object", value_name(choice_array))
     })?;
 
     // if we're at a base choice, return
@@ -173,26 +173,26 @@ fn process_bare_choice<'a>(
             // getting the choice array and unwrapping the value
             let choice_val = choice_array
                 .get("choice")
-                .ok_or_else(|| CharacterDataError::not_found("Object", "choice object"))?;
+                .ok_or_else(|| Dnd5eapiError::not_found("Object", "choice object"))?;
             let num = choice_val.get_usize("choose")?;
             return process_bare_choice(num, choice_val);
         } else if s == "multiple" {
             let items_arr = match choice_array.get("items") {
                 Some(Value::Array(a)) => a,
                 Some(o) => {
-                    return Err(CharacterDataError::mismatch(
+                    return Err(Dnd5eapiError::mismatch(
                         "choice items",
                         "Array",
                         value_name(o),
                     ))
                 }
-                None => return Err(CharacterDataError::not_found("Array", "choice items")),
+                None => return Err(Dnd5eapiError::not_found("Array", "choice items")),
             }
             .iter()
             .map(|v| v.as_object().map(|w| (num, w)))
             .collect::<Option<Vec<_>>>()
             .ok_or_else(|| {
-                CharacterDataError::mismatch("Choice multiple", "Object", "Non-Object")
+                Dnd5eapiError::mismatch("Choice multiple", "Object", "Non-Object")
             })?;
             return Ok(PresentedOption::Base(items_arr));
         }
@@ -217,7 +217,7 @@ fn process_bare_choice<'a>(
             .map(|v| {
                 v.as_base()
                     .ok_or_else(|| {
-                        CharacterDataError::mismatch(
+                        Dnd5eapiError::mismatch(
                             "Choice option field",
                             "One dimensional choice",
                             "recursive choice",
@@ -229,7 +229,7 @@ fn process_bare_choice<'a>(
         return Ok(PresentedOption::Choice(assembled_choice));
     };
 
-    Err(CharacterDataError::not_found(
+    Err(Dnd5eapiError::not_found(
         "Choice identifier",
         "option_type",
     ))

@@ -46,7 +46,7 @@ async fn get_dragonborn() {
 async fn get_with_race_context(
     race_name: &str,
     provider: &Dnd5eapiGetter,
-) -> Result<Race, CharacterDataError> {
+) -> Result<Race, Dnd5eapiError> {
     provider
         .get_race(race_name)
         .await
