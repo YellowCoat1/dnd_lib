@@ -98,10 +98,10 @@ impl Dnd5eapiDatastore {
     pub fn new() -> Self {
         Self {
             classes: InternalRequester::new_async(|s: String| async move {
-                Dnd5eapigetter::new().get_class(&s).await
+                Dnd5eapiGetter::new().get_class(&s).await
             }),
             backgrounds: InternalRequester::new_async(|s: String| async move {
-                Dnd5eapigetter::new().get_background(&s).await
+                Dnd5eapiGetter::new().get_background(&s).await
             }),
             races: InternalRequester::new_async(|s: String| async move { get_race_raw(&s).await }),
             items: InternalRequester::new_async(|s: String| async move { get_item_raw(&s).await }),

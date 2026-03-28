@@ -5,7 +5,7 @@ use dnd_lib::prelude::*;
 #[tokio::main]
 async fn main() {
     // Initialize the api getter
-    let provider = Dnd5eapigetter::new();
+    let provider = Dnd5eapiGetter::new();
 
     println!("Fetching data...");
     let elf_future = provider.get_race("elf");

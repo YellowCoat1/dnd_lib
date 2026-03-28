@@ -12,7 +12,7 @@ pub async fn get_subclass(name: &str) -> Result<Subclass, CharacterDataError> {
     let json = get_raw_json(format!("subclasses/{index}")).await?;
     let levels = get_raw_json(format!("subclasses/{index}/levels")).await?;
 
-    let api_getter = super::Dnd5eapigetter::new();
+    let api_getter = super::Dnd5eapiGetter::new();
 
     let name = json.get_str("name")?;
     let description = string_array(json.get_array("desc")?)?;

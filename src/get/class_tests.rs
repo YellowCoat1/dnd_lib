@@ -1,5 +1,5 @@
 use crate::{
-    get::Dnd5eapigetter,
+    get::Dnd5eapiGetter,
     rules2014::{
         class::{Class, ItemCategory},
         features::PresentedOption,
@@ -220,7 +220,7 @@ async fn fighter_items() {
 
 async fn get_with_class_context(
     class_name: &str,
-    provider: &Dnd5eapigetter,
+    provider: &Dnd5eapiGetter,
 ) -> Result<Class, CharacterDataError> {
     provider
         .get_class(class_name)

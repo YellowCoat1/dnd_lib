@@ -5,7 +5,7 @@ use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, Stat
 
 #[tokio::test]
 async fn level_5_halfling_rogue() {
-    let provider = Dnd5eapigetter::new();
+    let provider = Dnd5eapiGetter::new();
     let halfling_future = provider.get_race("halfling");
     let rogue_future = provider.get_class("rogue");
     let acolyte_future = provider.get_background("acolyte");

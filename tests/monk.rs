@@ -4,7 +4,7 @@ use dnd_lib::rules2014::stats::{SkillModifiers, SkillType};
 
 #[tokio::test]
 async fn level_3_elf_monk() {
-    let provider = Dnd5eapigetter::new();
+    let provider = Dnd5eapiGetter::new();
     let elf_future = provider.get_race("elf");
     let monk_future = provider.get_class("monk");
     let acolyte_future = provider.get_background("acolyte");

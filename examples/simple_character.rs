@@ -5,7 +5,7 @@ use dnd_lib::{prelude::*, rules2014::features::PresentedOption};
 #[tokio::main]
 async fn main() {
     // creating an api getter, which will fetch data from the 5e api
-    let provider = Dnd5eapigetter::new();
+    let provider = Dnd5eapiGetter::new();
 
     // fetching the race "elf"
     let elf = provider

@@ -5,7 +5,7 @@ use dnd_lib::prelude::*;
 #[tokio::main]
 async fn main() {
     // Initialize the api getter
-    let provider = Dnd5eapigetter::new();
+    let provider = Dnd5eapiGetter::new();
 
     // The race will be human, and the background will be acolyte
     let human = provider.get_race("human").await.unwrap();

@@ -4,7 +4,7 @@ use dnd_lib::prelude::*;
 
 #[tokio::main]
 async fn main() {
-    let provider = Dnd5eapigetter::new();
+    let provider = Dnd5eapiGetter::new();
 
     // fetching the 2 classes we want: monk and rogue
     let monk = provider.get_class("monk").await.unwrap();

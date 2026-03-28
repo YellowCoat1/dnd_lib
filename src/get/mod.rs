@@ -94,14 +94,14 @@ pub use item_list::ITEM_NAMES;
 /// Do note that this getter can be quite slow, as it needs to make multiple network requests to
 /// get all the data.
 /// Caching is implemented for items, classes, and backgrounds to help with this.
-pub struct Dnd5eapigetter {
+pub struct Dnd5eapiGetter {
     item_cache: Mutex<HashMap<String, Item>>,
     class_cache: Mutex<HashMap<String, Class>>,
     background_cache: Mutex<HashMap<String, Background>>,
 }
 
 #[async_trait]
-impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapigetter {
+impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapiGetter {
     async fn get_race(&self, name: &str) -> Result<Race, crate::getter::CharacterDataError> {
         get_race_inner(name).await
     }
@@ -149,9 +149,9 @@ impl crate::getter::DataProvider<CharacterDataError> for Dnd5eapigetter {
     }
 }
 
-impl Dnd5eapigetter {
-    pub fn new() -> Dnd5eapigetter {
-        Dnd5eapigetter {
+impl Dnd5eapiGetter {
+    pub fn new() -> Dnd5eapiGetter {
+        Dnd5eapiGetter {
             item_cache: Mutex::new(HashMap::new()),
             class_cache: Mutex::new(HashMap::new()),
             background_cache: Mutex::new(HashMap::new()),
@@ -163,9 +163,9 @@ impl Dnd5eapigetter {
     }
 }
 
-impl Default for Dnd5eapigetter {
+impl Default for Dnd5eapiGetter {
     fn default() -> Self {
-        Dnd5eapigetter {
+        Dnd5eapiGetter {
             item_cache: Mutex::new(HashMap::new()),
             class_cache: Mutex::new(HashMap::new()),
             background_cache: Mutex::new(HashMap::new()),

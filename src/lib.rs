@@ -82,20 +82,20 @@ pub use rules2014::player_character::{Character, CharacterBuilder};
 use std::sync::{Arc, OnceLock};
 #[cfg(feature = "dnd5eapi")]
 #[cfg_attr(not(test), allow(dead_code))]
-static PROVIDER: OnceLock<Arc<get::Dnd5eapigetter>> = OnceLock::new();
+static PROVIDER: OnceLock<Arc<get::Dnd5eapiGetter>> = OnceLock::new();
 
 // Global api getter for all tests, in order for a shared cache
 #[cfg(test)]
 #[cfg(feature = "dnd5eapi")]
-pub(crate) fn provider() -> Arc<get::Dnd5eapigetter> {
+pub(crate) fn provider() -> Arc<get::Dnd5eapiGetter> {
     PROVIDER
-        .get_or_init(|| Arc::new(get::Dnd5eapigetter::new()))
+        .get_or_init(|| Arc::new(get::Dnd5eapiGetter::new()))
         .clone()
 }
 
 pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
-    pub use crate::get::Dnd5eapigetter;
+    pub use crate::get::Dnd5eapiGetter;
     pub use crate::{
         getter::{CharacterDataError, DataProvider},
         rules2014::class::Class,
