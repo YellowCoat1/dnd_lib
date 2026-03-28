@@ -454,7 +454,7 @@ impl Character {
         // see comments for ability_score_increases 
         self.classes.iter_mut()
             .flat_map(|v| v.current_class_features.iter_mut())
-            .flat_map(|v| v) 
+            .flatten()
             .filter_map(|v| v.as_base_mut())
             .flat_map(|v| v.effects.iter_mut())
             .filter_map(|v| match v {
@@ -470,7 +470,7 @@ impl Character {
             // iter over each class's feature list
             .flat_map(|v| v.current_class_features.iter())
             // then over each feature
-            .flat_map(|v| v) 
+            .flatten()
             // and each chosen feature
             .filter_map(|v| v.as_base())
             // then each effect in those features
