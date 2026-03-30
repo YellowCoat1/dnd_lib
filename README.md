@@ -21,7 +21,7 @@ Creating a simple level 1 character. Do note this takes ~20 seconds, since the a
 use dnd_lib::prelude::*;
 #[tokio::main]
 async fn main() {
-	let provider = Dnd5eapigetter::new();
+	let provider = Dnd5eapiGetter::new();
 	
 	let rogue = provider.get_class("rogue").await.unwrap();
 	let human = provider.get_race("human").await.unwrap();

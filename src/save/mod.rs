@@ -10,7 +10,7 @@
 //! #[tokio::main]
 //! async fn main() {
 //!     // get an item from the api. For simplicity, we're just going with the shortsword.
-//!     let provider = Dnd5eapigetter::new();
+//!     let provider = Dnd5eapiGetter::new();
 //!     let item = provider.get_item("shortsword").await.unwrap();
 //!     assert_eq!(&item.name, "Shortsword");
 //!

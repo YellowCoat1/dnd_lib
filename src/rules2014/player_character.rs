@@ -57,7 +57,7 @@ use super::stats::{
 /// # rt.block_on(async {
 ///     use dnd_lib::prelude::*;
 ///
-///     let provider = Dnd5eapigetter::new();
+///     let provider = Dnd5eapiGetter::new();
 ///     let fighter = provider.get_class("fighter").await.unwrap();
 ///     let human = provider.get_race("human").await.unwrap();
 ///     let acolyte = provider.get_background("acolyte").await.unwrap();
@@ -140,7 +140,7 @@ use super::stats::{
 ///
 /// Then, you choose the category, (if there is any) so "any simple melee weapon" could be chosen as a "dagger".
 /// This is done with [Character::set_unchosen_category]. Do note that you would need to retrieve
-/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [Dnd5eapigetter](crate::prelude::Dnd5eapiGetter))  once you know the simple weapon you want is a dagger.
+/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [Dnd5eapiGetter](crate::prelude::Dnd5eapiGetter))  once you know the simple weapon you want is a dagger.
 ///
 /// Finally, you call [Character::add_chosen_items] to add the chosen items to the character's item
 /// list.
@@ -494,7 +494,7 @@ impl Character {
     /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
     /// # use dnd_lib::rules2014::stats::StatType;
-    /// # let provider = Dnd5eapigetter::new();
+    /// # let provider = Dnd5eapiGetter::new();
     /// # let fighter = provider.get_class("fighter").await.unwrap();
     /// # let human = provider.get_race("human").await.unwrap();
     /// # let acolyte = provider.get_background("acolyte").await.unwrap();
@@ -625,7 +625,7 @@ impl Character {
     ///     # let rt = Runtime::new().unwrap();
     ///     # rt.block_on(async {
     ///     # use dnd_lib::prelude::*;
-    ///     # let provider = Dnd5eapigetter::new();
+    ///     # let provider = Dnd5eapiGetter::new();
     ///     # let wizard = provider.get_class("wizard").await.unwrap();
     ///     # let acolyte = provider.get_background("acolyte").await.unwrap();
     ///     # let elf = provider.get_race("elf").await.unwrap();
@@ -728,7 +728,7 @@ impl Character {
     ///   # use dnd_lib::rules2014::spells::PactSlots;
     ///   # use dnd_lib::rules2014::player_character::CharacterBuilder;
     ///   #
-    ///   # let provider = Dnd5eapigetter::new();
+    ///   # let provider = Dnd5eapiGetter::new();
     ///   # let warlock = provider.get_class("warlock").await.unwrap();
     ///   # let acolyte = provider.get_background("acolyte").await.unwrap();
     ///   # let human = provider.get_race("human").await.unwrap();
@@ -1359,7 +1359,7 @@ impl Character {
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
-    /// # let provider = Dnd5eapigetter::new();
+    /// # let provider = Dnd5eapiGetter::new();
     /// # let fighter = provider.get_class("fighter").await.unwrap();
     /// # let acolyte = provider.get_background("acolyte").await.unwrap();
     /// # let human = provider.get_race("human").await.unwrap();
@@ -1592,7 +1592,7 @@ impl Character {
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
-    /// # let provider = Dnd5eapigetter::new();
+    /// # let provider = Dnd5eapiGetter::new();
     /// # let fighter = provider.get_class("fighter").await.unwrap();
     /// # let acolyte = provider.get_background("acolyte").await.unwrap();
     /// # let human = provider.get_race("human").await.unwrap();
@@ -1750,7 +1750,7 @@ impl Character {
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
     /// # use dnd_lib::prelude::*;
-    /// # let provider = Dnd5eapigetter::new();
+    /// # let provider = Dnd5eapiGetter::new();
     /// # let wizard = provider.get_class("wizard").await.unwrap();
     /// # let acolyte = provider.get_background("acolyte").await.unwrap();
     /// # let human = provider.get_race("human").await.unwrap();

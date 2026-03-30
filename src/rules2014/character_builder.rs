@@ -11,7 +11,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// # use tokio::runtime::Runtime;
 /// # let rt = Runtime::new().unwrap();
 /// # rt.block_on(async {
-/// # let provider = Dnd5eapigetter::new();
+/// # let provider = Dnd5eapiGetter::new();
 /// # let barbarian = provider.get_class("barbarian").await.unwrap();
 /// # let human = provider.get_race("human").await.unwrap();
 /// # let acolyte = provider.get_background("acolyte").await.unwrap();
@@ -36,7 +36,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// # use tokio::runtime::Runtime;
 /// # let rt = Runtime::new().unwrap();
 /// # rt.block_on(async {
-/// # let provider = Dnd5eapigetter::new();
+/// # let provider = Dnd5eapiGetter::new();
 /// # let barbarian = provider.get_class("barbarian").await.unwrap();
 /// # let human = provider.get_race("human").await.unwrap();
 /// # let acolyte = provider.get_background("acolyte").await.unwrap();
