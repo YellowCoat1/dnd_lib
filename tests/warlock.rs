@@ -1,6 +1,7 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
-use dnd_lib::rules2014::{features::FeatureEffect, spells::PactSlots, stats::StatType};
+use dnd_lib::rules2014::features::AbilityScoreIncrease;
+use dnd_lib::rules2014::{spells::PactSlots, stats::StatType};
 
 use futures::future::try_join_all;
 
@@ -69,30 +70,35 @@ async fn level_10_warlock() {
     baroopa.classes[0].subclass.choose_in_place(0);
 
     // find all ability score increases
-    let ability_score_increases = baroopa.classes[0]
-        .current_class_features
-        .iter_mut()
-        .flat_map(|level_features| level_features.iter_mut())
-        .filter_map(|v| v.as_base_mut())
-        .flat_map(|v| v.effects.iter_mut())
-        .filter_map(|v| match v {
-            FeatureEffect::AbilityScoreIncrease(a) => Some(a),
-            _ => None,
-        });
-
-    let mut ability_score_increases_vec = ability_score_increases.collect::<Vec<_>>();
+    let mut ability_score_increases = baroopa.ability_score_increases_mut();
     assert_eq!(
-        ability_score_increases_vec.len(),
+        ability_score_increases.len(),
         2,
         "Warlock should have 2 ability score increases by level 10"
     );
-    ability_score_increases_vec[0].set_stat_increase(StatType::Charisma, Some(StatType::Charisma));
-    ability_score_increases_vec[1].set_stat_increase(StatType::Charisma, Some(StatType::Dexterity));
+    ability_score_increases[0].set_stat_increase(StatType::Charisma, Some(StatType::Charisma));
+    ability_score_increases[1].set_stat_increase(StatType::Charisma, Some(StatType::Dexterity));
+
+    // should be eqaul to ability_score_increases. Testing if it really is.
+    let new_ability_scores = baroopa.ability_score_increases();
+    assert_eq!(
+        new_ability_scores.len(),
+        2,
+        "number of ability score increases changed after filling them"
+    );
+    assert_eq!(
+        *new_ability_scores[0],
+        AbilityScoreIncrease::StatIncrease(Some(StatType::Charisma), Some(StatType::Charisma))
+    );
+    assert_eq!(
+        *new_ability_scores[1],
+        AbilityScoreIncrease::StatIncrease(Some(StatType::Charisma), Some(StatType::Dexterity))
+    );
 
     assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 20]));
 
     // the warlock has no armor, so the ac should be 10+dex
-    assert_eq!(baroopa.ac(), 10+2);
+    assert_eq!(baroopa.ac(), 10 + 2);
     // There should be no spells to prepare for warlock, as they know their spells.
     assert_eq!(baroopa.prepare_spells_multiple().len(), 0);
 
@@ -106,7 +112,8 @@ async fn level_10_warlock() {
 
     let warlock_spells = baroopa.spells();
 
-    let spell_names: Vec<_> = warlock_spells.into_iter()
+    let spell_names: Vec<_> = warlock_spells
+        .into_iter()
         .map(|v| v.0.name.as_str())
         .collect();
 
