@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
-use dnd_lib::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect};
+use dnd_lib::rules2014::features::{Feature, FeatureEffect};
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
 
 #[tokio::test]
@@ -24,7 +24,14 @@ async fn level_5_halfling_rogue() {
         charisma: 8,
     };
 
-    let mut bingus = Character::new("bingus".to_string(), &rogue, &acolyte, &halfling, stats);
+    // create the character
+    let mut bingus = CharacterBuilder::new("bingus")
+        .class(&rogue)
+        .background(&acolyte)
+        .race(&halfling)
+        .stats(stats)
+        .build()
+        .expect("failed to build the rogue character");
 
     // check bingus's starting items
     assert_eq!(bingus.unchosen_items().len(), 3);
@@ -94,8 +101,9 @@ async fn level_5_halfling_rogue() {
     // We want to get the first feature of rogue.
     // This is bingus's first class, and in the features of that class, the first level and the
     // first feature of that level.
-    let expertise = bingus.classes[0].current_class_features[0]
-        .get_mut(0)
+    let expertise = bingus.classes[0] // the first class,
+        .current_class_features[0] // the features for 1st level
+        .get_mut(0) // and the first such feature.
         .expect("Rogue should have level 1 features")
         .as_base_mut()
         .expect("Rogue should have expertise");
@@ -118,31 +126,16 @@ async fn level_5_halfling_rogue() {
     // We also want to choose the subclass.
     bingus.classes[0].subclass.choose_in_place(0);
 
-    // at 4th level there's also an ability score increase.
+    // at 4th level there is also an ability score increase.
 
-    // this massive line is imposing, but it's just fetching the specific feature we want to fill.
-    let ability_score_increase = &mut bingus.classes[0].current_class_features[3]
+    // get the ability score increase 
+    let mut ability_score_increases = bingus.ability_score_increases_mut();    
+    let score_increase = ability_score_increases
         .get_mut(0)
-        .expect("Rogue should have 4th level features")
-        .as_base_mut()
-        .expect("Rogue should have 4th level features")
-        // here, we've gotten the specific Feature we want. the last 3 lines are to access the
-        // FeatureEffect.
-        .effects
-        .get_mut(0)
-        .expect("Rogue's 4th level feature should have an effect");
+        .expect("rogue should have an ability score increase");
 
-    // Now that we've gotten the FeatureEffect, we just match it to make sure it's an
-    // AbilityScoreIncrease.
-    let ability_score_effect = match ability_score_increase {
-        FeatureEffect::AbilityScoreIncrease(a) => a,
-        _ => panic!("Rogue's first 4th level feature should be an ability score increase"),
-    };
-
-    // finally, now that we have it, we just set it to a stat increase of dexterity and
-    // consitituion
-    *ability_score_effect =
-        AbilityScoreIncrease::StatIncrease(Some(StatType::Dexterity), Some(StatType::Constitution));
+    // set the score increase to dex and con
+    score_increase.set_stat_increase(StatType::Dexterity, Some(StatType::Constitution));
 
     // Now, with all of that out of the way, we check the skills and ability scores.
 
@@ -175,16 +168,14 @@ async fn level_5_halfling_rogue() {
     );
 
     // hp should be 38
-    assert_eq!(bingus.max_hp(), 38);
-    assert_eq!(bingus.hp, 38);
+    assert_eq!(bingus.max_hp(), 38, "rogue has wrong max hp");
+    assert_eq!(bingus.hp, 38, "rogue is not at max hp after level-up");
 
     // bingus has leather armor on.
     // This grants 11+DEX, which here is 11+4.
-    assert_eq!(bingus.ac(), 15);
+    assert_eq!(bingus.ac(), 15, "rogue has the wrong ac");
 
-    assert_eq!(bingus.speed(), 25);
-
-    assert_eq!(bingus.descriptors.size, Size::Small);
+    assert_eq!(bingus.descriptors.size, Size::Small, "rogue is not small, as a halfling should be");
 
     // Testing saving throw modifiers
     let saves = bingus.save_mods();
@@ -192,7 +183,8 @@ async fn level_5_halfling_rogue() {
         saves,
         Modifiers {
             stats: Stats::from(&[0, 7, 2, 4, 1, -1])
-        }
+        },
+        "rogue has wrong saving throw modifiers"
     );
 
     // Equipment proficiencies
@@ -219,8 +211,9 @@ async fn level_5_halfling_rogue() {
         ]
     );
 
-    // speeds
+    // testing the rogue's different speeds
     let speeds = bingus.speeds();
+    // check that there's only the default
     assert_eq!(speeds.walking, Some(25));
     assert_eq!(
         (
@@ -234,19 +227,22 @@ async fn level_5_halfling_rogue() {
         "rogue should have no special speeds"
     );
 
+    // add a swim speed
     let swimming_speed_feature = Feature {
         name: String::from("Swimmer"),
         description: vec![],
         effects: vec![FeatureEffect::SwimmingSpeed(30)],
     };
     bingus.bonus_features.push(swimming_speed_feature);
+    // check that the swim speed had an effect
     assert_eq!(
         bingus.speeds().swimming,
         Some(30),
         "rogue should have a swim speed"
     );
 
-    // damage
+    // Damage & Health
+
     bingus.damage(30);
     assert_eq!(bingus.hp, 8, "Character had not taken damage properly");
 
@@ -255,6 +251,7 @@ async fn level_5_halfling_rogue() {
         bingus.hp, 8,
         "Character healed from short rest when they should not have."
     );
+
     bingus.short_rest(1, None);
     assert_eq!(bingus.hp, 15, "Character did not heal the correct amount");
     bingus.short_rest(1, Some(vec![2]));
