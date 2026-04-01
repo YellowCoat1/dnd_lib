@@ -12,7 +12,7 @@ use crate::provider;
 
 use crate::getter::DataProvider;
 
-use super::{feature::get_feature, item::get_item};
+use super::{feature::get_feature};
 
 #[tokio::test]
 async fn wizard_retrieval() {
@@ -22,7 +22,7 @@ async fn wizard_retrieval() {
         .await
         .expect("failed to get wizard class from api");
 
-    let items_result = wizard_items(&wizard);
+    let items_result = wizard_items(&wizard, &provider);
     let features_result = wizard_features(&wizard);
 
     wizard_skill_proficiencies(&wizard);
@@ -69,8 +69,8 @@ fn wizard_skill_proficiencies(class: &Class) {
     );
 }
 
-async fn wizard_items(class: &Class) {
-    let spellbook_item = get_item("spellbook").await.unwrap();
+async fn wizard_items(class: &Class, provider: &Dnd5eapiGetter) {
+    let spellbook_item = provider.get_item("spellbook").await.unwrap();
 
     let spellbook_choice_entry =
         PresentedOption::Base(vec![(ItemCategory::Item(spellbook_item), 1)]);
@@ -90,10 +90,10 @@ async fn wizard_items(class: &Class) {
         2,
         "Wizard's first item choice should be between two items"
     );
-    let quarterstaff = get_item("quarterstaff")
+    let quarterstaff = provider.get_item("quarterstaff")
         .await
         .expect("Couldn't get quarterstaff");
-    let dagger = get_item("dagger").await.expect("Couldn't get dagger");
+    let dagger = provider.get_item("dagger").await.expect("Couldn't get dagger");
     assert_eq!(first_choice[0], vec![(ItemCategory::Item(quarterstaff), 1)]);
     assert_eq!(first_choice[1], vec![(ItemCategory::Item(dagger), 1)]);
 }
