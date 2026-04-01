@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
-use dnd_lib::rules2014::features::AbilityScoreIncrease;
+use dnd_lib::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect};
 use dnd_lib::rules2014::{spells::PactSlots, stats::StatType};
 
 use futures::future::try_join_all;
@@ -12,6 +12,7 @@ async fn level_10_warlock() {
     let warlock_future = provider.get_class("warlock");
     let acolyte_future = provider.get_background("acolyte");
 
+    let club_future = provider.get_item("club");
     let spells = vec![
         // cantrips
         provider.get_spell("eldritch blast"),
@@ -63,6 +64,16 @@ async fn level_10_warlock() {
         .expect("Character should have a 2nd choice for skill proficiencies")
         .choose_in_place(4);
 
+    // choosing items 
+    let item_choices = baroopa.unchosen_items();
+    assert_eq!(item_choices.len(), 4);
+    baroopa.choose_items(0, 0);
+    baroopa.choose_items(1, 1);
+    baroopa.choose_items(2, 1);
+    let club = club_future.await.expect("failed to get club item");
+    baroopa.set_unchosen_category(3, 0, club);
+    baroopa.add_chosen_items();
+
     baroopa.level_up_to_level(&warlock, 10);
 
     // choose subclass
@@ -96,6 +107,15 @@ async fn level_10_warlock() {
     );
 
     assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 20]));
+
+    // adding one uncapped modifier to raise the charisma to 21
+    baroopa.bonus_features.push(Feature {
+        name: "Charisma Bonus".to_string(),
+        description: vec![],
+        effects: vec![FeatureEffect::AddModifierUncapped(StatType::Charisma, 1)]
+    });
+
+    assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 21]));
 
     // the warlock has no armor, so the ac should be 10+dex
     assert_eq!(baroopa.ac(), 10 + 2);
