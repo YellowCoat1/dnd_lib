@@ -1877,7 +1877,7 @@ fn spell_action_cantrip(
 ) -> Option<SpellAction> {
     let mut damage = spell.leveled_damage.as_ref()?.clone();
     // make sure damage is sorted by level
-    damage.sort_by(|a, b| a.0.cmp(&b.0));
+    damage.sort_by_key(|a| a.0);
     // find the rightmost version we can use
     let position = damage
         .iter()

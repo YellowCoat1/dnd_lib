@@ -85,7 +85,7 @@ fn spell_damage(
             .transpose()?
             // sorts the damage by level
             .map(|mut v| {
-                v.sort_by(|a, b| a.0.cmp(&b.0));
+                v.sort_by_key(|a| a.0);
                 v
             });
 
