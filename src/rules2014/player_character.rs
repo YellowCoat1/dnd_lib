@@ -451,8 +451,9 @@ impl Character {
 
     /// Mutable version of [Character::ability_score_increases]
     pub fn ability_score_increases_mut(&mut self) -> Vec<&mut AbilityScoreIncrease> {
-        // see comments for ability_score_increases 
-        self.classes.iter_mut()
+        // see comments for ability_score_increases
+        self.classes
+            .iter_mut()
             .flat_map(|v| v.current_class_features.iter_mut())
             .flatten()
             .filter_map(|v| v.as_base_mut())
@@ -466,7 +467,8 @@ impl Character {
 
     /// A helper for getting the ability scores increases of a character
     pub fn ability_score_increases(&mut self) -> Vec<&AbilityScoreIncrease> {
-        self.classes.iter()
+        self.classes
+            .iter()
             // iter over each class's feature list
             .flat_map(|v| v.current_class_features.iter())
             // then over each feature
@@ -782,7 +784,6 @@ impl Character {
     /// Note that this only decrements the spell slot at the spell's level.
     pub fn cast<T: Castable>(&mut self, casted: &T, spell_list: Option<bool>) -> bool {
         match spell_list {
-
             None => {
                 let v = self.first_caster_class();
                 match v {
@@ -790,9 +791,9 @@ impl Character {
                     Some(SpellCasterType::Warlock) => self.cast_with_pact(casted.level()),
                     Some(_) => self.cast_with_slots(casted.level()),
                 }
-            },
-            Some(true) =>  self.cast_with_pact(casted.level()),
-            Some(false) => self.cast_with_slots(casted.level())
+            }
+            Some(true) => self.cast_with_pact(casted.level()),
+            Some(false) => self.cast_with_slots(casted.level()),
         }
     }
 
@@ -823,9 +824,6 @@ impl Character {
         upcast: Option<usize>,
         spell_list: Option<bool>,
     ) -> bool {
-
-
-
         macro_rules! unwrap_or_return {
             ($e: expr) => {
                 match $e {
@@ -1085,7 +1083,6 @@ impl Character {
         for lang in self.race.wildcard_languages.iter().flatten() {
             languages.insert(lang.as_str());
         }
-
 
         // background languages
         languages.extend(self.background.languages());
@@ -1868,7 +1865,7 @@ fn spell_action_cantrip(
 ) -> Option<SpellAction> {
     let mut damage = spell.leveled_damage.as_ref()?.clone();
     // make sure damage is sorted by level
-    damage.sort_by(|a, b| a.0.cmp(&b.0));
+    damage.sort_by_key(|a| a.0);
     // find the rightmost version we can use
     let position = damage
         .iter()

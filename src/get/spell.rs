@@ -1,7 +1,7 @@
 use super::get_page::get_raw_json;
 use super::json_tools::{string_array, value_name, ValueExt};
-use crate::get::json_tools::parse_string;
 use super::Dnd5eapiError;
+use crate::get::json_tools::parse_string;
 use crate::rules2014::items::{DamageRoll, DamageType};
 use crate::rules2014::spells::Spell;
 use serde_json::Value;
@@ -85,7 +85,7 @@ fn spell_damage(
             .transpose()?
             // sorts the damage by level
             .map(|mut v| {
-                v.sort_by(|a, b| a.0.cmp(&b.0));
+                v.sort_by_key(|a| a.0);
                 v
             });
 
@@ -103,9 +103,8 @@ fn standard_spell_damage(
         .ok_or_else(|| Dnd5eapiError::mismatch("spell damage", "Object", value_name(json)))?
         .values()
         .map(|v| {
-            v.as_str().ok_or_else(|| {
-                Dnd5eapiError::mismatch("spell damage", "string", value_name(v))
-            })
+            v.as_str()
+                .ok_or_else(|| Dnd5eapiError::mismatch("spell damage", "string", value_name(v)))
         })
         .collect::<Result<Vec<_>, Dnd5eapiError>>()?
         .into_iter()
@@ -132,11 +131,7 @@ fn leveled_spell_damage(
         .iter()
         .map(|(level, damage)| {
             let level_num: usize = level.parse().map_err(|_| {
-                Dnd5eapiError::mismatch(
-                    "Cantrip damage level",
-                    "number",
-                    "invalid string to parse",
-                )
+                Dnd5eapiError::mismatch("Cantrip damage level", "number", "invalid string to parse")
             })?;
             let damage_string = damage.as_str().ok_or_else(|| {
                 Dnd5eapiError::mismatch("Cantrip damage", "String", value_name(damage))
