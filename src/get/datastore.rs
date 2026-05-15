@@ -27,10 +27,7 @@ type ClassRequester = InternalRequester<
 type BackgroundRequester = InternalRequester<
     Background,
     Box<
-        dyn Fn(
-                String,
-            )
-                -> Pin<Box<dyn Future<Output = Result<Background, Dnd5eapiError>> + Send>>
+        dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<Background, Dnd5eapiError>> + Send>>
             + Send
             + Sync,
     >,

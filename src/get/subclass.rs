@@ -1,9 +1,9 @@
+use super::Dnd5eapiError;
 use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, string_array, ValueExt},
 };
 use crate::get::json_tools::value_name;
-use super::Dnd5eapiError;
 use crate::rules2014::features::Feature;
 use crate::rules2014::{class::Subclass, features::PresentedOption};
 

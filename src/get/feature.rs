@@ -68,9 +68,7 @@ pub async fn get_feature_from_trait(
     Ok(PresentedOption::Base(feature))
 }
 
-async fn get_draconic_ancestry(
-    json: Value,
-) -> Result<PresentedOption<Feature>, Dnd5eapiError> {
+async fn get_draconic_ancestry(json: Value) -> Result<PresentedOption<Feature>, Dnd5eapiError> {
     let trait_specific = json.get_map("trait_specific")?;
 
     let subtrait_options = trait_specific

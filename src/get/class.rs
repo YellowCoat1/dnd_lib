@@ -13,6 +13,7 @@ use heck::ToTitleCase;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
 
+use super::Dnd5eapiError;
 use crate::get::{
     feature::get_feature,
     get_page::get_raw_json,
@@ -21,7 +22,6 @@ use crate::get::{
     },
     subclass::get_subclass,
 };
-use super::Dnd5eapiError;
 
 /// All class names available in the api.
 pub const CLASS_NAMES: [&str; 12] = [
@@ -272,9 +272,9 @@ async fn class_item_choice(
                     }
                 }
 
-                let equipment = m.get("of").ok_or_else(|| {
-                    Dnd5eapiError::not_found("Object", "equipment 'of' field")
-                })?;
+                let equipment = m
+                    .get("of")
+                    .ok_or_else(|| Dnd5eapiError::not_found("Object", "equipment 'of' field"))?;
 
                 let item = process_equipment(getter, equipment).await?;
 
@@ -486,27 +486,24 @@ fn process_spell_list(spells: Value) -> Result<[Vec<String>; 10], Dnd5eapiError>
     Ok(spells_stored_array)
 }
 
-fn class_specific_map_parse(
-    key: &str,
-    map: &Map<String, Value>,
-) -> Result<String, Dnd5eapiError> {
+fn class_specific_map_parse(key: &str, map: &Map<String, Value>) -> Result<String, Dnd5eapiError> {
     match key {
         "martial_arts" => {
-            let count = map.get("dice_count").ok_or_else(|| {
-                Dnd5eapiError::not_found("string", "martial arts dice count")
-            })?;
-            let value = map.get("dice_value").ok_or_else(|| {
-                Dnd5eapiError::not_found("string", "martial arts dice value")
-            })?;
+            let count = map
+                .get("dice_count")
+                .ok_or_else(|| Dnd5eapiError::not_found("string", "martial arts dice count"))?;
+            let value = map
+                .get("dice_value")
+                .ok_or_else(|| Dnd5eapiError::not_found("string", "martial arts dice value"))?;
             Ok(format!("{}d{}", count, value))
         }
         "sneak_attack" => {
-            let count = map.get("dice_count").ok_or_else(|| {
-                Dnd5eapiError::not_found("string", "sneak attack dice count")
-            })?;
-            let value = map.get("dice_value").ok_or_else(|| {
-                Dnd5eapiError::not_found("string", "sneak attack dice count")
-            })?;
+            let count = map
+                .get("dice_count")
+                .ok_or_else(|| Dnd5eapiError::not_found("string", "sneak attack dice count"))?;
+            let value = map
+                .get("dice_value")
+                .ok_or_else(|| Dnd5eapiError::not_found("string", "sneak attack dice count"))?;
             Ok(format!("{}d{}", count, value))
         }
         _ => Err(Dnd5eapiError::mismatch(
@@ -517,9 +514,7 @@ fn class_specific_map_parse(
     }
 }
 
-fn class_specific(
-    levels: [&Value; 20],
-) -> Result<HashMap<String, [String; 20]>, Dnd5eapiError> {
+fn class_specific(levels: [&Value; 20]) -> Result<HashMap<String, [String; 20]>, Dnd5eapiError> {
     // for now we'll use vecs, we'll convert it to an array once we're done
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -538,11 +533,7 @@ fn class_specific(
     for level in levels {
         let class_specific = level.get_map("class_specific")?;
         let class_specific_map = class_specific.as_object().ok_or_else(|| {
-            Dnd5eapiError::mismatch(
-                "class specific field",
-                "Object",
-                value_name(class_specific),
-            )
+            Dnd5eapiError::mismatch("class specific field", "Object", value_name(class_specific))
         })?;
         for key in class_specific_map.keys() {
             if key == "creating_spell_slots" {

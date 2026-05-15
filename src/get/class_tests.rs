@@ -1,3 +1,4 @@
+use super::Dnd5eapiError;
 use crate::{
     get::Dnd5eapiGetter,
     rules2014::{
@@ -6,13 +7,12 @@ use crate::{
         stats::SkillType,
     },
 };
-use super::Dnd5eapiError;
 
 use crate::provider;
 
 use crate::getter::DataProvider;
 
-use super::{feature::get_feature};
+use super::feature::get_feature;
 
 #[tokio::test]
 async fn wizard_retrieval() {
@@ -90,10 +90,14 @@ async fn wizard_items(class: &Class, provider: &Dnd5eapiGetter) {
         2,
         "Wizard's first item choice should be between two items"
     );
-    let quarterstaff = provider.get_item("quarterstaff")
+    let quarterstaff = provider
+        .get_item("quarterstaff")
         .await
         .expect("Couldn't get quarterstaff");
-    let dagger = provider.get_item("dagger").await.expect("Couldn't get dagger");
+    let dagger = provider
+        .get_item("dagger")
+        .await
+        .expect("Couldn't get dagger");
     assert_eq!(first_choice[0], vec![(ItemCategory::Item(quarterstaff), 1)]);
     assert_eq!(first_choice[1], vec![(ItemCategory::Item(dagger), 1)]);
 }

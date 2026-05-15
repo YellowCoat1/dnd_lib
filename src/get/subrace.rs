@@ -1,8 +1,8 @@
 use super::feature::get_feature_from_trait;
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
-use crate::get::json_tools::parse_string;
 use super::Dnd5eapiError;
+use crate::get::json_tools::parse_string;
 use crate::rules2014::stats::StatType;
 use crate::rules2014::{Subrace, SubraceBuilder};
 use serde_json::Value;
@@ -57,9 +57,7 @@ pub fn process_ability_bonuses(
     Ok(ability_bonuses)
 }
 
-pub fn ability_bonus_choice(
-    val: &Value,
-) -> Result<Vec<(Option<StatType>, isize)>, Dnd5eapiError> {
+pub fn ability_bonus_choice(val: &Value) -> Result<Vec<(Option<StatType>, isize)>, Dnd5eapiError> {
     let num = val.get_usize("choose")?;
     Ok(vec![(None, 1); num])
 }

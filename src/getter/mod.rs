@@ -59,4 +59,3 @@ pub trait DataProvider<E: Error>: Send + Sync {
     async fn get_class(&self, name: &str) -> Result<Class, E>;
     async fn get_spell(&self, name: &str) -> Result<Spell, E>;
 }
-

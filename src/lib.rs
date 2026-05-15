@@ -95,10 +95,7 @@ pub(crate) fn provider() -> Arc<get::Dnd5eapiGetter> {
 
 pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
-    pub use crate::get::{
-        Dnd5eapiGetter,
-        Dnd5eapiError
-    };
+    pub use crate::get::{Dnd5eapiError, Dnd5eapiGetter};
     pub use crate::{
         getter::DataProvider,
         rules2014::class::Class,

@@ -1,8 +1,8 @@
+use super::Dnd5eapiError;
 use super::{
     get_page::get_raw_json,
     json_tools::{parse_string, ValueExt},
 };
-use super::Dnd5eapiError;
 use crate::rules2014::items::{
     Armor, ArmorCategory, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties,
     WeaponType,
@@ -95,10 +95,7 @@ fn weapon(map: &Value) -> Result<Weapon, Dnd5eapiError> {
     Ok(weapon)
 }
 
-fn properties(
-    map: &Value,
-    damage_type: DamageType,
-) -> Result<WeaponProperties, Dnd5eapiError> {
+fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, Dnd5eapiError> {
     let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
     let mut properties = WeaponProperties::default();

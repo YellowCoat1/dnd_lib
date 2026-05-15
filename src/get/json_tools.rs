@@ -1,8 +1,8 @@
 //! shared tools for handling incoming json from the api.
 use std::str::FromStr;
 
-use crate::rules2014::stats::SkillType;
 use super::Dnd5eapiError;
+use crate::rules2014::stats::SkillType;
 use serde_json::{Map, Number, Value};
 
 use crate::rules2014::features::PresentedOption;
@@ -35,11 +35,7 @@ pub fn parse_skilltype(f: &str, s: &str) -> Result<SkillType, Dnd5eapiError> {
 impl ValueExt for Value {
     fn as_string(&self, name: &str) -> Result<String, Dnd5eapiError> {
         self.as_str()
-            .ok_or(Dnd5eapiError::mismatch(
-                name,
-                "String",
-                value_name(self),
-            ))
+            .ok_or(Dnd5eapiError::mismatch(name, "String", value_name(self)))
             .map(|v| v.to_string())
     }
 
@@ -59,9 +55,7 @@ impl ValueExt for Value {
             .as_number()
             .ok_or_else(|| Dnd5eapiError::mismatch(key, "Number", value_name(self)))?
             .as_u64()
-            .ok_or_else(|| {
-                Dnd5eapiError::mismatch(key, "unsigned integer", "signed int or float")
-            })?
+            .ok_or_else(|| Dnd5eapiError::mismatch(key, "unsigned integer", "signed int or float"))?
             .try_into()
             .expect("number too large"))
     }
@@ -88,9 +82,7 @@ impl ValueExt for Value {
             .get(key)
             .ok_or_else(|| Dnd5eapiError::not_found("Array", key))?
             .as_array()
-            .ok_or_else(|| {
-                Dnd5eapiError::mismatch(key, "unsigned integer", "signed int or float")
-            })?
+            .ok_or_else(|| Dnd5eapiError::mismatch(key, "unsigned integer", "signed int or float"))?
             .as_ref())
     }
 }
@@ -163,9 +155,9 @@ fn process_bare_choice<'a>(
     num: usize,
     choice_array: &'a Value,
 ) -> Result<NameCountMap<'a>, Dnd5eapiError> {
-    let choice_array = choice_array.as_object().ok_or_else(|| {
-        Dnd5eapiError::mismatch("choice", "Object", value_name(choice_array))
-    })?;
+    let choice_array = choice_array
+        .as_object()
+        .ok_or_else(|| Dnd5eapiError::mismatch("choice", "Object", value_name(choice_array)))?;
 
     // if we're at a base choice, return
     if let Some(Value::String(s)) = choice_array.get("option_type") {
@@ -191,9 +183,7 @@ fn process_bare_choice<'a>(
             .iter()
             .map(|v| v.as_object().map(|w| (num, w)))
             .collect::<Option<Vec<_>>>()
-            .ok_or_else(|| {
-                Dnd5eapiError::mismatch("Choice multiple", "Object", "Non-Object")
-            })?;
+            .ok_or_else(|| Dnd5eapiError::mismatch("Choice multiple", "Object", "Non-Object"))?;
             return Ok(PresentedOption::Base(items_arr));
         }
         return Ok(PresentedOption::Base(vec![(num, choice_array)]));
@@ -229,8 +219,5 @@ fn process_bare_choice<'a>(
         return Ok(PresentedOption::Choice(assembled_choice));
     };
 
-    Err(Dnd5eapiError::not_found(
-        "Choice identifier",
-        "option_type",
-    ))
+    Err(Dnd5eapiError::not_found("Choice identifier", "option_type"))
 }

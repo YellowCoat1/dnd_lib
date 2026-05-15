@@ -63,7 +63,6 @@ pub use race::RACE_NAMES;
 mod item_list;
 pub use item_list::ITEM_NAMES;
 
-
 mod error;
 pub use error::Dnd5eapiError;
 
@@ -108,10 +107,7 @@ impl crate::getter::DataProvider<Dnd5eapiError> for Dnd5eapiGetter {
     async fn get_race(&self, name: &str) -> Result<Race, Dnd5eapiError> {
         get_race_inner(name).await
     }
-    async fn get_background(
-        &self,
-        name: &str,
-    ) -> Result<Background, Dnd5eapiError> {
+    async fn get_background(&self, name: &str) -> Result<Background, Dnd5eapiError> {
         if let Some(cached) = self.background_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }

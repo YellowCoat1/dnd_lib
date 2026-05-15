@@ -64,7 +64,7 @@ async fn level_10_warlock() {
         .expect("Character should have a 2nd choice for skill proficiencies")
         .choose_in_place(4);
 
-    // choosing items 
+    // choosing items
     let item_choices = baroopa.unchosen_items();
     assert_eq!(item_choices.len(), 4);
     baroopa.choose_items(0, 0);
@@ -112,7 +112,7 @@ async fn level_10_warlock() {
     baroopa.bonus_features.push(Feature {
         name: "Charisma Bonus".to_string(),
         description: vec![],
-        effects: vec![FeatureEffect::AddModifierUncapped(StatType::Charisma, 1)]
+        effects: vec![FeatureEffect::AddModifierUncapped(StatType::Charisma, 1)],
     });
 
     assert_eq!(baroopa.stats(), Stats::from(&[8, 14, 14, 13, 10, 21]));

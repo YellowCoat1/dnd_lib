@@ -180,5 +180,8 @@ async fn level_3_druid() {
         .collect();
 
     assert_eq!(boopo_languages.len(), 2);
-    assert_eq!(boopo_languages, vec![String::from("common"), String::from("dwarvish")])
+    assert_eq!(
+        boopo_languages,
+        vec![String::from("common"), String::from("dwarvish")]
+    )
 }
