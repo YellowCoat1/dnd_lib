@@ -128,8 +128,8 @@ async fn level_5_halfling_rogue() {
 
     // at 4th level there is also an ability score increase.
 
-    // get the ability score increase 
-    let mut ability_score_increases = bingus.ability_score_increases_mut();    
+    // get the ability score increase
+    let mut ability_score_increases = bingus.ability_score_increases_mut();
     let score_increase = ability_score_increases
         .get_mut(0)
         .expect("rogue should have an ability score increase");
@@ -175,7 +175,11 @@ async fn level_5_halfling_rogue() {
     // This grants 11+DEX, which here is 11+4.
     assert_eq!(bingus.ac(), 15, "rogue has the wrong ac");
 
-    assert_eq!(bingus.descriptors.size, Size::Small, "rogue is not small, as a halfling should be");
+    assert_eq!(
+        bingus.descriptors.size,
+        Size::Small,
+        "rogue is not small, as a halfling should be"
+    );
 
     // Testing saving throw modifiers
     let saves = bingus.save_mods();
@@ -185,6 +189,34 @@ async fn level_5_halfling_rogue() {
             stats: Stats::from(&[0, 7, 2, 4, 1, -1])
         },
         "rogue has wrong saving throw modifiers"
+    );
+    // add a feature that adds proficiency in strength
+    bingus.bonus_features.push(Feature {
+        name: "Strength saving throw proficiency".to_string(),
+        description: vec![],
+        effects: vec![FeatureEffect::AddSaveProficiency(StatType::Strength)],
+    });
+    // Proficiency bonus is +3, so the strength modifier is now 0+3=3
+    assert_eq!(
+        bingus.save_mods(),
+        Modifiers {
+            stats: Stats::from(&[3, 7, 2, 4, 1, -1])
+        },
+        "rogue has wrong saving throw modifiers after adding strength save proficiency"
+    );
+
+    // then, add 1 to the save with another feature
+    bingus.bonus_features.push(Feature {
+        name: "Strength save bonus".to_string(),
+        description: vec![],
+        effects: vec![FeatureEffect::AddSaveModifier(StatType::Strength, 1)],
+    });
+    assert_eq!(
+        bingus.save_mods(),
+        Modifiers {
+            stats: Stats::from(&[4, 7, 2, 4, 1, -1])
+        },
+        "rogue has wrong saving throw modifiers after adding strength save proficiency"
     );
 
     // Equipment proficiencies
