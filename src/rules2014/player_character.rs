@@ -1000,6 +1000,7 @@ impl Character {
             .class_features()
             .into_iter()
             .chain(self.item_features())
+            .chain(&self.bonus_features)
             .flat_map(|v| v.effects.iter());
 
         // TODO: pick the unarmored defense that grants the most ac.
