@@ -895,11 +895,7 @@ impl Character {
             _ => return false,
         };
 
-        if spell_slot.level < level {
-            return false;
-        }
-
-        if spell_slot.num < 1 {
+        if spell_slot.level < level || spell_slot.num < 1 {
             return false;
         }
 
