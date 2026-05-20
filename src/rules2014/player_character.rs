@@ -304,7 +304,10 @@ impl Character {
         for (i, option) in self.unchosen_items.iter().enumerate() {
             if let PresentedOption::Base(choices) = option {
                 for (j, (category, _)) in choices.iter().enumerate() {
-                    categories.push((i, j, category));
+                    match category {
+                        ItemCategory::Item(_) => (),
+                        _ => categories.push((i, j, category)),
+                    }
                 }
             }
         }

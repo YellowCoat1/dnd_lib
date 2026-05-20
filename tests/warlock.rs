@@ -71,6 +71,10 @@ async fn level_10_warlock() {
     baroopa.choose_items(1, 1);
     baroopa.choose_items(2, 1);
     let club = club_future.await.expect("failed to get club item");
+
+    // item categories
+    let unchosen_items = baroopa.get_unchosen_categories();
+    assert_eq!(unchosen_items.len(), 1);
     baroopa.set_unchosen_category(3, 0, club);
     baroopa.add_chosen_items();
 
