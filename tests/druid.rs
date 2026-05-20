@@ -2,6 +2,7 @@
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::background::LanguageOption;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
+use dnd_lib::rules2014::items::{HeldEquipment, Item};
 use dnd_lib::rules2014::spells::{SpellSlots, CASTER_SLOTS};
 
 use futures::future::try_join_all;
@@ -184,5 +185,31 @@ async fn level_3_druid() {
     assert_eq!(
         boopo_languages,
         vec![String::from("common"), String::from("dwarvish")]
-    )
+    );
+
+    assert_eq!(boopo.ac(), 12);
+    // add a shield, and
+    let shield = Item {
+        name: String::from("shield"),
+        description: None,
+        item_type: dnd_lib::rules2014::items::ItemType::Shield,
+        features: vec![],
+    };
+    boopo.items.push(HeldEquipment::new(shield, 1, true));
+    assert_eq!(boopo.ac(), 14);
+
+    assert_eq!(boopo.hp, 24);
+
+    let bonus_hp = Feature {
+        name: String::new(),
+        description: vec![],
+        effects: vec![FeatureEffect::LeveledHpIncrease],
+    };
+    boopo.bonus_features.push(bonus_hp);
+    assert_eq!(boopo.level(), 3);
+    assert_eq!(
+        boopo.max_hp(),
+        24 + boopo.level(),
+        "Health wasn't affected by a leveled health increase."
+    );
 }
