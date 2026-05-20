@@ -1062,7 +1062,11 @@ impl Character {
         let mut hp = hit_die + con + (level - 1) * (hit_die_avg + con);
 
         // some features
-        for effect in self.race_features().iter().flat_map(|v| v.effects.iter()) {
+        let features = self
+            .total_features()
+            .into_iter()
+            .flat_map(|v| v.effects.iter());
+        for effect in features {
             if let FeatureEffect::LeveledHpIncrease = effect {
                 hp += level;
             }
