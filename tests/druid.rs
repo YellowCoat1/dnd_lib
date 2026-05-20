@@ -173,11 +173,12 @@ async fn level_3_druid() {
 
     boopo.bonus_features.push(language_feature);
 
-    let boopo_languages: Vec<_> = boopo
+    let mut boopo_languages: Vec<_> = boopo
         .total_languages()
         .into_iter()
         .map(|v| v.to_lowercase())
         .collect();
+    boopo_languages.sort();
 
     assert_eq!(boopo_languages.len(), 2);
     assert_eq!(
