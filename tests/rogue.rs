@@ -167,6 +167,24 @@ async fn level_5_halfling_rogue() {
         }
     );
 
+    let acrobatics_bonus = Feature {
+        name: String::new(),
+        description: vec![],
+        effects: vec![FeatureEffect::AddSkillModifier(SkillType::Acrobatics, 1)],
+    };
+    bingus.bonus_features.push(acrobatics_bonus);
+    let updated_acrobatics_skills = bingus.skill_modifiers();
+    assert_eq!(updated_acrobatics_skills.acrobatics, 5);
+
+    let history_proficiency = Feature {
+        name: String::new(),
+        description: vec![],
+        effects: vec![FeatureEffect::AddSkillProficiency(SkillType::History)],
+    };
+    bingus.bonus_features.push(history_proficiency);
+    let updated_history_skills = bingus.skill_modifiers();
+    assert_eq!(updated_history_skills.history, 4);
+
     // hp should be 38
     assert_eq!(bingus.max_hp(), 38, "rogue has wrong max hp");
     assert_eq!(bingus.hp, 38, "rogue is not at max hp after level-up");
