@@ -1,5 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
+use dnd_lib::rules2014::features::{Feature, FeatureEffect};
 use dnd_lib::rules2014::stats::{SkillModifiers, SkillType};
 
 #[tokio::test]
@@ -156,7 +157,17 @@ async fn level_3_elf_monk() {
     assert_eq!(skills, correct_skills);
 
     let ac = georg.ac();
-    assert_eq!(ac, 15);
+    assert_eq!(ac, 15, "monk should have 15 ac");
+
+    let ac_bonus = Feature {
+        name: String::new(),
+        description: vec![],
+        effects: vec![FeatureEffect::ACBonus(3)],
+    };
+    georg.bonus_features.push(ac_bonus);
+    let new_ac = georg.ac();
+    assert_eq!(new_ac, 18, "AC bonus feature effect did not properly add AC");
+
 
     // speed
     let speed = georg.speed();
