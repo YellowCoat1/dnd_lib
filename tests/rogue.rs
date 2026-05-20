@@ -1,6 +1,8 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
+use dnd_lib::rules2014::items::DamageRoll;
+use dnd_lib::rules2014::spells::SpellAction;
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
 
 #[tokio::test]
@@ -290,6 +292,17 @@ async fn level_5_halfling_rogue() {
         Some(30),
         "rogue should have a swim speed"
     );
+
+    // make sure bingus cannot cast spells
+    let spell = SpellAction {
+        name: String::new(),
+        spell_level: 1,
+        damage_roll: DamageRoll::new(0, 0, 0, dnd_lib::rules2014::items::DamageType::Slashing),
+        spell_attack_mod: 0,
+    };
+
+    let casting_result = bingus.cast(&spell, None);
+    assert!(!casting_result, "rogue should not be able to cast spells");
 
     // Damage & Health
 
