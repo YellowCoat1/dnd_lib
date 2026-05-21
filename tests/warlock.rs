@@ -232,11 +232,21 @@ async fn level_10_warlock() {
         "6d10 Fire",
         "Hellish rebuke damage roll when cast at 5th level did not match expected value"
     );
-    baroopa.cast(hellish_rebuke, None);
+    let hellish_rebuke_warlock_result = baroopa.cast(hellish_rebuke, Some(true));
+    assert!(
+        hellish_rebuke_warlock_result,
+        "Warlock should've been able to cast hellish rebuke"
+    );
     assert_eq!(
         baroopa.available_pact_slots,
         Some(PactSlots { num: 1, level: 5 }),
         "Pact slots after casting hellish rebuke did not match expected value"
+    );
+
+    let hellish_rebuke_slots_result = baroopa.cast(hellish_rebuke, Some(false));
+    assert!(
+        !hellish_rebuke_slots_result,
+        "Warlock should not be able to cast spells using regular spell slots"
     );
 
     // Casting blight at 5th level
