@@ -166,8 +166,10 @@ async fn level_3_elf_monk() {
     };
     georg.bonus_features.push(ac_bonus);
     let new_ac = georg.ac();
-    assert_eq!(new_ac, 18, "AC bonus feature effect did not properly add AC");
-
+    assert_eq!(
+        new_ac, 18,
+        "AC bonus feature effect did not properly add AC"
+    );
 
     // speed
     let speed = georg.speed();
