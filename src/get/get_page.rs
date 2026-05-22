@@ -1,4 +1,4 @@
-#[cfg(test)]
+#[cfg(feature = "network-intensive-tests")]
 use std::{hash::{DefaultHasher, Hash, Hasher}, path::PathBuf};
 
 use serde_json::Value;
@@ -12,18 +12,18 @@ pub async fn get_page(path: String) -> Result<reqwest::Response, reqwest::Error>
 }
 
 pub async fn get_raw_json(path: String) -> Result<serde_json::Value, Dnd5eapiError> {
-    #[cfg(test)]
+    #[cfg(feature = "network-intensive-tests")]
     if let Some(s) = get_cached(&path) {
         return Ok(s)
     }
     let json = get_page(path.clone()).await?.json::<Value>().await?;
-    #[cfg(test)]
+    #[cfg(feature = "network-intensive-tests")]
     set_cached(path, json.clone());
 
     Ok(json)
 }
 
-#[cfg(test)]
+#[cfg(feature = "network-intensive-tests")]
 fn get_cached(path: &String) -> Option<serde_json::Value> {
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
@@ -39,7 +39,7 @@ fn get_cached(path: &String) -> Option<serde_json::Value> {
     None
 }
 
-#[cfg(test)]
+#[cfg(feature = "network-intensive-tests")]
 fn set_cached(path: String, val: serde_json::Value) -> Option<()> {
     let mut hasher = DefaultHasher::new();
     path.hash(&mut hasher);
