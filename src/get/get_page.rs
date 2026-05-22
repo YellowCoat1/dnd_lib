@@ -1,5 +1,8 @@
 #[cfg(feature = "network-intensive-tests")]
-use std::{hash::{DefaultHasher, Hash, Hasher}, path::PathBuf};
+use std::{
+    hash::{DefaultHasher, Hash, Hasher},
+    path::PathBuf,
+};
 
 use serde_json::Value;
 
@@ -14,7 +17,7 @@ pub async fn get_page(path: String) -> Result<reqwest::Response, reqwest::Error>
 pub async fn get_raw_json(path: String) -> Result<serde_json::Value, Dnd5eapiError> {
     #[cfg(feature = "network-intensive-tests")]
     if let Some(s) = get_cached(&path) {
-        return Ok(s)
+        return Ok(s);
     }
     let json = get_page(path.clone()).await?.json::<Value>().await?;
     #[cfg(feature = "network-intensive-tests")]
@@ -34,7 +37,7 @@ fn get_cached(path: &String) -> Option<serde_json::Value> {
     if path.exists() {
         let v_str = std::fs::read_to_string(path).ok()?;
         let result = serde_json::from_str::<serde_json::Value>(&v_str).ok()?;
-        return Some(result)
+        return Some(result);
     }
     None
 }
@@ -51,7 +54,6 @@ fn set_cached(path: String, val: serde_json::Value) -> Option<()> {
     std::fs::write(&path, &body).ok()?;
     Some(())
 }
-
 
 #[cfg(test)]
 mod tests {
