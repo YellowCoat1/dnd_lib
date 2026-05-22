@@ -1885,7 +1885,7 @@ fn spell_action_cantrip(
 }
 
 fn weapon_actions_inner(
-    name: &String,
+    name: &str,
     w: &Weapon,
     m: &Modifiers,
     p: &EquipmentProficiencies,
@@ -1902,7 +1902,11 @@ fn weapon_actions_inner(
         m.stats.strength
     };
 
-    let proficient = is_proficient_with(&w.weapon_type, p) || p.other.contains(name);
+    let mut proficient =
+        is_proficient_with(&w.weapon_type, p) || p.other.contains(&name.to_lowercase());
+    let mut name_plural = name.to_owned();
+    name_plural.push('s');
+    proficient = proficient || p.other.contains(&name_plural.to_lowercase());
 
     let bonus = if proficient { proficiency_mod } else { 0 };
 
@@ -1911,7 +1915,7 @@ fn weapon_actions_inner(
     damage_roll.bonus = modifier + bonus;
 
     let base_attack = WeaponAction {
-        name: name.clone(),
+        name: name.to_owned(),
         attack_bonus,
         damage_roll,
         two_handed,
@@ -1927,7 +1931,7 @@ fn weapon_actions_inner(
             ..damage_roll
         };
         attacks.push(WeaponAction {
-            name: name.clone(),
+            name: name.to_owned(),
             attack_bonus,
             damage_roll,
             two_handed: false,
@@ -1938,7 +1942,7 @@ fn weapon_actions_inner(
     // add possible two-handed attack
     if let Some(d) = versatile {
         attacks.push(WeaponAction {
-            name: name.clone(),
+            name: name.to_owned(),
             attack_bonus,
             damage_roll: d,
             two_handed: true,
