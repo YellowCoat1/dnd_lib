@@ -1457,11 +1457,11 @@ impl Character {
             }
         }
         // Unarmed Strike
-        let bonus = modifiers.stats.strength + self.proficiency_bonus();
+        let bonus = modifiers.stats.strength + 1;
         weapon_actions_vec.push(WeaponAction {
             name: "Unarmed Strike".to_string(),
-            attack_bonus: self.proficiency_bonus(),
-            damage_roll: DamageRoll::new(1, 4, bonus, DamageType::Bludgeoning),
+            attack_bonus: modifiers.stats.strength + self.proficiency_bonus(),
+            damage_roll: DamageRoll::new(0, 0, bonus, DamageType::Bludgeoning),
             two_handed: false,
             second_attack: false,
         });
