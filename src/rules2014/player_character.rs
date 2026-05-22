@@ -1908,11 +1908,11 @@ fn weapon_actions_inner(
     name_plural.push('s');
     proficient = proficient || p.other.contains(&name_plural.to_lowercase());
 
-    let bonus = if proficient { proficiency_mod } else { 0 };
+    let proficiency_bonus = if proficient { proficiency_mod } else { 0 };
 
-    let attack_bonus = modifier + bonus + (w.attack_roll_bonus as isize);
+    let attack_bonus = modifier + proficiency_bonus + (w.attack_roll_bonus as isize);
     let mut damage_roll = w.damage;
-    damage_roll.bonus = modifier + bonus;
+    damage_roll.bonus = modifier;
 
     let base_attack = WeaponAction {
         name: name.to_owned(),
