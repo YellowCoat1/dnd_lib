@@ -1552,14 +1552,16 @@ impl Character {
             .iter()
             .map(|v| modifiers.stats.get_stat_type(v))
             .sum::<isize>();
-        let attack_bonus = (c.static_attack_bonus as isize + stats_attack_bonus).max(0);
+        let attack_bonus_prof = if c.add_prof_to_attack {self.proficiency_bonus()} else {0};
+        let attack_bonus = (c.static_attack_bonus as isize + stats_attack_bonus + attack_bonus_prof).max(0);
 
         let stats_damage_bonus = c
             .damage_bonus_stats
             .iter()
             .map(|v| modifiers.stats.get_stat_type(v))
             .sum::<isize>();
-        let damage_roll_bonus = (c.damage_roll.bonus + stats_damage_bonus).max(0);
+        let damage_bonus_prof = if c.add_prof_to_damage {self.proficiency_bonus()} else {0};
+        let damage_roll_bonus = (c.damage_roll.bonus + stats_damage_bonus + damage_bonus_prof).max(0);
 
         let damage_roll = DamageRoll {
             bonus: damage_roll_bonus,
