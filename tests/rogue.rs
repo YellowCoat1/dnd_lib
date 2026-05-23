@@ -1,6 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
-use dnd_lib::rules2014::features::{Feature, FeatureEffect};
+use dnd_lib::rules2014::features::{CustomAction, Feature, FeatureEffect};
 use dnd_lib::rules2014::items::{DamageRoll, DamageType};
 use dnd_lib::rules2014::spells::SpellAction;
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
@@ -375,5 +375,39 @@ async fn level_5_halfling_rogue() {
     assert_eq!(
         weapon_actions[3].damage_roll,
         DamageRoll::new(0, 0, 1, DamageType::Bludgeoning)
+    );
+
+    // add a custom action
+    let custom_action = CustomAction {
+        name: String::from("Brain Zap"),
+        static_attack_bonus: 0,
+        attack_bonus_stats: vec![StatType::Wisdom],
+        add_prof_to_attack: true,
+        damage_roll: DamageRoll::new(1, 6, 3, DamageType::Psychic),
+        damage_bonus_stats: vec![StatType::Wisdom],
+        add_prof_to_damage: true,
+    };
+    let custom_action_feature = Feature {
+        name: String::from("Brain Zap"),
+        description: vec![],
+        effects: vec![FeatureEffect::CustomAction(custom_action)],
+    };
+    bingus.bonus_features.push(custom_action_feature);
+
+    // get the final action with computed attack roll/damage roll
+    let etc_actions = bingus.ect_actions();
+    assert_eq!(
+        etc_actions.len(),
+        1,
+        "The rogue should have 1 custom action after it was added"
+    );
+    let computed_action = etc_actions.into_iter().next().unwrap();
+    assert_eq!(computed_action.name, "Brain Zap");
+    // the attack bonus is wisdom+proficiency, and the rogue has 1 for its wisdom modifier
+    assert_eq!(computed_action.attack_bonus, 4);
+    // the damage bonus is the given bonus (3) plus wisdom (1) plus proficiency (3)
+    assert_eq!(
+        computed_action.damage_roll,
+        DamageRoll::new(1, 6, 7, DamageType::Psychic)
     );
 }
