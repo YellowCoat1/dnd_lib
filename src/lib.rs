@@ -6,6 +6,7 @@
 //!
 //! ```
 //! # #[cfg(feature = "dnd5eapi")] {
+//! # #[cfg(feature = "rand")] {
 //! #[tokio::main]
 //! async fn main() {
 //!     use rand::Rng;
@@ -49,6 +50,7 @@
 //!     // Afterwards, john is smited from reality for the sin of existance.
 //!     drop(john);
 //! }
+//! # }
 //! # }
 //! ```
 //!
