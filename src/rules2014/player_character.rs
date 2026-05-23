@@ -1108,9 +1108,7 @@ impl Character {
         languages
     }
 
-    /// Processes the character taking damage.
-    ///
-    /// If the character's hp reaches 0, this returns true. Otherwise, it returns false.
+    /// Processes the character taking damage. Returns if the player reached 0 hp.
     pub fn damage(&mut self, damage: usize) -> bool {
         let o = self.hp.checked_sub(damage);
         match o {
@@ -1125,7 +1123,7 @@ impl Character {
         }
     }
 
-    /// Gets the walking speed of the character
+    /// The walking speed of the character.
     pub fn speed(&self) -> usize {
         let speed_bonus: usize = self
             .race_features()
@@ -1143,7 +1141,7 @@ impl Character {
         self.race.speed + speed_bonus
     }
 
-    /// Returns the different speeds of the character, e.g. flying and climbing.
+    /// The different speeds of the character, e.g. flying and climbing.
     ///
     /// Aarococra have flying speed, for example, so an aarococra character would have `character.speeds().flying
     /// == Some(30)`. A human would have `character.speeds().flying == None`.
@@ -1533,10 +1531,8 @@ impl Character {
     /// The resulting [ComputedCustomAction] has the final calculations needed to preform an
     /// attack.
     ///
-    /// This may represent any extra feature that deals damage. Maybe your race has claws. Maybe
-    /// your class adds 1d6 to every melee attack. Maybe a magical item allows you to make a
-    /// special attack with it. Anything that isn't a regular attack with weapons or spells will
-    /// fit here.
+    /// This may represent any extra feature that deals damage. Claws, bonus melee damage, and
+    /// special attacks from magical items fall under this category.
     pub fn ect_actions(&self) -> Vec<ComputedCustomAction> {
         self.total_features()
             .into_iter()
