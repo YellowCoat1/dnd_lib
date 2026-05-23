@@ -1,7 +1,7 @@
 #![cfg(feature = "network-intensive-tests")]
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
-use dnd_lib::rules2014::items::DamageRoll;
+use dnd_lib::rules2014::items::{DamageRoll, DamageType};
 use dnd_lib::rules2014::spells::SpellAction;
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
 
@@ -334,5 +334,46 @@ async fn level_5_halfling_rogue() {
     assert_eq!(
         bingus.spent_hit_dice, 0,
         "Character did not regain correct hit dice"
+    );
+
+    // Weapon Actions
+
+    // equip items
+    bingus
+        .items
+        .get_mut(3)
+        .expect("Rogue should have a dagger")
+        .equip(); // dagger
+    bingus
+        .items
+        .get_mut(5)
+        .expect("Rogue should have a rapier")
+        .equip(); // rapier
+                  // see the actions that bingus can take with these weapons
+    let mut weapon_actions = bingus.weapon_actions();
+    assert_eq!(
+        weapon_actions.len(),
+        4,
+        "Rogue should have 4 weapon actions: 2 for daggers, 1 for the rapier, and 1 for unarmed."
+    );
+    weapon_actions.sort_by(|a, b| a.name.cmp(&b.name));
+    assert_eq!(weapon_actions[0].name, "Dagger");
+    assert_eq!(weapon_actions[1].name, "Dagger");
+
+    // one should have second attack, and one shouldn't.
+    assert!(!weapon_actions[0].second_attack || !weapon_actions[1].second_attack);
+    assert!(weapon_actions[0].second_attack || weapon_actions[1].second_attack);
+
+    assert_eq!(weapon_actions[2].name, "Rapier");
+    assert_eq!(weapon_actions[2].attack_bonus, 3 + 4);
+    assert_eq!(
+        weapon_actions[2].damage_roll,
+        DamageRoll::new(1, 8, 4, DamageType::Piercing)
+    );
+
+    assert_eq!(weapon_actions[3].name, "Unarmed Strike");
+    assert_eq!(
+        weapon_actions[3].damage_roll,
+        DamageRoll::new(0, 0, 1, DamageType::Bludgeoning)
     );
 }
