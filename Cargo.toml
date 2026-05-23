@@ -33,3 +33,16 @@ integration = ["disk-tests", "network-intensive-tests"]
 
 [package.metadata.docs.rs]
 features = ["dnd5eapi"]
+
+[[example]]
+name = "multiclassing"
+required-features = ["dnd5eapi"]
+[[example]]
+name = "simple_character"
+required-features = ["dnd5eapi"]
+[[example]]
+name = "spellcasting"
+required-features = ["dnd5eapi"]
+[[example]]
+name = "spellcasting_multiclass"
+required-features = ["dnd5eapi"]
