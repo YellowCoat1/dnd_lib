@@ -52,6 +52,14 @@ fn modifiers() {
         save_modifiers.stats.charisma, 4,
         "Incorrect calculated charisma saving throw"
     );
+
+
+    assert_eq!(
+        Modifiers::default(),
+        Modifiers {
+            stats: Stats::from(&[0, 0, 0, 0, 0, 0])
+        }
+    );
 }
 
 #[test]
