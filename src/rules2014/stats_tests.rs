@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use super::stats::*;
 
 #[test]
@@ -78,4 +80,36 @@ fn add_stats() {
     let other_stats = Stats::from(&[1, 3, 2, 1, 2, 2]);
     stats = stats - other_stats;
     assert_eq!(stats, Stats::from(&[19, 7, 14, 9, 10, 12]));
+}
+
+#[test]
+fn equipment() {
+    let equipment1 = EquipmentProficiencies {
+        simple_weapons: true,
+        light_armor: true,
+        ..EquipmentProficiencies::default()
+    };
+    let added_equipment = EquipmentProficiencies {
+        heavy_armor: true,
+        other: HashSet::from([String::from("dragonchess")]),
+        ..EquipmentProficiencies::default()
+    };
+
+    let final_equipment = equipment1 + added_equipment;
+
+    assert_eq!(final_equipment,
+        EquipmentProficiencies {
+            simple_weapons: true,
+            martial_weapons: false,
+            light_armor: true,
+            medium_armor: false,
+            heavy_armor: true,
+            shields: false,
+            other: HashSet::from([String::from("dragonchess")]),
+        }
+    );
+
+    
+
+
 }
