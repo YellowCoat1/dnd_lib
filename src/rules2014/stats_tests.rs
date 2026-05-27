@@ -66,4 +66,8 @@ fn add_stats() {
 
     *stats.get_stat_type_mut(&StatType::Constitution) = 16;
     assert_eq!(stats.constitution, 16);
+
+    let other_stats = Stats::from(&[1, 3, 2, 1, 2, 2]);
+    stats = stats - other_stats;
+    assert_eq!(stats, Stats::from(&[19, 7, 14, 9, 10, 12]));
 }
