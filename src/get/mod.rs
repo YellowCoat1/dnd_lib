@@ -95,7 +95,7 @@ pub use error::Dnd5eapiError;
 /// ```
 /// Do note that this getter can be quite slow, as it needs to make multiple network requests to
 /// get all the data.
-/// Caching is implemented for items, classes, and backgrounds to help with this.
+/// Caching is implemented for items, classes, and backgrounds.
 pub struct Dnd5eapiGetter {
     item_cache: Mutex<HashMap<String, Item>>,
     class_cache: Mutex<HashMap<String, Class>>,

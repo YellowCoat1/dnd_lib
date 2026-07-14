@@ -42,13 +42,9 @@
 //!     let attack_roll = rng.random_range(1..=20) as isize + dagger_attack.attack_bonus;
 //!     // And it hits!
 //!     let damage_roll = dagger_attack.damage_roll;
-//!     // It does enough damage to kill the monster immediately!
 //!
 //!     // With the xp from that fight, john levels up.
 //!     john.level_up(&rogue);
-//!
-//!     // Afterwards, john is smited from reality for the sin of existance.
-//!     drop(john);
 //! }
 //! # }
 //! # }
