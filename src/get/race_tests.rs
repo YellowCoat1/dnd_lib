@@ -1,3 +1,4 @@
+use crate::rules2014::RaceBonus;
 use crate::rules2014::stats::{Size, StatType};
 use crate::{prelude::*, provider};
 
@@ -11,7 +12,7 @@ async fn get_elf() {
     );
     assert_eq!(
         elf.ability_bonuses().first().cloned(),
-        Some((Some(StatType::Dexterity), 2))
+        Some(RaceBonus::Specific(StatType::Dexterity, 2))
     );
     assert_eq!(
         elf.languages().first().cloned(),

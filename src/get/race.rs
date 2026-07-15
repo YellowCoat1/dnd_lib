@@ -5,7 +5,7 @@ use super::subrace::get_subrace;
 use super::Dnd5eapiError;
 use crate::get::subrace::ability_bonus_choice;
 use crate::rules2014::stats::Size;
-use crate::rules2014::{Race, RaceBuilder, Subrace};
+use crate::rules2014::{Race, RaceBonus, RaceBuilder, Subrace};
 use serde_json::Value;
 
 // the func to run through ability bonuses is in subrace, since that module isn't publicly exported
@@ -38,15 +38,21 @@ async fn get_race_raw(index_name: String) -> Result<Race, Dnd5eapiError> {
         Dnd5eapiError::mismatch("size", "Valid size string", "Invalid size string")
     })?;
 
-    let ability_bonuses_array = process_ability_bonuses(race_json.get_array("ability_bonuses")?)?;
+    let ability_bonuses_array: Vec<RaceBonus> = process_ability_bonuses(race_json.get_array("ability_bonuses")?)?.into_iter().map(|v| match v.0 {
+        Some(s) => RaceBonus::Specific(s, v.1),
+        None => RaceBonus::Wildcard(v.1),
+    }).collect();
     let ability_bonuses_wildcard = race_json
         .get_map("ability_bonus_options")
         .ok()
         .map(ability_bonus_choice)
         .transpose()?;
 
-    let ability_bonuses = match ability_bonuses_wildcard {
-        Some(s) => ability_bonuses_array.into_iter().chain(s).collect(),
+    let ability_bonuses: Vec<RaceBonus> = match ability_bonuses_wildcard {
+        Some(s) => s.into_iter().map(|v| match v.0 {
+            Some(s) => RaceBonus::Specific(s, v.1),
+            None => RaceBonus::Wildcard(v.1),
+        }).chain(ability_bonuses_array).collect(),
         None => ability_bonuses_array,
     };
 

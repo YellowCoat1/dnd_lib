@@ -7,14 +7,14 @@ use serde::{Deserialize, Serialize};
 
 use super::stats::Size;
 
-/// A race that can be used by the character.
+/// A static race that can be used by a character.
 ///
 /// This is static information which can't be modified after creation, save for subraces.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Race {
     name: String,
     speed: usize,
-    ability_bonuses: Vec<(Option<StatType>, isize)>,
+    ability_bonuses: Vec<RaceBonus>,
     size: Size,
     traits: Vec<PresentedOption<Feature>>,
     subraces: Vec<Subrace>,
@@ -35,11 +35,7 @@ impl Race {
     pub fn speed(&self) -> usize {
         self.speed
     }
-    /// Lists ability bonus by stat and the amount of the bonus.
-    ///
-    /// If the `Option<StatType>` is [None], then this means that the bonus can be chosen from any
-    /// stat.
-    pub fn ability_bonuses(&self) -> &Vec<(Option<StatType>, isize)> {
+    pub fn ability_bonuses(&self) -> &Vec<RaceBonus> {
         &self.ability_bonuses
     }
     pub fn size(&self) -> &Size {
@@ -65,7 +61,7 @@ impl Race {
 pub struct RaceBuilder {
     pub name: String,
     pub speed: usize,
-    pub ability_bonuses: Vec<(Option<StatType>, isize)>,
+    pub ability_bonuses: Vec<RaceBonus>,
     pub size: Size,
     pub traits: Vec<PresentedOption<Feature>>,
     pub subraces: Vec<Subrace>,
@@ -101,14 +97,14 @@ impl RaceBuilder {
         self
     }
 
-    pub fn add_ability_bonus(mut self, stat: Option<StatType>, bonus: isize) -> Self {
-        self.ability_bonuses.push((stat, bonus));
+    pub fn add_ability_bonus(mut self, bonus: RaceBonus) -> Self {
+        self.ability_bonuses.push(bonus);
         self
     }
 
     pub fn add_ability_bonuses<I>(mut self, bonuses: I) -> Self
     where
-        I: IntoIterator<Item = (Option<StatType>, isize)>,
+        I: IntoIterator<Item = RaceBonus>,
     {
         self.ability_bonuses.extend(bonuses);
         self
@@ -302,4 +298,12 @@ impl SubraceBuilder {
             traits: self.traits,
         }
     }
+}
+
+// An ability score bonus given by a race
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum RaceBonus {
+    Specific(StatType, isize),
+    /// Can be chosen by the character to be any stat
+    Wildcard(isize),
 }
