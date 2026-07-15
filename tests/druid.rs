@@ -5,6 +5,7 @@ use dnd_lib::rules2014::features::{Feature, FeatureEffect};
 use dnd_lib::rules2014::items::{HeldEquipment, Item};
 use dnd_lib::rules2014::spells::{SpellSlots, CASTER_SLOTS};
 
+use dnd_lib::rules2014::stats::Speeds;
 use futures::future::try_join_all;
 
 #[tokio::test]
@@ -212,4 +213,27 @@ async fn level_3_druid() {
         24 + boopo.level(),
         "Health wasn't affected by a leveled health increase."
     );
+
+
+    // Movement Speeds
+    let movement_feature = Feature {
+        description: vec![],
+        name: String::new(),
+        effects: vec![
+            FeatureEffect::FlyingSpeed(10),
+            FeatureEffect::HoveringSpeed(15),
+            FeatureEffect::BurrowingSpeed(20),
+            FeatureEffect::ClimbingSpeed(25),
+            FeatureEffect::SwimmingSpeed(30),
+        ]
+    };
+    boopo.bonus_features.push(movement_feature);
+    assert_eq!(boopo.speeds(), Speeds {
+        walking: Some(30),
+        flying: Some(10),
+        hovering: Some(15),
+        burrowing: Some(20),
+        climbing: Some(25),
+        swimming: Some(30),
+    })
 }
