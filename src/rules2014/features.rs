@@ -114,12 +114,9 @@ impl Action for ComputedCustomAction {
 
 /// Different mechanical effects a [Feature] can have.
 ///
-/// Features describe any effect something may have on a character. Some of these effects have
-/// mechanical implications that this crate can represent. These mechanical effects are listed
-/// here.
-///
-/// This list will grow as the crate is developed.
+/// Features describe any effect something may have on a character, some of which have mechanical implications this crate can represent. Those effects are listed here.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum FeatureEffect {
     /// Grants proficiency in a saving throw
     AddSaveProficiency(StatType),
