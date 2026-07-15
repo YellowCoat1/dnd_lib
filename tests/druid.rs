@@ -214,7 +214,6 @@ async fn level_3_druid() {
         "Health wasn't affected by a leveled health increase."
     );
 
-
     // Movement Speeds
     let movement_feature = Feature {
         description: vec![],
@@ -225,15 +224,18 @@ async fn level_3_druid() {
             FeatureEffect::BurrowingSpeed(20),
             FeatureEffect::ClimbingSpeed(25),
             FeatureEffect::SwimmingSpeed(30),
-        ]
+        ],
     };
     boopo.bonus_features.push(movement_feature);
-    assert_eq!(boopo.speeds(), Speeds {
-        walking: Some(30),
-        flying: Some(10),
-        hovering: Some(15),
-        burrowing: Some(20),
-        climbing: Some(25),
-        swimming: Some(30),
-    })
+    assert_eq!(
+        boopo.speeds(),
+        Speeds {
+            walking: Some(30),
+            flying: Some(10),
+            hovering: Some(15),
+            burrowing: Some(20),
+            climbing: Some(25),
+            swimming: Some(30),
+        }
+    )
 }

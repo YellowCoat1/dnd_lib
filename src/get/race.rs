@@ -38,10 +38,14 @@ async fn get_race_raw(index_name: String) -> Result<Race, Dnd5eapiError> {
         Dnd5eapiError::mismatch("size", "Valid size string", "Invalid size string")
     })?;
 
-    let ability_bonuses_array: Vec<RaceBonus> = process_ability_bonuses(race_json.get_array("ability_bonuses")?)?.into_iter().map(|v| match v.0 {
-        Some(s) => RaceBonus::Specific(s, v.1),
-        None => RaceBonus::Wildcard(v.1),
-    }).collect();
+    let ability_bonuses_array: Vec<RaceBonus> =
+        process_ability_bonuses(race_json.get_array("ability_bonuses")?)?
+            .into_iter()
+            .map(|v| match v.0 {
+                Some(s) => RaceBonus::Specific(s, v.1),
+                None => RaceBonus::Wildcard(v.1),
+            })
+            .collect();
     let ability_bonuses_wildcard = race_json
         .get_map("ability_bonus_options")
         .ok()
@@ -49,10 +53,14 @@ async fn get_race_raw(index_name: String) -> Result<Race, Dnd5eapiError> {
         .transpose()?;
 
     let ability_bonuses: Vec<RaceBonus> = match ability_bonuses_wildcard {
-        Some(s) => s.into_iter().map(|v| match v.0 {
-            Some(s) => RaceBonus::Specific(s, v.1),
-            None => RaceBonus::Wildcard(v.1),
-        }).chain(ability_bonuses_array).collect(),
+        Some(s) => s
+            .into_iter()
+            .map(|v| match v.0 {
+                Some(s) => RaceBonus::Specific(s, v.1),
+                None => RaceBonus::Wildcard(v.1),
+            })
+            .chain(ability_bonuses_array)
+            .collect(),
         None => ability_bonuses_array,
     };
 

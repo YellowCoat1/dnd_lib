@@ -2188,10 +2188,14 @@ impl SpeccedRace {
 
     pub fn new(race: &Race) -> SpeccedRace {
         let wildcard_languages: Vec<Option<String>> = vec![None; race.wildcard_languages()];
-        let ability_bonuses: Vec<(Option<StatType>, isize)> = race.ability_bonuses().iter().map(|v| match v {
-            RaceBonus::Specific(t, i) => (Some(t.clone()), *i),
-            RaceBonus::Wildcard(i) => (None, *i),
-        }).collect();
+        let ability_bonuses: Vec<(Option<StatType>, isize)> = race
+            .ability_bonuses()
+            .iter()
+            .map(|v| match v {
+                RaceBonus::Specific(t, i) => (Some(*t), *i),
+                RaceBonus::Wildcard(i) => (None, *i),
+            })
+            .collect();
         let subraces = PresentedOption::Choice(race.subraces().to_vec());
         SpeccedRace {
             race: race.name().to_string(),

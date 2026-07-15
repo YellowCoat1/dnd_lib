@@ -55,7 +55,6 @@ fn modifiers() {
         "Incorrect calculated charisma saving throw"
     );
 
-
     assert_eq!(
         Modifiers::default(),
         Modifiers {
@@ -97,7 +96,8 @@ fn equipment() {
 
     let final_equipment = equipment1 + added_equipment;
 
-    assert_eq!(final_equipment,
+    assert_eq!(
+        final_equipment,
         EquipmentProficiencies {
             simple_weapons: true,
             martial_weapons: false,
@@ -108,8 +108,4 @@ fn equipment() {
             other: HashSet::from([String::from("dragonchess")]),
         }
     );
-
-    
-
-
 }
