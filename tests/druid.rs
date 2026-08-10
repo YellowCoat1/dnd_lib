@@ -60,6 +60,8 @@ async fn level_3_druid() {
         // this is the 8th choice, which is Survival
         .choose_in_place(7);
 
+    assert!(boopo.race.ability_bonuses_unchosen().is_empty(), "Human should have no unchosen ability bonuses");
+
     boopo.level_up_to_level(&druid, 3);
 
     // choose subclass
