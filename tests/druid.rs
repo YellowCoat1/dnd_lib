@@ -163,6 +163,10 @@ async fn level_3_druid() {
         "Spell slots after long rest did not match expected value"
     );
 
+
+    // try to upcast moonbeam to an impossible level
+    let result = boopo.cast_prepared(0, "moonbeam", Some(3), None);
+    assert!(!result, "upcasting to an impossible level should've failed");
     // testing languages
 
     let language_feature = Feature {
