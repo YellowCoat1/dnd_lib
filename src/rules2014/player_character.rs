@@ -2186,6 +2186,13 @@ impl SpeccedRace {
         &self.languages
     }
 
+    pub fn wildcard_languages(&self) -> &Vec<Option<String>> {
+        &self.wildcard_languages
+    }
+    pub fn wildcard_languages_mut(&mut self) -> Vec<&mut Option<String>> {
+        self.wildcard_languages.iter_mut().collect()
+    }
+
     pub fn new(race: &Race) -> SpeccedRace {
         let wildcard_languages: Vec<Option<String>> = vec![None; race.wildcard_languages()];
         let ability_bonuses: Vec<(Option<StatType>, isize)> = race
