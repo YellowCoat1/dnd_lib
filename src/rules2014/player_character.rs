@@ -2012,7 +2012,7 @@ pub struct SpeccedClass {
 
 impl SpeccedClass {
     /// Get a specced class from a class, up to the specified level.
-    fn from_class(class: &Class, level: usize) -> SpeccedClass {
+    pub fn from_class(class: &Class, level: usize) -> SpeccedClass {
         let subclass = PresentedOption::Choice(class.subclasses.to_vec());
 
         let base_tracked_fields = class.tracked_fields().clone();
@@ -2045,14 +2045,14 @@ impl SpeccedClass {
     }
 
     /// Get the total class's features.
-    fn get_features(&self) -> Vec<&Feature> {
+    pub fn get_features(&self) -> Vec<&Feature> {
         self.current_class_features
             .iter()
             .flat_map(|level_features| chosen(level_features))
             .collect()
     }
 
-    fn get_subclass_features(&self) -> Option<Vec<&Feature>> {
+    pub fn get_subclass_features(&self) -> Option<Vec<&Feature>> {
         let subclass = self.subclass.as_base()?;
         let features: Vec<_> = subclass.features[0..self.level]
             .iter()
@@ -2063,7 +2063,7 @@ impl SpeccedClass {
     }
 
     /// Increments the character's level by 1 in that class.
-    fn add_level(&mut self, class: &Class) {
+    pub fn add_level(&mut self, class: &Class) {
         if self.level >= 20 {
             return;
         }
