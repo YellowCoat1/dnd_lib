@@ -1,7 +1,8 @@
 #![cfg(feature = "network-intensive-tests")]
+
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{CustomAction, Feature, FeatureEffect};
-use dnd_lib::rules2014::items::{DamageRoll, DamageType};
+use dnd_lib::rules2014::items::{ArmorCategory, DamageRoll, DamageType, WeaponType};
 use dnd_lib::rules2014::spells::SpellAction;
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
 
@@ -410,4 +411,32 @@ async fn level_5_halfling_rogue() {
         computed_action.damage_roll,
         DamageRoll::new(1, 6, 7, DamageType::Psychic)
     );
+
+
+    // equipment proficiencies
+    
+    let proficiencies = vec![
+        FeatureEffect::WeaponProficiency(WeaponType::Simple),
+        FeatureEffect::WeaponProficiency(WeaponType::SimpleRanged),
+        FeatureEffect::WeaponProficiency(WeaponType::Martial),
+        FeatureEffect::WeaponProficiency(WeaponType::MartialRanged),
+        FeatureEffect::ArmorProficiency(ArmorCategory::Light),
+        FeatureEffect::ArmorProficiency(ArmorCategory::Medium),
+        FeatureEffect::ArmorProficiency(ArmorCategory::Heavy),
+    ];
+
+    let proficiencies_feature = Feature {
+        name: String::new(),
+        description: vec![],
+        effects: proficiencies,
+
+    };
+    bingus.bonus_features.push(proficiencies_feature);
+
+    let equipment_proficiences = bingus.equipment_proficiencies();
+    assert!(equipment_proficiences.simple_weapons, "No proficiency in simple weapons, despite setting it to true");
+    assert!(equipment_proficiences.martial_weapons, "No proficiency in martial weapons, despite setting it to true");
+    assert!(equipment_proficiences.light_armor, "No proficiency in light armor, despite setting it to true");
+    assert!(equipment_proficiences.medium_armor, "No proficiency in medium armor, despite setting it to true");
+    assert!(equipment_proficiences.heavy_armor, "No proficiency in heavy armor, despite setting it to true");
 }
