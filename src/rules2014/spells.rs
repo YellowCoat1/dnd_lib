@@ -231,6 +231,7 @@ pub enum SpellCastingPreperation {
 /// Represents the amount of spells available to a caster.
 ///
 /// E.g. 3 spells to prepare and 2 cantrips known.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SpellsAvailable {
     pub num_spells: usize,
     pub num_cantrips: usize,
