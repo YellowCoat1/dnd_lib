@@ -1,3 +1,4 @@
+use crate::rules2014::features::FeatureEffect;
 use crate::rules2014::stats::{Size, StatType};
 use crate::rules2014::RaceBonus;
 use crate::{prelude::*, provider};
@@ -19,13 +20,20 @@ async fn get_elf() {
         Some(String::from("Common"))
     );
 
-    let high_elf = elf.subraces().first().expect("Elf should have subraces!");
+    let mut high_elf = elf.subraces()
+        .first()
+        .expect("Elf should have subraces!")
+        .clone();
 
     assert_eq!(high_elf.name(), "High Elf");
     assert_eq!(
         high_elf.ability_bonuses().first().cloned(),
         Some((Some(StatType::Intelligence), 1))
     );
+
+    assert_eq!(high_elf.ability_bonuses_unchosen(), vec![]);
+    assert_eq!(&high_elf.description()[..14], "As a high elf,");
+    assert_eq!(high_elf.trait_effects_mut(), Vec::<&mut FeatureEffect>::new());
 }
 
 #[tokio::test]
