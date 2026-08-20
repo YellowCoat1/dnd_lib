@@ -412,9 +412,8 @@ async fn level_5_halfling_rogue() {
         DamageRoll::new(1, 6, 7, DamageType::Psychic)
     );
 
-
     // equipment proficiencies
-    
+
     let proficiencies = vec![
         FeatureEffect::WeaponProficiency(WeaponType::Simple),
         FeatureEffect::WeaponProficiency(WeaponType::SimpleRanged),
@@ -429,14 +428,28 @@ async fn level_5_halfling_rogue() {
         name: String::new(),
         description: vec![],
         effects: proficiencies,
-
     };
     bingus.bonus_features.push(proficiencies_feature);
 
     let equipment_proficiences = bingus.equipment_proficiencies();
-    assert!(equipment_proficiences.simple_weapons, "No proficiency in simple weapons, despite setting it to true");
-    assert!(equipment_proficiences.martial_weapons, "No proficiency in martial weapons, despite setting it to true");
-    assert!(equipment_proficiences.light_armor, "No proficiency in light armor, despite setting it to true");
-    assert!(equipment_proficiences.medium_armor, "No proficiency in medium armor, despite setting it to true");
-    assert!(equipment_proficiences.heavy_armor, "No proficiency in heavy armor, despite setting it to true");
+    assert!(
+        equipment_proficiences.simple_weapons,
+        "No proficiency in simple weapons, despite setting it to true"
+    );
+    assert!(
+        equipment_proficiences.martial_weapons,
+        "No proficiency in martial weapons, despite setting it to true"
+    );
+    assert!(
+        equipment_proficiences.light_armor,
+        "No proficiency in light armor, despite setting it to true"
+    );
+    assert!(
+        equipment_proficiences.medium_armor,
+        "No proficiency in medium armor, despite setting it to true"
+    );
+    assert!(
+        equipment_proficiences.heavy_armor,
+        "No proficiency in heavy armor, despite setting it to true"
+    );
 }

@@ -20,7 +20,8 @@ async fn get_elf() {
         Some(String::from("Common"))
     );
 
-    let mut high_elf = elf.subraces()
+    let mut high_elf = elf
+        .subraces()
         .first()
         .expect("Elf should have subraces!")
         .clone();
@@ -33,7 +34,10 @@ async fn get_elf() {
 
     assert_eq!(high_elf.ability_bonuses_unchosen(), vec![]);
     assert_eq!(&high_elf.description()[..14], "As a high elf,");
-    assert_eq!(high_elf.trait_effects_mut(), Vec::<&mut FeatureEffect>::new());
+    assert_eq!(
+        high_elf.trait_effects_mut(),
+        Vec::<&mut FeatureEffect>::new()
+    );
 }
 
 #[tokio::test]

@@ -3,7 +3,7 @@ use dnd_lib::prelude::*;
 use dnd_lib::rules2014::background::LanguageOption;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
 use dnd_lib::rules2014::items::{HeldEquipment, Item};
-use dnd_lib::rules2014::spells::{CASTER_SLOTS, SpellSlots, SpellsAvailable};
+use dnd_lib::rules2014::spells::{SpellSlots, SpellsAvailable, CASTER_SLOTS};
 
 use dnd_lib::rules2014::stats::Speeds;
 use futures::future::try_join_all;
@@ -60,7 +60,10 @@ async fn level_3_druid() {
         // this is the 8th choice, which is Survival
         .choose_in_place(7);
 
-    assert!(boopo.race.ability_bonuses_unchosen().is_empty(), "Human should have no unchosen ability bonuses");
+    assert!(
+        boopo.race.ability_bonuses_unchosen().is_empty(),
+        "Human should have no unchosen ability bonuses"
+    );
 
     boopo.level_up_to_level(&druid, 3);
 
@@ -75,7 +78,13 @@ async fn level_3_druid() {
     assert_eq!(boopo.available_pact_slots, None);
 
     // boopo should be able to cast 2 cantrips and prepare 6 (level 3 druid + 3 wisdom modifier) spells
-    assert_eq!(boopo.num_spells(0), Some(SpellsAvailable {num_cantrips: 2, num_spells: 6}));
+    assert_eq!(
+        boopo.num_spells(0),
+        Some(SpellsAvailable {
+            num_cantrips: 2,
+            num_spells: 6
+        })
+    );
 
     let v = boopo.prepare_spells_multiple();
     assert_eq!(
@@ -167,7 +176,6 @@ async fn level_3_druid() {
         Some(SpellSlots([4, 2, 0, 0, 0, 0, 0, 0, 0])),
         "Spell slots after long rest did not match expected value"
     );
-
 
     // try to upcast moonbeam to an impossible level
     let result = boopo.cast_prepared(0, "moonbeam", Some(3), None);

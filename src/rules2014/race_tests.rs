@@ -1,4 +1,9 @@
-use crate::rules2014::{Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder, choice::PresentedOption, features::{Feature, FeatureEffect}, stats::{Size, StatType}};
+use crate::rules2014::{
+    choice::PresentedOption,
+    features::{Feature, FeatureEffect},
+    stats::{Size, StatType},
+    Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder,
+};
 
 #[test]
 fn custom_race() {
@@ -6,7 +11,10 @@ fn custom_race() {
 
     let animated_armor_slumber = Feature {
         name: "Animated Armor Slumber".to_string(),
-        description: vec!["As animated armor, rather than sleeping as a creature, you become inanimate".to_string()],
+        description: vec![
+            "As animated armor, rather than sleeping as a creature, you become inanimate"
+                .to_string(),
+        ],
         effects: vec![],
     };
 
@@ -25,15 +33,27 @@ fn custom_race() {
     assert_eq!(animated_armor.name(), "Animated Armor");
     assert_eq!(animated_armor.speed(), 25);
     assert_eq!(*animated_armor.size(), Size::Large);
-    assert_eq!(*animated_armor.ability_bonuses(), vec![RaceBonus::Specific(Strength, 2), RaceBonus::Wildcard(1)]);
-    assert_eq!(animated_armor.traits().first().expect("Armor should have traits").as_base().unwrap().name, "Animated Armor Slumber");
+    assert_eq!(
+        *animated_armor.ability_bonuses(),
+        vec![RaceBonus::Specific(Strength, 2), RaceBonus::Wildcard(1)]
+    );
+    assert_eq!(
+        animated_armor
+            .traits()
+            .first()
+            .expect("Armor should have traits")
+            .as_base()
+            .unwrap()
+            .name,
+        "Animated Armor Slumber"
+    );
     assert_eq!(*animated_armor.languages(), vec!["Elvish"]);
     assert_eq!(animated_armor.wildcard_languages(), 1);
 
     // adding a new subrace to it
     animated_armor.add_subrace(animated_plate);
     assert_eq!(animated_armor.subraces().len(), 2);
-    
+
     let animated_armor2 = animated_armor.clone();
     assert_eq!(animated_armor, animated_armor2);
 }
@@ -44,7 +64,9 @@ fn animated_subraces() -> (Subrace, Subrace) {
         .build();
     let animated_plate_toughness = Feature {
         name: "Animated Plate Toughness".to_string(),
-        description: vec!["As animated plate of a metal armor, your AC is naturally increased.".to_string()],
+        description: vec![
+            "As animated plate of a metal armor, your AC is naturally increased.".to_string(),
+        ],
         effects: vec![FeatureEffect::ACBonus(2)],
     };
     let animated_plate = SubraceBuilder::new("Animated Plate")

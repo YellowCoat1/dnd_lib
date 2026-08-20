@@ -195,9 +195,9 @@ async fn level_3_elf_monk() {
         "character should have died to sufficient damage."
     );
 
-
     // finding the monk's ki points
-    let ki_points: usize = georg.classes
+    let ki_points: usize = georg
+        .classes
         .first()
         .expect("Monk should have a class")
         .get_class_specific()

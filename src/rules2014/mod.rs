@@ -16,13 +16,12 @@ pub mod class;
 pub mod player_character;
 
 #[cfg(test)]
-mod character_tests;
-#[cfg(test)]
 mod background_tests;
 #[cfg(test)]
-mod stats_tests;
+mod character_tests;
 #[cfg(test)]
 mod choice_tests;
 #[cfg(test)]
 mod race_tests;
-
+#[cfg(test)]
+mod stats_tests;
