@@ -83,11 +83,6 @@ impl RaceBuilder {
         }
     }
 
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name.to_title_case();
-        self
-    }
-
     pub fn size(mut self, size: Size) -> Self {
         self.size = size;
         self
@@ -187,15 +182,6 @@ impl PartialEq for Subrace {
 }
 
 impl Subrace {
-    pub fn new(name: String, description: String) -> Self {
-        Self {
-            name,
-            description,
-            ability_bonuses: Vec::new(),
-            traits: Vec::new(),
-        }
-    }
-
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -252,11 +238,6 @@ impl SubraceBuilder {
             ability_bonuses: Vec::new(),
             traits: Vec::new(),
         }
-    }
-
-    pub fn name(mut self, name: String) -> Self {
-        self.name = name.to_title_case();
-        self
     }
 
     pub fn description(mut self, description: String) -> Self {
