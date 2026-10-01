@@ -246,6 +246,58 @@ pub struct WeaponProperties {
     pub versatile: Option<DamageRoll>,
 }
 
+impl<'a> WeaponProperties {
+    fn versatile_parsing(s: &str, damage_type: DamageType) -> Option<DamageRoll> {
+        let damage_roll_str = s[9..s.len()].trim();
+        if damage_roll_str.len() < 3 {
+            return None;
+        }
+        DamageRoll::from_str(&damage_roll_str[1..damage_roll_str.len() - 1], damage_type)
+    }
+
+    /// Converts an iterator of property strings (e.g. "reach", "versatile (1d10)") to weapon properties.
+    pub fn from_list<T>(list: T, damage_type: DamageType) -> WeaponProperties
+    where
+        T: IntoIterator<Item = &'a str>,
+    {
+        let mut properties = WeaponProperties {
+            ammunition: false,
+            finesse: false,
+            heavy: false,
+            light: false,
+            loading: false,
+            monk: false,
+            reach: false,
+            special: false,
+            thrown: false,
+            two_handed: false,
+            versatile: None,
+        };
+
+        for property in list {
+            let processed = property.trim().to_lowercase();
+            match processed.as_str() {
+                "ammunition" => properties.ammunition = true,
+                "finesse" => properties.finesse = true,
+                "heavy" => properties.heavy = true,
+                "light" => properties.light = true,
+                "loading" => properties.loading = true,
+                "reach" => properties.reach = true,
+                "special" => properties.special = true,
+                "thrown" => properties.thrown = true,
+                "two handed" => properties.two_handed = true,
+                "monk" => properties.monk = true,
+                s if s.starts_with("versatile") => {
+                    properties.versatile = WeaponProperties::versatile_parsing(s, damage_type)
+                }
+                _ => {}
+            }
+        }
+
+        properties
+    }
+}
+
 #[derive(
     Debug,
     Clone,
@@ -588,5 +640,50 @@ mod tests {
         assert_eq!(held_other_2.quantity, 2);
         let held_other_3 = HeldEquipment::from(base_item);
         assert_eq!(held_other_3.item.name, "Shield");
+    }
+
+    #[test]
+    fn equipment_property_conversion() {
+        let equipment_property_list = vec![
+            "ammunition",
+            "finesse",
+            "heavy",
+            "light",
+            "loading",
+            "reach",
+            "special",
+            "thrown",
+            "two handed",
+            "monk",
+            "versatile (1d12)",
+        ];
+        let weapon_properties =
+            WeaponProperties::from_list(equipment_property_list, DamageType::Slashing);
+        assert_eq!(
+            weapon_properties,
+            WeaponProperties {
+                ammunition: true,
+                finesse: true,
+                heavy: true,
+                light: true,
+                loading: true,
+                reach: true,
+                special: true,
+                thrown: true,
+                two_handed: true,
+                monk: true,
+                versatile: Some(DamageRoll {
+                    number: 1,
+                    dice: 12,
+                    bonus: 0,
+                    damage_type: DamageType::Slashing
+                })
+            }
+        );
+
+        let empty_property_list = vec![];
+        let weapon_properties_empty =
+            WeaponProperties::from_list(empty_property_list, DamageType::Bludgeoning);
+        assert_eq!(weapon_properties_empty, WeaponProperties::default());
     }
 }
