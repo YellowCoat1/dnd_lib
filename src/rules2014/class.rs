@@ -1,3 +1,5 @@
+use crate::rules2014::stats::Saves;
+
 use super::features::{Feature, PresentedOption};
 use super::items::{ArmorCategory, Item, WeaponType};
 use super::spells::Spellcasting;
@@ -22,7 +24,7 @@ pub struct Class {
     pub subclasses: Vec<Subclass>,
     features: [Vec<PresentedOption<Feature>>; 20],
     beginning_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
-    saving_throw_proficiencies: Vec<StatType>,
+    saving_throw_proficiencies: Saves,
     hit_die: usize,
     skill_proficiency_choices: (usize, PresentedOption<SkillType>),
     spellcasting: Option<Spellcasting>,
@@ -59,7 +61,7 @@ impl Class {
     }
     /// The list of saving throw proficiencies granted by the class. Just about every class has
     /// this as two stats.
-    pub fn saving_throw_proficiencies(&self) -> &Vec<StatType> {
+    pub fn saving_throw_proficiencies(&self) -> &Saves {
         &self.saving_throw_proficiencies
     }
     /// Gets the dice size of a hit die, e.g. 12 is 1d12.
@@ -217,7 +219,7 @@ pub struct ClassBuilder {
     subclasses: Vec<Subclass>,
     features: Option<[Vec<PresentedOption<Feature>>; 20]>,
     beginning_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
-    saving_throw_proficiencies: Vec<StatType>,
+    saving_throw_proficiencies: Saves,
     hit_die: Option<usize>,
     skill_proficiency_choices: Option<(usize, PresentedOption<SkillType>)>,
     equipment_proficiencies: EquipmentProficiencies,
@@ -236,7 +238,7 @@ impl ClassBuilder {
             subclasses: vec![],
             features: None,
             beginning_items: vec![],
-            saving_throw_proficiencies: vec![],
+            saving_throw_proficiencies: Saves::default(),
             hit_die: None,
             skill_proficiency_choices: None,
             equipment_proficiencies: EquipmentProficiencies::default(),
@@ -289,16 +291,8 @@ impl ClassBuilder {
         self
     }
 
-    pub fn add_saving_throw_proficiency(mut self, stat: StatType) -> Self {
-        self.saving_throw_proficiencies.push(stat);
-        self
-    }
-
-    pub fn add_multiple_save_proficiencies<T>(mut self, stats: T) -> Self
-    where
-        T: IntoIterator<Item = StatType>,
-    {
-        self.saving_throw_proficiencies.extend(stats);
+    pub fn saving_throw_proficiencies(mut self, saves: Saves) -> Self {
+        self.saving_throw_proficiencies = saves;
         self
     }
 
@@ -444,7 +438,7 @@ mod tests {
             subclasses: vec![],
             features,
             beginning_items: vec![],
-            saving_throw_proficiencies: vec![],
+            saving_throw_proficiencies: Saves::default(),
             hit_die: 4,
             skill_proficiency_choices: (0, PresentedOption::Base(SkillType::Investigation)),
             equipment_proficiencies: EquipmentProficiencies::default(),

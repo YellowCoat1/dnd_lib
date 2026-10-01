@@ -176,7 +176,7 @@ pub struct Character {
     pub unchosen_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     equipment_proficiencies: EquipmentProficiencies,
     pub class_skill_proficiencies: Vec<PresentedOption<SkillType>>,
-    class_saving_throw_proficiencies: Vec<StatType>,
+    class_saving_throw_proficiencies: Saves,
     pub hp: usize,
     pub temp_hp: usize,
 
@@ -519,11 +519,7 @@ impl Character {
     /// # })
     /// # }
     pub fn saves(&self) -> Saves {
-        let mut base = Saves::default();
-
-        for save in self.class_saving_throw_proficiencies.iter() {
-            base.add_proficiency_from_type(*save);
-        }
+        let mut base = self.class_saving_throw_proficiencies.clone();
 
         for effect in self
             .total_features()

@@ -6,7 +6,7 @@ use crate::{
         features::{Feature, PresentedOption},
         items::{Item, ItemType, WeaponType},
         spells::{SpellCasterType, SpellCastingPreperation, Spellcasting},
-        stats::{EquipmentProficiencies, SkillType, StatType},
+        stats::{EquipmentProficiencies, Saves, SkillType, StatType},
     },
 };
 use heck::ToTitleCase;
@@ -120,12 +120,12 @@ fn equipment_proficiencies(json: &Value) -> Result<EquipmentProficiencies, Dnd5e
     Ok(equipment_proficiencies_inner(proficiency_strings_vec))
 }
 
-fn saves(json: &Value) -> Result<Vec<StatType>, Dnd5eapiError> {
+fn saves(json: &Value) -> Result<Saves, Dnd5eapiError> {
     let saving_throws = json
         .get("saving_throws")
         .ok_or_else(|| Dnd5eapiError::not_found("Object", "character saving throws"))?;
 
-    array_index_values(saving_throws, "name")
+    let stat_list = array_index_values(saving_throws, "name")
         .unwrap_or_default()
         .into_iter()
         .map(|s| StatType::from_shorthand(s.as_str()))
@@ -138,7 +138,8 @@ fn saves(json: &Value) -> Result<Vec<StatType>, Dnd5eapiError> {
                 )
             })
         })
-        .collect::<Result<Vec<_>, _>>()
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(Saves::from_stats(stat_list))
 }
 
 fn proficiency_choices(map: &Value) -> Result<(usize, Vec<SkillType>), Dnd5eapiError> {
@@ -737,7 +738,7 @@ async fn json_to_class(
         .await
         .map_err(|v| v.prepend("Subclass "))?;
 
-    let saving_throw_proficiencies: Vec<StatType> = saves(&json).unwrap_or_default();
+    let saving_throw_proficiencies: Saves = saves(&json).unwrap_or_default();
     let equipment_proficiencies =
         equipment_proficiencies(&json).map_err(|v| v.prepend("equipement proficiencies "))?;
     let skill_proficiency_choices: (usize, Vec<SkillType>) =
@@ -782,7 +783,7 @@ async fn json_to_class(
         .add_subclasses(subclasses)
         .set_features(features)
         .add_beginning_items(beginning_items)
-        .add_multiple_save_proficiencies(saving_throw_proficiencies)
+        .saving_throw_proficiencies(saving_throw_proficiencies)
         .add_equipment_proficiencies(equipment_proficiencies)
         .set_hit_die(hit_die)
         .add_class_specific_fields(class_specific_leveled)
