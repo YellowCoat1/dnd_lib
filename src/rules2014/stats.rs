@@ -307,6 +307,24 @@ impl Saves {
         }
     }
 
+    pub fn from_stats<T>(stats: T) -> Saves
+    where
+        T: IntoIterator<Item = StatType>,
+    {
+        let mut saves = Saves::default();
+        for stat in stats {
+            match stat {
+                StatType::Wisdom => saves.wisdom = true,
+                StatType::Strength => saves.strength = true,
+                StatType::Dexterity => saves.dexterity = true,
+                StatType::Constitution => saves.constitution = true,
+                StatType::Intelligence => saves.intelligence = true,
+                StatType::Charisma => saves.charisma = true,
+            }
+        }
+        saves
+    }
+
     /// Add a saving throw proficiency from an ability score type
     pub fn add_proficiency_from_type(&mut self, stat_type: StatType) {
         match stat_type {

@@ -109,3 +109,27 @@ fn equipment() {
         }
     );
 }
+
+#[test]
+fn stat_list_conversion() {
+    let stat_list = vec![
+        StatType::Strength,
+        StatType::Constitution,
+        StatType::Dexterity,
+        StatType::Charisma,
+        StatType::Intelligence,
+        StatType::Wisdom,
+    ];
+    let saves_list = Saves::from_stats(stat_list);
+    assert_eq!(
+        saves_list,
+        Saves {
+            strength: true,
+            constitution: true,
+            dexterity: true,
+            charisma: true,
+            intelligence: true,
+            wisdom: true,
+        }
+    );
+}
