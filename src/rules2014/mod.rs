@@ -24,6 +24,6 @@ mod choice_tests;
 #[cfg(test)]
 mod race_tests;
 #[cfg(test)]
-mod stats_tests;
-#[cfg(test)]
 mod spell_tests;
+#[cfg(test)]
+mod stats_tests;
