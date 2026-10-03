@@ -44,7 +44,7 @@ pub struct Feature {
 /// - Increase two ability scores by +1 each
 /// - Increase one ability score by +2
 /// - Optionally, take a bonus feature.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AbilityScoreIncrease {
     /// Increase ability scores. A `None` variant means that it's still unchosen.
     StatIncrease(Option<StatType>, Option<StatType>),
@@ -53,6 +53,7 @@ pub enum AbilityScoreIncrease {
     /// Since there's no reasonable way for this library to hold every feature you can take, this
     /// an open ended option that you can fill with any feature you choose.
     AddedFeature(Option<Feature>),
+    #[default]
     Unchosen,
 }
 
