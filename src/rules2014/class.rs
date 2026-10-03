@@ -1,4 +1,5 @@
 use crate::rules2014::stats::Saves;
+use thiserror::Error;
 
 use super::features::{Feature, PresentedOption};
 use super::items::{ArmorCategory, Item, WeaponType};
@@ -206,6 +207,17 @@ impl TrackedField {
     }
 }
 
+#[derive(Error, Debug)]
+/// Errors for [ClassBuilder]
+pub enum ClassBuilderError {
+    #[error("Name missing")]
+    NameMissing,
+    #[error("Feature list missing")]
+    FeaturesMissing,
+    #[error("Hit die missing")]
+    HitDieMissing,
+}
+
 /// A builder for [Class].
 ///
 /// The following fields are required before building:
@@ -390,7 +402,7 @@ impl ClassBuilder {
             hit_die: self.hit_die.ok_or("Class hit die is required")?,
             skill_proficiency_choices: self
                 .skill_proficiency_choices
-                .ok_or("Class skill proficiency choices are required")?,
+                .unwrap_or((0, PresentedOption::Choice(vec![]))),
             equipment_proficiencies: self.equipment_proficiencies,
             spellcasting: self.spellcasting,
             class_specific_leveled: self.class_specific_leveled,
