@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use strum::Display as StrumDisplay;
 
 use super::{
@@ -90,7 +89,9 @@ impl Action for SpellAction {
 /// A school of magic.
 ///
 /// Doc comments are just copy-pasted from the official descriptions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, StrumDisplay, strum::EnumString, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, StrumDisplay, strum::EnumString, Deserialize,
+)]
 pub enum School {
     ///Abjuration spells are protective in nature, though some of them have aggressive uses. They create magical barriers, negate harmful effects, harm trespassers, or banish creatures to other planes of existence.
     Abjuration,

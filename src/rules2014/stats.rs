@@ -765,4 +765,3 @@ pub enum Alignment {
     NeutralEvil,
     ChaoticEvil,
 }
-
