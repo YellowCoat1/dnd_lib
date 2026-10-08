@@ -751,6 +751,21 @@ impl Display for Size {
     }
 }
 
+impl TryFrom<&str> for Size {
+    type Error = ();
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Ok(match value.to_lowercase().as_str() {
+            "tiny" => Size::Tiny,
+            "small" => Size::Small,
+            "medium" => Size::Medium,
+            "large" => Size::Large,
+            "huge" => Size::Huge,
+            "gargantuan" => Size::Gargantuan,
+            _ => return Err(()),
+        })
+    }
+}
+
 #[derive(
     Clone,
     Copy,
