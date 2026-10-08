@@ -167,6 +167,9 @@ impl RaceBuilder {
     }
 }
 
+// NOTE: Ability bonuses are stored as Option<StatType> instead of a RaceBonus
+// Because RaceBonus is specifically for static Races, and cannot be collapsed into a single
+// StatType.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Subrace {
     name: String,
