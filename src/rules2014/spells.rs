@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use strum::Display as StrumDisplay;
 
 use super::{
     items::{Action, DamageRoll},
@@ -89,7 +90,7 @@ impl Action for SpellAction {
 /// A school of magic.
 ///
 /// Doc comments are just copy-pasted from the official descriptions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, StrumDisplay, strum::EnumString, Deserialize)]
 pub enum School {
     ///Abjuration spells are protective in nature, though some of them have aggressive uses. They create magical barriers, negate harmful effects, harm trespassers, or banish creatures to other planes of existence.
     Abjuration,
@@ -107,39 +108,6 @@ pub enum School {
     Necromancy,
     /// Transmutation spells change the properties of a creature, object, or environment. They might turn an enemy into a harmless creature, bolster the strength of an ally, make an object move at the caster's command, or enhance a creature's innate healing abilities to rapidly recover from injury.
     Transmutation,
-}
-
-impl FromStr for School {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.trim().to_lowercase().as_str() {
-            "abjuration" => Ok(School::Abjuration),
-            "conjuration" => Ok(School::Conjuration),
-            "divination" => Ok(School::Divination),
-            "enchantment" => Ok(School::Enchantment),
-            "evocation" => Ok(School::Evocation),
-            "illusion" => Ok(School::Illusion),
-            "necromancy" => Ok(School::Necromancy),
-            "transmutation" => Ok(School::Transmutation),
-            _ => Err(()),
-        }
-    }
-}
-
-impl std::fmt::Display for School {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            School::Abjuration => "Abjuration",
-            School::Conjuration => "Conjuration",
-            School::Divination => "Divination",
-            School::Enchantment => "Enchantment",
-            School::Evocation => "Evocation",
-            School::Illusion => "Illusion",
-            School::Necromancy => "Necromancy",
-            School::Transmutation => "Transmutation",
-        };
-        write!(f, "{}", s)
-    }
 }
 
 /// Represents the spell slots for levels 0-9.

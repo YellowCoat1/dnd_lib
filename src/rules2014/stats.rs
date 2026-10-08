@@ -2,7 +2,6 @@
 
 use std::{
     collections::HashSet,
-    fmt::Display,
     ops::{Add, AddAssign, Index, IndexMut, Sub},
     str::FromStr,
 };
@@ -716,6 +715,8 @@ impl Default for Speeds {
     Debug,
     Default,
     EnumIter,
+    StrumDisplay,
+    strum::EnumString,
     PartialEq,
     Eq,
     PartialOrd,
@@ -724,6 +725,7 @@ impl Default for Speeds {
     Serialize,
     Deserialize,
 )]
+#[strum(ascii_case_insensitive)]
 pub enum Size {
     Tiny,
     Small,
@@ -733,44 +735,13 @@ pub enum Size {
     Huge,
     Gargantuan,
 }
-
-impl Display for Size {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Size::Tiny => "Tiny",
-                Size::Small => "Small",
-                Size::Medium => "Medium",
-                Size::Large => "Large",
-                Size::Huge => "Huge",
-                Size::Gargantuan => "Gargantuan",
-            }
-        )
-    }
-}
-
-impl TryFrom<&str> for Size {
-    type Error = ();
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(match value.to_lowercase().as_str() {
-            "tiny" => Size::Tiny,
-            "small" => Size::Small,
-            "medium" => Size::Medium,
-            "large" => Size::Large,
-            "huge" => Size::Huge,
-            "gargantuan" => Size::Gargantuan,
-            _ => return Err(()),
-        })
-    }
-}
-
 #[derive(
     Clone,
     Copy,
     Debug,
     EnumIter,
+    StrumDisplay,
+    strum::EnumString,
     PartialEq,
     Eq,
     PartialOrd,
@@ -780,6 +751,8 @@ impl TryFrom<&str> for Size {
     Serialize,
     Deserialize,
 )]
+#[strum(serialize_all = "title_case")]
+#[strum(ascii_case_insensitive)]
 pub enum Alignment {
     LawfulGood,
     NeutralGood,
@@ -793,40 +766,3 @@ pub enum Alignment {
     ChaoticEvil,
 }
 
-impl Display for Alignment {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Alignment::LawfulGood => "Lawful Good",
-                Alignment::NeutralGood => "Neutral Good",
-                Alignment::ChaoticGood => "Chaotic Good",
-                Alignment::LawfulNeutral => "Lawful Neutral",
-                Alignment::TrueNeutral => "True Neutral",
-                Alignment::ChaoticNeutral => "Chaotic Neutral",
-                Alignment::LawfulEvil => "Lawful Evil",
-                Alignment::NeutralEvil => "Neutral Evil",
-                Alignment::ChaoticEvil => "Chaotic Evil",
-            }
-        )
-    }
-}
-
-impl FromStr for Alignment {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "lawful good" => Ok(Alignment::LawfulGood),
-            "neutral good" => Ok(Alignment::NeutralGood),
-            "chaotic good" => Ok(Alignment::ChaoticGood),
-            "lawful neutral" => Ok(Alignment::LawfulNeutral),
-            "true neutral" => Ok(Alignment::TrueNeutral),
-            "chaotic neutral" => Ok(Alignment::ChaoticNeutral),
-            "lawful evil" => Ok(Alignment::LawfulEvil),
-            "neutral evil" => Ok(Alignment::NeutralEvil),
-            "chaotic evil" => Ok(Alignment::ChaoticEvil),
-            _ => Err(()),
-        }
-    }
-}
