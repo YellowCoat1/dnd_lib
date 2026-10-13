@@ -58,6 +58,7 @@ fn custom_race() {
     assert_eq!(animated_armor, animated_armor2);
 }
 
+#[allow(clippy::eq_op)]
 fn animated_subraces() -> (Subrace, Subrace) {
     let animated_leather = SubraceBuilder::new("Animated Leather")
         .description("Animated Leather Armor".to_string())
