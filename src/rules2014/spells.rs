@@ -6,46 +6,39 @@ use super::{
 };
 use serde::{Deserialize, Serialize};
 
-/// A spell definition, either manually created or loaded from an API.
-///
-/// `damage` represents spell damage scaling by level:
-/// - Outer index = spell level (starting from base level)
-/// - Inner index = multiple damage rolls per level (e.g., multi-damage spells like Chromatic Orb)// so spell.damage.unwrap()\[0\] returns its regular damage.
+/// A D&D 5e spell.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Spell {
-    /// The name of the spell, e.g. "Fireball"
+    /// e.g. "Fireball"
     pub name: String,
-    /// The description, split by paragraph
+    /// split by paragraph.
     pub description: Vec<String>,
     /// Textual description of higher level casting
     pub higher_level: Vec<String>,
     pub ritual: bool,
     pub concentration: bool,
-    /// Casting time (e.g. "1 minute" "1 action")
+    /// e.g. "1 minute" "1 action"
     pub casting_time: String,
-    /// Duration (e.g. "Instantaneous", "10 minutes")
+    /// e.g. "Instantaneous", "10 minutes"
     pub duration: String,
-    /// Spell level (0 for cantrips)
+    /// Spell level 
     pub level: usize,
-    /// Range (e.g. "60 feet")
+    /// e.g. "60 feet"
     pub range: String,
-    /// The school of magic that the spell is in
     pub school: School,
-    /// The components of the spell, represened as characters. V, S, M are 'V', 'S', and 'M'.
-    ///
-    /// If D&D only supported these, it would be simplier to use a struct of bools, but there are
-    /// others that pop up occasionally (Like the R, or "Royalty" component.)
+    /// The components of the spell, represented as characters. Verbal, Somatic, Material are 'V', 'S', and 'M'.
     pub components: Vec<char>,
-    /// If the spell has a material (M) component, it's listed here. (e.g. "a tiny bell and a piece of fine silver wire")
+    /// The material (M) component. (e.g. "a tiny bell and a piece of fine silver wire")
     pub material: Option<String>,
     /// if there is damage, this shows it for each of the levels. There also may be multiple
     /// different types, like chromatic orb's multiple damage types.
+    /// - Outer index = spell level (starting from base level)
+    /// - Inner index = multiple damage rolls per level (e.g., multi-damage spells like Chromatic Orb) so ``spell.damage.unwrap()[0]`` returns its regular damage.
     pub damage: Option<Vec<Vec<DamageRoll>>>,
     /// Cantrips can have damage that scales with class level, rather than spell level. This
     /// represents that.
     ///
     /// The first field of the vec is the class level, and the second field is the damage.
-    ///
     pub leveled_damage: Option<Vec<(usize, DamageRoll)>>,
 }
 
