@@ -1,0 +1,358 @@
+query ClassQuery($index: String!) {
+  class(index: $index) {
+    proficiencies {
+      name
+    }
+    hit_die
+    spellcasting {
+      spellcasting_ability {
+        name
+      }
+      level
+    }
+    subclasses {
+      name
+      desc
+      spells {
+        spell {
+          name
+        }
+      }
+      subclass_levels {
+        features {
+          name
+          desc
+        }
+        level
+      }
+    }
+    multi_classing {
+      prerequisites {
+        ability_score {
+          name
+        }
+        minimum_score
+      }
+    }
+    starting_equipment {
+      quantity
+      equipment {
+        __typename
+        ... on Armor {
+          name
+          armor_category
+          armor_class {
+            base
+          }
+          str_minimum
+          stealth_disadvantage
+        }
+        ... on Weapon {
+          name
+          damage {
+            damage_dice
+            damage_type {
+              name
+            }
+          }
+          two_handed_damage {
+            damage_dice
+            damage_type {
+              name
+            }
+          }
+          weapon_category
+          properties {
+            name
+          }
+          desc
+        }
+        ... on Tool {
+          name
+        }
+        ... on Gear {
+          name
+        }
+        ... on Pack {
+          name
+        }
+        ... on Ammunition {
+          name
+        }
+        ... on Vehicle {
+          name
+        }
+      }
+    }
+
+    starting_equipment_options {
+      from {
+        __typename
+        ... on EquipmentOptionSet {
+          __typename
+          options {
+          __typename
+            ... on MultipleItemsOption {
+            __typename
+              items {
+                __typename
+                ... on CountedReferenceOption {
+                  of {
+                    name
+                  }
+                  count
+                }
+              }
+            }
+            ... on CountedReferenceOption {
+              of {
+                name
+              }
+              count
+            }
+            ... on EquipmentCategoryChoiceOption {
+              choice {
+                from {
+                  equipment_category {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+        ... on EquipmentCategorySet {
+          equipment_category {
+            name
+          }
+        }
+      }
+    }
+    
+    class_levels {
+      features {
+        name
+        desc
+      }
+      spellcasting {
+        cantrips_known 
+        spells_known
+      }
+    }
+    spells {
+      name
+      level
+    }
+    proficiency_choices {
+      choose
+      from {
+        options {
+          item {
+            __typename
+            ... on Proficiency {
+              name
+            }
+
+          }
+        }
+      }
+    }
+  }
+}
+
+query BackgroundQuery($index: String!) {
+  background(index: $index) {
+    name
+    starting_proficiencies {
+      name
+    }
+    flaws {
+      from {
+        options {
+          string
+        }
+      }
+    }
+    bonds {
+      from {
+        options {
+          string
+        }
+      }
+    }
+    feature {
+      name
+      desc
+    }
+    ideals {
+      from {
+        options {
+          desc
+        }
+      }
+    }
+    personality_traits {
+      from {
+        options {
+          string
+        }
+      }
+    }
+    language_options {
+      from {
+        options {
+          item {
+            name
+          }
+        }
+      }
+      choose
+    }
+    starting_equipment {
+      equipment {
+        name
+      }
+      quantity
+    }
+  }
+}
+
+query RaceQuery($index: String!) {
+  race(index: $index) {
+    name
+    speed
+    size
+    ability_bonuses {
+      ability_score {
+        name
+      }
+      bonus
+    }
+    ability_bonus_options {
+      choose
+      from {
+        options {
+          bonus
+          ability_score {
+            name
+          }
+        }
+      }
+    }
+    traits {
+      name
+      desc
+    }
+    language_options {
+      choose
+    }
+    languages {
+      name
+    }
+    subraces {
+      name
+      desc
+      ability_bonuses {
+        bonus
+        ability_score {
+          name
+        }
+      }
+      racial_traits {
+        name
+        desc
+      }
+    }
+  }
+}
+
+query EquipmentQuery {
+  __typename
+  equipments(limit: 1000) {
+    __typename
+    ... on Armor {
+          name
+          armor_category
+          armor_class {
+            base
+          }
+          str_minimum
+          stealth_disadvantage
+      desc
+    }
+        ... on Weapon {
+          name
+          damage {
+            damage_dice
+            damage_type {
+              name
+            }
+          }
+          two_handed_damage {
+            damage_dice
+            damage_type {
+              name
+            }
+          }
+          weapon_category
+          properties {
+            name
+          }
+          desc
+        }
+        ... on Tool {
+          name
+          desc
+        }
+        ... on Gear {
+          name
+          desc
+        }
+        ... on Pack {
+          name
+          desc
+        }
+        ... on Ammunition {
+          name
+          desc
+        }
+        ... on Vehicle {
+          name
+          desc
+        }
+  }
+}
+
+query SpellQuery($index: String!) {
+  spell(index: $index) {
+    attack_type
+    casting_time
+    components
+    concentration
+    damage {
+      damage_type {
+        name
+      }
+      damage_at_slot_level {
+        value
+        level
+      }
+      damage_at_character_level {
+        level
+        value
+      }
+    }
+    desc
+    duration
+    higher_level
+    level
+    index
+    material
+    name
+    ritual
+    school {
+      name
+    }
+    range
+  }
+}
