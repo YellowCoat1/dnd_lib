@@ -39,7 +39,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, Dnd5eapiError> {
         .collect();
     let material = json.get_str("material").ok();
     let (damage, leveled_damage) =
-        spell_damage(json.get_map("damage").ok()).unwrap_or((None, None));
+        spell_damage(json.get_array("damage").ok()).unwrap_or((None, None));
     let duration = json.get_str("duration")?;
 
     Ok(Spell {
@@ -61,38 +61,40 @@ pub async fn get_spell(name: &str) -> Result<Spell, Dnd5eapiError> {
 }
 
 fn spell_damage(
-    v: Option<&Value>,
+    v: Option<&[Value]>,
 ) -> Result<(Option<StandardDamage>, Option<LeveledDamage>), Dnd5eapiError> {
-    v.map(|v| {
-        let damage_type_name = v.get_map("damage_type")?.get_str("name")?;
-        let damage_type: DamageType = damage_type_name.parse().map_err(|_| {
-            Dnd5eapiError::mismatch(
-                "spell damage type",
-                "Valid DamageType string",
-                "Invalid DamageType string",
-            )
-        })?;
+    v.as_ref()
+        .and_then(|v| v.first())
+        .map(|v| {
+            let damage_type_name = v.get_map("damage_type")?.get_str("name")?;
+            let damage_type: DamageType = damage_type_name.parse().map_err(|_| {
+                Dnd5eapiError::mismatch(
+                    "spell damage type",
+                    "Valid DamageType string",
+                    "Invalid DamageType string",
+                )
+            })?;
 
-        let damage_vec: Option<StandardDamage> = v
-            .get_map("damage_at_slot_level")
-            .ok()
-            .map(|v| standard_spell_damage(damage_type, v))
-            .transpose()?;
-        let leveled_damage_map: Option<LeveledDamage> = v
-            .get_map("damage_at_character_level")
-            .ok()
-            .map(|v| leveled_spell_damage(damage_type, v))
-            .transpose()?
-            // sorts the damage by level
-            .map(|mut v| {
-                v.sort_by_key(|a| a.0);
-                v
-            });
+            let damage_vec: Option<StandardDamage> = v
+                .get_map("damage_at_slot_level")
+                .ok()
+                .map(|v| standard_spell_damage(damage_type, v))
+                .transpose()?;
+            let leveled_damage_map: Option<LeveledDamage> = v
+                .get_map("damage_at_character_level")
+                .ok()
+                .map(|v| leveled_spell_damage(damage_type, v))
+                .transpose()?
+                // sorts the damage by level
+                .map(|mut v| {
+                    v.sort_by_key(|a| a.0);
+                    v
+                });
 
-        Ok((damage_vec, leveled_damage_map))
-    })
-    .transpose()
-    .map(|v| v.unwrap_or((None, None)))
+            Ok((damage_vec, leveled_damage_map))
+        })
+        .transpose()
+        .map(|v| v.unwrap_or((None, None)))
 }
 
 fn standard_spell_damage(

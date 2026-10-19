@@ -21,7 +21,7 @@ pub struct Spell {
     pub casting_time: String,
     /// e.g. "Instantaneous", "10 minutes"
     pub duration: String,
-    /// Spell level 
+    /// Spell level
     pub level: usize,
     /// e.g. "60 feet"
     pub range: String,
