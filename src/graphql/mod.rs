@@ -14,15 +14,10 @@ pub struct GraphqlProvider {
 
 #[derive(Debug, Error)]
 pub enum GraphqlError {
-    Item(items::ItemError),
+    #[error("Item Error: {0}")]
+    Item(#[from] items::ItemError),
 }
-impl Display for GraphqlError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GraphqlError::Item(i) => i.fmt(f),
-        }
-    }
-}
+
 
 
 #[async_trait]
