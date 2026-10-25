@@ -67,9 +67,9 @@
 
 #[cfg(feature = "dnd5eapi")]
 pub mod get;
+mod getter;
 #[cfg(feature = "graphql_api")]
 pub mod graphql;
-mod getter;
 pub mod rules2014;
 pub mod save;
 
