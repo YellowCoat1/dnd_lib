@@ -93,7 +93,7 @@ fn process_equipment(
         Vehicle(vehicle) => generic_item(&vehicle.name, &vehicle.desc),
     };
 
-    Ok((item.name.clone(), item))
+    Ok((item.name.to_lowercase(), item))
 }
 
 fn process_armor(
@@ -254,5 +254,73 @@ fn generic_item(name: &str, desc: &Option<Vec<String>>) -> Item {
         description,
         item_type: ItemType::Misc,
         features: vec![],
+    }
+}
+
+#[cfg(test)]
+mod item_tests {
+    use std::collections::HashMap;
+
+    use crate::{
+        graphql::items::new_database,
+        rules2014::items::{ArmorCategory, DamageRoll, Item, ItemType},
+    };
+
+    #[tokio::test]
+    async fn item_tests() {
+        let item_database = new_database().await.unwrap();
+        shortsword_test(&item_database);
+        shield_test(&item_database);
+        studded_leather_retrieval(&item_database);
+    }
+
+    fn shortsword_test(database: &HashMap<String, Item>) {
+        let shortsword = database
+            .get("shortsword")
+            .expect("Database should've had shortsword");
+        assert_eq!(shortsword.name, "Shortsword");
+        let weapon_type = match &shortsword.item_type {
+            ItemType::Weapon(w) => w,
+            ItemType::Misc => panic!("Shortsword should be a weapon, not a misc item"),
+            ItemType::Shield => panic!("Shortsword should be a weapon, not a shield"),
+            ItemType::Armor(_) => panic!("Shortsword should be a weapon, not armor"),
+        };
+
+        assert_eq!(
+            weapon_type.damage,
+            DamageRoll {
+                bonus: 0,
+                damage_type: crate::rules2014::items::DamageType::Piercing,
+                number: 1,
+                dice: 6,
+            }
+        )
+    }
+
+    fn shield_test(database: &HashMap<String, Item>) {
+        let shield = database
+            .get("shield")
+            .expect("Database should have a shield");
+        match &shield.item_type {
+            ItemType::Weapon(_) => panic!("Shield should be a shield, not a weapon"),
+            ItemType::Misc => panic!("Shield should be a shield, not a misc item"),
+            ItemType::Armor(_) => panic!("Sheild should be a weapon, not armor"),
+            ItemType::Shield => (),
+        }
+    }
+
+    fn studded_leather_retrieval(database: &HashMap<String, Item>) {
+        let v = database
+            .get("studded leather armor")
+            .expect("Failed to get studded leather");
+        assert_eq!(v.name, "Studded Leather Armor");
+
+        let armor = match &v.item_type {
+            ItemType::Armor(a) => a,
+            _ => panic!("Studded leather armor should be armor!"),
+        };
+
+        assert_eq!(armor.ac, 12);
+        assert_eq!(armor.category, ArmorCategory::Light);
     }
 }
