@@ -63,7 +63,7 @@ impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
 
         get_database()?
             .0
-            .get(name)
+            .get(&name.to_lowercase())
             .cloned()
             .ok_or(ItemError::new(ItemErrorVariant::DoesNotExist).into())
     }
