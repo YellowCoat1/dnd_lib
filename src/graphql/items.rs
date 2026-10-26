@@ -74,8 +74,8 @@ async fn request_equipment() -> Option<ResponseData> {
         .json(&request_body)
         .send()
         .await
-        .unwrap();
-    let response_body: Response<equipment_query::ResponseData> = res.json().await.unwrap();
+        .ok()?;
+    let response_body: Response<equipment_query::ResponseData> = res.json().await.ok()?;
     response_body.data
 }
 
@@ -191,7 +191,12 @@ fn process_weapon(
                 ),
             )?;
         } else {
-            let damage_bonus: isize = damage_raw.damage_dice.parse().unwrap();
+            let damage_bonus: isize = damage_raw.damage_dice.parse().map_err(|_| {
+                ItemError::named(
+                    ItemErrorVariant::ParseError("Damage Dice".to_string()),
+                    name.clone(),
+                )
+            })?;
             damage = DamageRoll {
                 number: 0,
                 dice: 0,
