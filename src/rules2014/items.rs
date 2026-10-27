@@ -415,8 +415,8 @@ impl DamageRoll {
         let bonus;
         if b.contains('+') || b.contains('-') {
             let (c, d) = b.split_once(['+', '-'])?;
-            dice = c.parse().ok()?;
-            bonus = d.parse().ok()?;
+            dice = c.trim().parse().ok()?;
+            bonus = d.trim().parse().ok()?;
         } else {
             dice = b.parse().ok()?;
             bonus = 0;
