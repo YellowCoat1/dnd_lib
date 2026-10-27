@@ -8,6 +8,7 @@ use crate::rules2014::{background::Background, class::Class, items::Item, spells
 
 mod items;
 use items::{ItemError, ItemErrorVariant};
+mod races;
 mod spells;
 
 pub struct GraphqlProvider {
@@ -20,6 +21,8 @@ pub enum GraphqlError {
     Item(#[from] items::ItemError),
     #[error("Spell Error: {0}")]
     Spell(#[from] spells::SpellError),
+    #[error("Race Error: {0}")]
+    Race(#[from] races::RaceError),
 }
 
 impl GraphqlProvider {
@@ -39,7 +42,7 @@ impl Default for GraphqlProvider {
 #[async_trait]
 impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
     async fn get_race(&self, name: &str) -> Result<Race, GraphqlError> {
-        todo!()
+        races::get_race(name).await.map_err(|v| v.into())
     }
     async fn get_background(&self, name: &str) -> Result<Background, GraphqlError> {
         todo!()
