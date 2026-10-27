@@ -103,6 +103,12 @@ fn process_damage(
     response_data: &spell_query::SpellQuerySpell,
 ) -> Result<Option<Vec<Vec<DamageRoll>>>, SpellError> {
     let name = &response_data.name;
+
+    //sleep pretends to have damage
+    if name == "Sleep" {
+        return Ok(None);
+    }
+
     let damage = response_data
         .damage
         .as_ref()
@@ -227,6 +233,12 @@ fn process_leveled_damage(
     response_data: &spell_query::SpellQuerySpell,
 ) -> Result<Option<Vec<(usize, DamageRoll)>>, SpellError> {
     let name = &response_data.name;
+
+    //sleep pretends to have damage
+    if name == "Sleep" {
+        return Ok(None);
+    }
+
     if let Some(s) = leveled_damage_edge_cases(response_data) {
         return Ok(Some(s));
     }
@@ -266,4 +278,74 @@ fn process_leveled_damage(
             })
             .collect::<Result<Vec<(usize, DamageRoll)>, SpellError>>()?,
     ))
+}
+
+#[cfg(test)]
+mod spell_tests {
+    use crate::rules2014::items::{DamageRoll, DamageType};
+
+    use super::get_spell;
+
+    #[tokio::test]
+    async fn spell_retrieval() {
+        let acid_arrow = get_spell("acid-arrow").await.expect("failed to get spell");
+        assert_eq!(acid_arrow.name, "Acid Arrow");
+        assert_eq!(acid_arrow.range, "90 feet");
+        let damage = acid_arrow.damage.expect("acid arrow should have damage!");
+        let acid = DamageType::Acid;
+        let second_level_damage = damage
+            .first()
+            .expect("acid arrow should have 2nd level damage!");
+        assert_eq!(second_level_damage[0], DamageRoll::new(4, 4, 0, acid));
+        let ninth_level_damage = damage
+            .get(7)
+            .expect("acid arrow should have 9th level damage!");
+        assert_eq!(ninth_level_damage[0], DamageRoll::new(11, 4, 0, acid));
+    }
+
+    #[tokio::test]
+    async fn poison_spray() {
+        use DamageType::Poison;
+        let poison_spray = get_spell("poison spray")
+            .await
+            .expect("failed to get poison spray");
+        let poison_spray_damage = match poison_spray.leveled_damage {
+            Some(s) => s,
+            _ => panic!("Poison spray should have leveled damage"),
+        };
+
+        assert_eq!(
+            poison_spray_damage,
+            vec![
+                (1, DamageRoll::new(1, 12, 0, Poison)),
+                (5, DamageRoll::new(2, 12, 0, Poison)),
+                (11, DamageRoll::new(3, 12, 0, Poison)),
+                (17, DamageRoll::new(4, 12, 0, Poison))
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn sleep() {
+        let sleep = get_spell("sleep").await.expect("failed to get sleep spell");
+        assert!(sleep.damage.is_none(), "sleep should not have damage");
+        assert!(
+            sleep.leveled_damage.is_none(),
+            "sleep should not have leveled damage"
+        );
+    }
+
+    #[tokio::test]
+    async fn magic_missile() {
+        let magic_missile = get_spell("magic-missile")
+            .await
+            .expect("failed to get magic missile spell");
+        assert_eq!(magic_missile.name, "Magic Missile");
+    }
+
+    #[tokio::test]
+    async fn fireball() {
+        let fireball = get_spell("fireball").await.expect("Failed to get fireball");
+        assert!(fireball.damage.is_some());
+    }
 }
