@@ -199,3 +199,50 @@ async fn request_spell_page(name: &str) -> Option<race_query::ResponseData> {
     let response_body: Response<race_query::ResponseData> = res.json().await.ok()?;
     response_body.data
 }
+
+#[cfg(test)]
+mod graphql_race_tests {
+    use crate::rules2014::{features::FeatureEffect, stats::Size, stats::StatType, RaceBonus};
+    #[tokio::test]
+    async fn get_dragonborn() {
+        let dragonborn = super::get_race("dragonborn")
+            .await
+            .expect("failed to get dragonborn!");
+        assert_eq!(*dragonborn.size(), Size::Medium);
+    }
+    #[tokio::test]
+    async fn get_elf() {
+        let elf = super::get_race("elf").await.expect("failed to get elf!");
+        assert_eq!(
+            (elf.name(), elf.speed(), *elf.size()),
+            ("Elf", 30, Size::Medium)
+        );
+        assert_eq!(
+            elf.ability_bonuses().first().cloned(),
+            Some(RaceBonus::Specific(StatType::Dexterity, 2))
+        );
+        assert_eq!(
+            elf.languages().first().cloned(),
+            Some(String::from("Common"))
+        );
+
+        let mut high_elf = elf
+            .subraces()
+            .first()
+            .expect("Elf should have subraces!")
+            .clone();
+
+        assert_eq!(high_elf.name(), "High Elf");
+        assert_eq!(
+            high_elf.ability_bonuses().first().cloned(),
+            Some((Some(StatType::Intelligence), 1))
+        );
+
+        assert_eq!(high_elf.ability_bonuses_unchosen(), vec![]);
+        assert_eq!(&high_elf.description()[..14], "As a high elf,");
+        assert_eq!(
+            high_elf.trait_effects_mut(),
+            Vec::<&mut FeatureEffect>::new()
+        );
+    }
+}
