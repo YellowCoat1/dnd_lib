@@ -8,6 +8,7 @@ use crate::rules2014::{background::Background, class::Class, items::Item, spells
 
 mod items;
 use items::{ItemError, ItemErrorVariant};
+mod spells;
 
 pub struct GraphqlProvider {
     equipment_cache: Mutex<(HashMap<String, Item>, bool)>,
@@ -17,6 +18,8 @@ pub struct GraphqlProvider {
 pub enum GraphqlError {
     #[error("Item Error: {0}")]
     Item(#[from] items::ItemError),
+    #[error("Spell Error: {0}")]
+    Spell(#[from] spells::SpellError),
 }
 
 impl GraphqlProvider {
@@ -68,6 +71,6 @@ impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
             .ok_or(ItemError::new(ItemErrorVariant::DoesNotExist).into())
     }
     async fn get_spell(&self, name: &str) -> Result<Spell, GraphqlError> {
-        todo!()
+        spells::get_spell(name).await.map_err(|v| v.into())
     }
 }
