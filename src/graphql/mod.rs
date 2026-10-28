@@ -7,7 +7,7 @@ use thiserror::Error;
 use crate::rules2014::{background::Background, class::Class, items::Item, spells::Spell, Race};
 
 mod items;
-use items::{ItemError, ItemErrorVariant};
+use items::ItemError;
 mod races;
 mod spells;
 
@@ -54,7 +54,7 @@ impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
         let get_database = || -> Result<_, _> {
             self.equipment_cache
                 .lock()
-                .map_err(|_| ItemError::new(ItemErrorVariant::DatabaseLockError))
+                .map_err(|_| ItemError::DatabaseLockError)
         };
 
         // an edit of get_or_insert_with in order to support async stuffs
@@ -71,7 +71,7 @@ impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
             .0
             .get(&name.to_lowercase())
             .cloned()
-            .ok_or(ItemError::new(ItemErrorVariant::DoesNotExist).into())
+            .ok_or(ItemError::DoesNotExist.into())
     }
     async fn get_spell(&self, name: &str) -> Result<Spell, GraphqlError> {
         spells::get_spell(name).await.map_err(|v| v.into())

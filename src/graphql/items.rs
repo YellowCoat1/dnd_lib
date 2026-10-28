@@ -19,43 +19,27 @@ use crate::{
 struct EquipmentQuery;
 
 #[derive(Debug, Error)]
-#[error("{name}: {source}", name = name.as_deref().unwrap_or(""))]
-pub struct ItemError {
-    pub source: ItemErrorVariant,
-    pub name: Option<String>,
-}
-
-impl ItemError {
-    pub fn new(variant: ItemErrorVariant) -> ItemError {
-        ItemError {
-            source: variant,
-            name: None,
-        }
-    }
-    pub fn named(variant: ItemErrorVariant, name: String) -> ItemError {
-        ItemError {
-            source: variant,
-            name: Some(name),
-        }
-    }
-}
-
-#[derive(Debug, Error)]
-pub enum ItemErrorVariant {
+pub enum ItemError {
     #[error("Failed to obtain item database!")]
     DatabaseLockError,
     #[error("Item does not exist.")]
     DoesNotExist,
     #[error("Failed to contact API.")]
     ConnectionError,
-    #[error("Failed to parse {0}")]
-    ParseError(String),
+    #[error("Failed to parse {0} from item {0}")]
+    ParseError(String, String),
+}
+
+impl ItemError {
+    fn parse_error(msg: &str, name: &str) -> ItemError {
+        ItemError::ParseError(msg.to_string(), name.to_string())
+    }
 }
 
 pub async fn new_database() -> Result<HashMap<String, Item>, ItemError> {
     let response = request_equipment()
         .await
-        .ok_or(ItemError::new(ItemErrorVariant::ConnectionError))?;
+        .ok_or(ItemError::ConnectionError)?;
     response
         .equipments
         .iter()
@@ -117,16 +101,10 @@ fn process_armor(
     }
 
     let ac: isize = armor.armor_class.base.try_into().map_err(|_| {
-        ItemError::named(
-            ItemErrorVariant::ParseError("Armor Class".to_string()),
-            name.clone(),
-        )
+            ItemError::parse_error("Armor Class", &name)
     })?;
     let category = ArmorCategory::from_str(&armor.armor_category).map_err(|_| {
-        ItemError::named(
-            ItemErrorVariant::ParseError("Armor Category".to_string()),
-            name.clone(),
-        )
+        ItemError::parse_error("Armor Category", &name)
     })?;
     let stealth_disadvantage = armor.stealth_disadvantage.unwrap_or(false);
     let strength_minimum: Option<usize> = armor
@@ -134,10 +112,7 @@ fn process_armor(
         .map(|v| v.try_into())
         .transpose()
         .map_err(|_| {
-            ItemError::named(
-                ItemErrorVariant::ParseError("Strength Minimum".to_string()),
-                name.clone(),
-            )
+            ItemError::parse_error("Strength Minimum", &name)
         })?;
 
     let item_type = ItemType::Armor(Armor {
@@ -167,35 +142,22 @@ fn process_weapon(
     let damage;
     let damage_type;
     if let Some(damage_raw) = weapon.damage.as_ref() {
-        let name_cloned = name.clone();
         let damage_type_name = damage_raw
             .damage_type
             .as_ref()
-            .ok_or(ItemError::named(
-                ItemErrorVariant::ParseError("Damage Type".to_string()),
-                name.clone(),
-            ))?
+            .ok_or(ItemError::parse_error("Damage Type", &name))?
             .name
             .as_str();
         damage_type = DamageType::try_from(damage_type_name).map_err(|_| {
-            ItemError::named(
-                ItemErrorVariant::ParseError("Damage Type".to_string()),
-                name_cloned,
-            )
+            ItemError::parse_error("Damage Type", &name)
         })?;
         if damage_raw.damage_dice.chars().find(|v| *v == 'd').is_some() {
             damage = DamageRoll::from_str(&damage_raw.damage_dice, damage_type).ok_or(
-                ItemError::named(
-                    ItemErrorVariant::ParseError("Damage Roll".to_string()),
-                    name.clone(),
-                ),
+                ItemError::parse_error("Damage Roll", &name)
             )?;
         } else {
             let damage_bonus: isize = damage_raw.damage_dice.parse().map_err(|_| {
-                ItemError::named(
-                    ItemErrorVariant::ParseError("Damage Dice".to_string()),
-                    name.clone(),
-                )
+                ItemError::parse_error("Damage Dice", &name)
             })?;
             damage = DamageRoll {
                 number: 0,
@@ -218,20 +180,15 @@ fn process_weapon(
         "simple" => WeaponType::Simple,
         "martial" => WeaponType::Martial,
         _ => {
-            return Err(ItemError::named(
-                ItemErrorVariant::ParseError("Weapon Type".to_string()),
-                name.clone(),
-            ))
+            return Err(ItemError::parse_error("Weapon Type",&name))
+            
         }
     };
 
     let property_list = weapon
         .properties
         .as_ref()
-        .ok_or(ItemError::named(
-            ItemErrorVariant::ParseError("Property List".to_string()),
-            name.clone(),
-        ))?
+        .ok_or(ItemError::parse_error("Property List", &name))?
         .iter()
         .map(|p| p.name.as_str());
 
