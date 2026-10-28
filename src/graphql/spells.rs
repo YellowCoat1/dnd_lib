@@ -26,6 +26,12 @@ pub enum SpellError {
     ParseError(String, String),
 }
 
+impl SpellError {
+    fn parse_error(msg: &str, name: &str) -> SpellError {
+        SpellError::ParseError(msg.to_string(), name.to_string())
+    }
+}
+
 pub async fn get_spell(name: &str) -> Result<Spell, SpellError> {
     let response_data = request_spell_page(name)
         .await
@@ -45,7 +51,7 @@ pub async fn get_spell(name: &str) -> Result<Spell, SpellError> {
     let level: usize = response_data
         .level
         .try_into()
-        .map_err(|_| SpellError::ParseError("Spell Level".to_string(), name.to_string()))?;
+        .map_err(|_| SpellError::parse_error("Spell Level", name))?;
     let material = response_data.material.clone();
     let name = response_data.name.clone();
     let ritual = response_data.ritual;
