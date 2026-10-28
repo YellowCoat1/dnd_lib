@@ -100,20 +100,19 @@ fn process_armor(
         });
     }
 
-    let ac: isize = armor.armor_class.base.try_into().map_err(|_| {
-            ItemError::parse_error("Armor Class", &name)
-    })?;
-    let category = ArmorCategory::from_str(&armor.armor_category).map_err(|_| {
-        ItemError::parse_error("Armor Category", &name)
-    })?;
+    let ac: isize = armor
+        .armor_class
+        .base
+        .try_into()
+        .map_err(|_| ItemError::parse_error("Armor Class", &name))?;
+    let category = ArmorCategory::from_str(&armor.armor_category)
+        .map_err(|_| ItemError::parse_error("Armor Category", &name))?;
     let stealth_disadvantage = armor.stealth_disadvantage.unwrap_or(false);
     let strength_minimum: Option<usize> = armor
         .str_minimum
         .map(|v| v.try_into())
         .transpose()
-        .map_err(|_| {
-            ItemError::parse_error("Strength Minimum", &name)
-        })?;
+        .map_err(|_| ItemError::parse_error("Strength Minimum", &name))?;
 
     let item_type = ItemType::Armor(Armor {
         ac,
@@ -148,17 +147,16 @@ fn process_weapon(
             .ok_or(ItemError::parse_error("Damage Type", &name))?
             .name
             .as_str();
-        damage_type = DamageType::try_from(damage_type_name).map_err(|_| {
-            ItemError::parse_error("Damage Type", &name)
-        })?;
+        damage_type = DamageType::try_from(damage_type_name)
+            .map_err(|_| ItemError::parse_error("Damage Type", &name))?;
         if damage_raw.damage_dice.chars().find(|v| *v == 'd').is_some() {
-            damage = DamageRoll::from_str(&damage_raw.damage_dice, damage_type).ok_or(
-                ItemError::parse_error("Damage Roll", &name)
-            )?;
+            damage = DamageRoll::from_str(&damage_raw.damage_dice, damage_type)
+                .ok_or(ItemError::parse_error("Damage Roll", &name))?;
         } else {
-            let damage_bonus: isize = damage_raw.damage_dice.parse().map_err(|_| {
-                ItemError::parse_error("Damage Dice", &name)
-            })?;
+            let damage_bonus: isize = damage_raw
+                .damage_dice
+                .parse()
+                .map_err(|_| ItemError::parse_error("Damage Dice", &name))?;
             damage = DamageRoll {
                 number: 0,
                 dice: 0,
@@ -179,10 +177,7 @@ fn process_weapon(
     let weapon_type = match weapon.weapon_category.to_lowercase().as_str() {
         "simple" => WeaponType::Simple,
         "martial" => WeaponType::Martial,
-        _ => {
-            return Err(ItemError::parse_error("Weapon Type",&name))
-            
-        }
+        _ => return Err(ItemError::parse_error("Weapon Type", &name)),
     };
 
     let property_list = weapon
