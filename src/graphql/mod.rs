@@ -7,6 +7,7 @@ use thiserror::Error;
 use crate::rules2014::{background::Background, class::Class, items::Item, spells::Spell, Race};
 
 mod backgrounds;
+mod classes;
 mod items;
 mod races;
 mod spells;
@@ -25,6 +26,8 @@ pub enum GraphqlError {
     Race(#[from] races::RaceError),
     #[error("Background Error: {0}")]
     Background(#[from] backgrounds::BackgroundError),
+    #[error("Class Error: {0}")]
+    Class(#[from] classes::ClassError),
 }
 
 impl GraphqlProvider {
@@ -52,7 +55,7 @@ impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
             .map_err(|v| v.into())
     }
     async fn get_class(&self, name: &str) -> Result<Class, GraphqlError> {
-        todo!()
+        classes::get_class(name, self).await.map_err(|v| v.into())
     }
     async fn get_item(&self, name: &str) -> Result<Item, GraphqlError> {
         let get_database = || -> Result<_, _> {
