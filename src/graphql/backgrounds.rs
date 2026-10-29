@@ -196,3 +196,13 @@ async fn request_background_page(name: &str) -> Option<background_query::Respons
     let response_body: Response<background_query::ResponseData> = res.json().await.ok()?;
     response_body.data
 }
+
+#[cfg(test)]
+mod bg_tests {
+    use super::get_background;
+    #[tokio::test]
+    async fn bg_test() {
+        let acolyte = get_background("acolyte").await.unwrap();
+        assert_eq!(acolyte.name(), "Acolyte");
+    }
+}
