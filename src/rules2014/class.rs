@@ -392,14 +392,14 @@ impl ClassBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Class, String> {
+    pub fn build(self) -> Result<Class, ClassBuilderError> {
         Ok(Class {
-            name: self.name.ok_or("Class name is required")?,
+            name: self.name.ok_or(ClassBuilderError::NameMissing)?,
             subclasses: self.subclasses,
-            features: self.features.ok_or("Class features are required")?,
+            features: self.features.ok_or(ClassBuilderError::FeaturesMissing)?,
             beginning_items: self.beginning_items,
             saving_throw_proficiencies: self.saving_throw_proficiencies,
-            hit_die: self.hit_die.ok_or("Class hit die is required")?,
+            hit_die: self.hit_die.ok_or(ClassBuilderError::HitDieMissing)?,
             skill_proficiency_choices: self
                 .skill_proficiency_choices
                 .unwrap_or((0, PresentedOption::Choice(vec![]))),
