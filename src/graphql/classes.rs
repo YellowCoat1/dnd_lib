@@ -6,6 +6,7 @@ use graphql_client::{GraphQLQuery, Response};
 use heck::ToKebabCase;
 use thiserror::Error;
 
+mod equipment;
 mod features;
 
 #[derive(GraphQLQuery)]
@@ -46,11 +47,13 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
         .map_err(|_| ClassError::parse_error("hit die", name))?;
 
     let features = features::features(&response_data)?;
+
     let equipment = todo!();
+    let equipment_proficiencies = todo!();
+
     let multiclass_prerequisites = todo!();
     let multiclass_or = todo!();
     let saving_throw_proficiencies = todo!();
-    let equipment_proficiencies = todo!();
     let subclasses = todo!();
     let spells = todo!();
     let skills_num = todo!();
