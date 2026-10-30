@@ -1,5 +1,5 @@
 use crate::{
-    graphql::GraphqlProvider,
+    graphql::{items::ItemError, GraphqlProvider},
     rules2014::class::{Class, ClassBuilder, ClassBuilderError},
 };
 use graphql_client::{GraphQLQuery, Response};
@@ -25,6 +25,8 @@ pub enum ClassError {
     ConnectionError,
     #[error("Failed to parse {0} from item {0}")]
     ParseError(String, String),
+    #[error("Item Retrieval Error: {0}")]
+    ItemRetrieval(#[from] ItemError),
 }
 
 impl ClassError {
