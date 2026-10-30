@@ -1,5 +1,6 @@
 query ClassQuery($index: String!) {
   class(index: $index) {
+    name
     proficiencies {
       name
     }

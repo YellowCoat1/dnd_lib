@@ -1,4 +1,7 @@
-use crate::{graphql::GraphqlProvider, rules2014::class::Class};
+use crate::{
+    graphql::GraphqlProvider,
+    rules2014::class::{Class, ClassBuilder, ClassBuilderError},
+};
 use graphql_client::{GraphQLQuery, Response};
 use heck::ToKebabCase;
 use thiserror::Error;
@@ -21,6 +24,12 @@ pub enum ClassError {
     ParseError(String, String),
 }
 
+impl ClassError {
+    fn parse_error(msg: &str, name: &str) -> ClassError {
+        ClassError::ParseError(msg.to_string(), name.to_string())
+    }
+}
+
 pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, ClassError> {
     let response_data = request_class_page(name)
         .await
@@ -28,7 +37,41 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
         .class
         .ok_or(ClassError::DoesNotExist(name.to_string()))?;
 
-    todo!()
+    let name = &response_data.name;
+    let hit_die = response_data
+        .hit_die
+        .try_into()
+        .map_err(|_| ClassError::parse_error("hit die", name))?;
+
+    let features = todo!();
+    let equipment = todo!();
+    let multiclass_prerequisites = todo!();
+    let multiclass_or = todo!();
+    let saving_throw_proficiencies = todo!();
+    let equipment_proficiencies = todo!();
+    let subclasses = todo!();
+    let spells = todo!();
+    let skills_num = todo!();
+    let skills_choices = todo!();
+
+    ClassBuilder::new()
+        .name(name.clone())
+        .set_hit_die(hit_die)
+        .add_equipment_proficiencies(equipment_proficiencies)
+        .saving_throw_proficiencies(saving_throw_proficiencies)
+        //.add_multiclassing_prerequisites(multiclass_prerequisites)
+        .set_multiclassing_prerequisites_or(multiclass_or)
+        //.add_beginning_items(equipment)
+        .set_features(features)
+        //.add_subclasses(subclasses)
+        .set_spellcasting(spells)
+        .set_skill_proficiency_choices(skills_num, skills_choices)
+        .build()
+        .map_err(|v| match v {
+            ClassBuilderError::NameMissing => ClassError::parse_error("missing name", name),
+            ClassBuilderError::HitDieMissing => ClassError::parse_error("hit die missing", name),
+            ClassBuilderError::FeaturesMissing => ClassError::parse_error("features missing", name),
+        })
 }
 
 async fn request_class_page(name: &str) -> Option<class_query::ResponseData> {
