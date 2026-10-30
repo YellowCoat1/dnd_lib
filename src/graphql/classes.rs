@@ -6,6 +6,8 @@ use graphql_client::{GraphQLQuery, Response};
 use heck::ToKebabCase;
 use thiserror::Error;
 
+mod features;
+
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "graphql_query/schema.json"
@@ -43,7 +45,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
         .try_into()
         .map_err(|_| ClassError::parse_error("hit die", name))?;
 
-    let features = todo!();
+    let features = features::features(&response_data)?;
     let equipment = todo!();
     let multiclass_prerequisites = todo!();
     let multiclass_or = todo!();
