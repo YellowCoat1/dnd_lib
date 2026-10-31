@@ -11,6 +11,7 @@ use thiserror::Error;
 
 mod equipment;
 mod features;
+mod spellcasting;
 mod subclasses;
 
 #[derive(GraphQLQuery)]
@@ -61,7 +62,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
     let multiclass_prerequisites = process_multiclassing_requirements(&response_data)?;
     let multiclass_or = name.to_lowercase().as_str() == "fighter";
     let subclasses = subclasses::process_subclasses(&response_data)?;
-    let spells = None;
+    let spells = spellcasting::process_spellcasting(&response_data)?;
     let skills_choices = vec![];
     let skills_num = 0;
 
