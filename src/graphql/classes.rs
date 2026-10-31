@@ -11,6 +11,7 @@ use thiserror::Error;
 
 mod equipment;
 mod features;
+mod subclasses;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -57,24 +58,23 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
     let (equipment_proficiencies, saving_throw_proficiencies) =
         process_proficiencies(&response_data)?;
 
-    let multiclass_prerequisites = process_multiclassing_requirements(&response_data);
+    let multiclass_prerequisites = process_multiclassing_requirements(&response_data)?;
     let multiclass_or = name.to_lowercase().as_str() == "fighter";
-    let saving_throw_proficiencies = todo!();
-    let subclasses = todo!();
-    let spells = todo!();
-    let skills_num = todo!();
-    let skills_choices = todo!();
+    let subclasses = subclasses::process_subclasses(&response_data)?;
+    let spells = None;
+    let skills_choices = vec![];
+    let skills_num = 0;
 
     ClassBuilder::new()
         .name(name.clone())
         .set_hit_die(hit_die)
         .add_equipment_proficiencies(equipment_proficiencies)
         .saving_throw_proficiencies(saving_throw_proficiencies)
-        //.add_multiclassing_prerequisites(multiclass_prerequisites)
+        .add_multiclassing_prerequisites(multiclass_prerequisites)
         .set_multiclassing_prerequisites_or(multiclass_or)
-        //.add_beginning_items(equipment)
+        .add_beginning_items(equipment)
         .set_features(features)
-        //.add_subclasses(subclasses)
+        .add_subclasses(subclasses)
         .set_spellcasting(spells)
         .set_skill_proficiency_choices(skills_num, skills_choices)
         .build()
