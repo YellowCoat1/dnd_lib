@@ -50,7 +50,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
 
     let features = features::features(&response_data)?;
 
-    let equipment = todo!();
+    let equipment = equipment::equipment(&response_data, provider).await?;
     let equipment_proficiencies = todo!();
 
     let multiclass_prerequisites = todo!();
