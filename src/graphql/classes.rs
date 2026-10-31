@@ -11,6 +11,7 @@ use thiserror::Error;
 
 mod equipment;
 mod features;
+mod skills;
 mod spellcasting;
 mod subclasses;
 
@@ -63,8 +64,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
     let multiclass_or = name.to_lowercase().as_str() == "fighter";
     let subclasses = subclasses::process_subclasses(&response_data)?;
     let spells = spellcasting::process_spellcasting(&response_data)?;
-    let skills_choices = vec![];
-    let skills_num = 0;
+    let (skills_num, skills_choices) = skills::process_skills(&response_data)?;
 
     ClassBuilder::new()
         .name(name.clone())
