@@ -9,12 +9,12 @@ use graphql_client::{GraphQLQuery, Response};
 use heck::ToKebabCase;
 use thiserror::Error;
 
+mod class_specific;
 mod equipment;
 mod features;
 mod skills;
 mod spellcasting;
 mod subclasses;
-mod class_specific;
 
 #[derive(GraphQLQuery)]
 #[graphql(

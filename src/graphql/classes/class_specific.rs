@@ -1,14 +1,20 @@
 use std::collections::HashMap;
 
-use crate::graphql::classes::{ClassError, class_query::ClassQueryClass};
+use crate::graphql::classes::{class_query::ClassQueryClass, ClassError};
 
-
-pub fn process_class_specific(response_data: &ClassQueryClass) -> Result<Vec<(String, [String; 20])>, ClassError> {
+pub fn process_class_specific(
+    response_data: &ClassQueryClass,
+) -> Result<Vec<(String, [String; 20])>, ClassError> {
     let name = &response_data.name;
     let class_specific_strings: [Vec<(String, String)>; 20] = response_data
         .class_levels
         .iter()
-        .map(|level| level.class_specific.as_ref().ok_or(ClassError::parse_error("class specific", name)))
+        .map(|level| {
+            level
+                .class_specific
+                .as_ref()
+                .ok_or(ClassError::parse_error("class specific", name))
+        })
         .map(|v| v.map(class_specific_from_data))
         .collect::<Result<Vec<_>, ClassError>>()?
         .try_into()
@@ -39,23 +45,32 @@ fn class_specific_from_data(class_specific_fields: &ClassSpecificList) -> Vec<(S
         vec.push(("Ki Points".to_string(), ki.to_string()));
     }
     if let Some(unarmored_movement) = &class_specific_fields.unarmored_movement {
-        vec.push(("Unarmored Movement".to_string(), unarmored_movement.to_string()));
+        vec.push((
+            "Unarmored Movement".to_string(),
+            unarmored_movement.to_string(),
+        ));
     }
     if let Some(martial_arts) = &class_specific_fields.martial_arts {
-        vec.push(("Martial Arts".to_string(), format!("{}d{}", martial_arts.dice_value, martial_arts.dice_count)));
+        vec.push((
+            "Martial Arts".to_string(),
+            format!("{}d{}", martial_arts.dice_value, martial_arts.dice_count),
+        ));
     }
 
     // rogue
     if let Some(sneak) = &class_specific_fields.sneak_attack {
-        vec.push(("Sneak Attack".to_string(), format!("{}d{}", sneak.dice_count, sneak.dice_value)));
+        vec.push((
+            "Sneak Attack".to_string(),
+            format!("{}d{}", sneak.dice_count, sneak.dice_value),
+        ));
     }
 
     // sorcerer
     if let Some(sorcery_points) = class_specific_fields.sorcery_points {
         vec.push(("Sorcery Points".to_string(), sorcery_points.to_string()));
     }
-    
-    // warlock 
+
+    // warlock
     if let Some(invocations) = class_specific_fields.invocations_known {
         vec.push(("Invocations Known".to_string(), invocations.to_string()));
     }
@@ -69,7 +84,8 @@ fn class_specific_from_data(class_specific_fields: &ClassSpecificList) -> Vec<(S
 }
 
 fn transpose(
-    name: &str, input: [Vec<(String, String)>; 20],
+    name: &str,
+    input: [Vec<(String, String)>; 20],
 ) -> Result<Vec<(String, [String; 20])>, ClassError> {
     let mut output: HashMap<String, [Option<String>; 20]> = HashMap::new();
 
@@ -89,7 +105,10 @@ fn transpose(
             let values: Result<Vec<String>, _> = values
                 .into_iter()
                 .map(|value| {
-                    value.ok_or(ClassError::ParseError(format!("class specific field {} only partially complete", key), name.to_string()))
+                    value.ok_or(ClassError::ParseError(
+                        format!("class specific field {} only partially complete", key),
+                        name.to_string(),
+                    ))
                 })
                 .collect();
 
