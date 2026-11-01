@@ -175,11 +175,14 @@ async fn multiple_items(
     let mut output = Vec::with_capacity(items.len());
     for item in items {
         let new_item = match item {
-            SingleItem::EquipmentCategoryChoiceOption => {
-                return Err(ClassError::parse_error(
-                    "equipment cat choice option unimplemented",
-                    "null",
-                ))
+            SingleItem::EquipmentCategoryChoiceOption(o) => {
+                category_from_str(&o.choice.from.equipment_category.name)
+                    .into_iter()
+                    .next()
+                    .ok_or(ClassError::parse_error(
+                        "equipment cat choice option null category",
+                        &o.choice.from.equipment_category.name,
+                    ))?
             }
             SingleItem::CountedReferenceOption(o) => {
                 let count: usize = o

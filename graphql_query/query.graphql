@@ -97,6 +97,15 @@ query ClassQuery($index: String!) {
             __typename
               items {
                 __typename
+                ... on EquipmentCategoryChoiceOption {
+                  choice {
+                    from {
+                      equipment_category {
+                        name
+                      }
+                    }
+                  }
+                }
                 ... on CountedReferenceOption {
                   of {
                     name
