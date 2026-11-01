@@ -139,6 +139,49 @@ query ClassQuery($index: String!) {
         cantrips_known 
         spells_known
       }
+      class_specific {
+        wild_shape_swim
+        wild_shape_max_cr
+        wild_shape_fly
+        unarmored_movement
+        sorcery_points
+        song_of_rest_die
+        sneak_attack {
+          dice_value
+          dice_count
+        }
+        rage_damage_bonus
+        rage_count
+        mystic_arcanum_level_9
+        mystic_arcanum_level_8
+        mystic_arcanum_level_7
+        mystic_arcanum_level_6
+        metamagic_known
+        martial_arts {
+          dice_count
+          dice_value
+        }
+        magical_secrets_max_9
+        magical_secrets_max_7
+        magical_secrets_max_5
+        ki_points
+        invocations_known
+        indomitable_uses
+        favored_terrain
+        favored_enemies
+        extra_attacks
+        destroy_undead_cr
+        creating_spell_slots {
+          sorcery_point_cost
+          spell_slot_level
+        }
+        channel_divinity_charges
+        brutal_critical_dice
+        bardic_inspiration_die
+        aura_range
+        arcane_recovery_levels
+        action_surges
+      }
     }
     spells {
       name

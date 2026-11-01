@@ -14,6 +14,7 @@ mod features;
 mod skills;
 mod spellcasting;
 mod subclasses;
+mod class_specific;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -65,6 +66,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
     let subclasses = subclasses::process_subclasses(&response_data)?;
     let spells = spellcasting::process_spellcasting(&response_data)?;
     let (skills_num, skills_choices) = skills::process_skills(&response_data)?;
+    let class_specific = class_specific::process_class_specific(&response_data)?;
 
     ClassBuilder::new()
         .name(name.clone())
@@ -78,6 +80,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
         .add_subclasses(subclasses)
         .set_spellcasting(spells)
         .set_skill_proficiency_choices(skills_num, skills_choices)
+        .add_class_specific_fields(class_specific)
         .build()
         .map_err(|v| match v {
             ClassBuilderError::NameMissing => ClassError::parse_error("missing name", name),
