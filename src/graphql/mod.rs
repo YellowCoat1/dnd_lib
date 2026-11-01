@@ -12,6 +12,9 @@ mod items;
 mod races;
 mod spells;
 
+#[cfg(test)]
+mod class_tests;
+
 pub struct GraphqlProvider {
     equipment_cache: Mutex<(HashMap<String, Item>, bool)>,
 }
