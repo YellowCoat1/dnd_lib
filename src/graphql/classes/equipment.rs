@@ -106,7 +106,7 @@ fn category_from_str(name: &str) -> Vec<(ItemCategory, usize)> {
     match name.to_lowercase().as_str() {
         "simple melee weapons" => vec![(ItemCategory::Weapon(WeaponType::Simple), 1)],
         "simple weapons" => vec![(ItemCategory::Weapon(WeaponType::Simple), 1)],
-        "martial weapons" => vec![(ItemCategory::Weapon(WeaponType::Simple), 1)],
+        "martial weapons" => vec![(ItemCategory::Weapon(WeaponType::Martial), 1)],
         o => vec![(
             ItemCategory::Item(Item {
                 name: o.to_string(),
