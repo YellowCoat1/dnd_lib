@@ -132,7 +132,15 @@ async fn parse_items(
     for option in option_set.options.iter() {
         let item = match option {
             ItemChoice::EquipmentCategoryChoiceOption(category) => {
-                category_from_str(&category.choice.from.equipment_category.name)
+                let choose: usize = category.choice.choose.try_into().map_err(|_| {
+                    ClassError::parse_error(
+                        "cat choice option choose#",
+                        &category.choice.from.equipment_category.name,
+                    )
+                })?;
+                let mut cats = category_from_str(&category.choice.from.equipment_category.name);
+                cats.iter_mut().for_each(|z| z.1 = choose);
+                cats
             }
             ItemChoice::CountedReferenceOption(input_items) => {
                 counted_refrence_option(input_items, provider).await?

@@ -127,6 +127,7 @@ query ClassQuery($index: String!) {
                     name
                   }
                 }
+                choose
               }
             }
           }
