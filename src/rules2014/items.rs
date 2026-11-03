@@ -7,9 +7,6 @@ use super::{features::Feature, stats::EquipmentProficiencies};
 use strum::{Display as StrumDisplay, EnumString};
 
 /// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately.
-///
-/// If you want an [Item], you need to use a get function, like
-/// [Dnd5eapiGetter](crate::prelude::Dnd5eapiGetter).
 pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
     "club",
     "dagger",
@@ -25,9 +22,6 @@ pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
 /// Lists the names of all regular D&D ranged simple weapons.
 ///
 /// See [SIMPLE_WEAPONS_MELEE].
-///
-/// If you want an [Item], you need to use a get function, like
-/// [Dnd5eapiGetter](crate::prelude::Dnd5eapiGetter).
 pub const SIMPLE_WEAPONS_RANGED: [&str; 4] = ["crossbow light ", "dart", "shortbow", "sling"];
 
 /// Lists the names of all regular D&D simple weapons.
@@ -67,9 +61,6 @@ pub const fn martial_weapons() -> [&'static str; 23] {
 }
 
 /// Lists the names of all regular D&D melee martial weapons. Ranged weapons are listed seperately.
-///
-/// If you want an [Item], you need to use a get function, like
-/// [Dnd5eapiGetter](crate::prelude::Dnd5eapiGetter).
 pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
     "battleaxe",
     "flail",
@@ -94,9 +85,6 @@ pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
 /// Lists the names of all regular D&D ranged martial weapons.
 ///
 /// See [MARTIAL_WEAPONS_MELEE].
-///
-/// If you want an [Item], you need to use a get function, like
-/// [Dnd5eapiGetter](crate::prelude::Dnd5eapiGetter).
 pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
     "blowgun",
     "crossbow hand",

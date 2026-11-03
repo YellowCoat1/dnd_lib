@@ -49,7 +49,7 @@ use super::stats::{
 /// A struct to represent a Dungeons and Dragons character.
 ///
 /// In order to build a character, you need a [Class], a [Background], and a [Race].
-/// To get one of these, you can either get them from the api using the [get](super::super::get) module,
+/// To get one of these, you can either get them from the api using the [graphql](super::super::graphql) module,
 /// or build them from scratch in the case of homebrew.
 ///
 /// ```
@@ -142,7 +142,7 @@ use super::stats::{
 ///
 /// Then, you choose the category, (if there is any) so "any simple melee weapon" could be chosen as a "dagger".
 /// This is done with [Character::set_unchosen_category]. Do note that you would need to retrieve
-/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [Dnd5eapiGetter](crate::prelude::Dnd5eapiGetter))  once you know the simple weapon you want is a dagger.
+/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [GraphqlProvider](crate::prelude::GraphqlProvider))  once you know the simple weapon you want is a dagger.
 ///
 /// Finally, you call [Character::add_chosen_items] to add the chosen items to the character's item
 /// list.
