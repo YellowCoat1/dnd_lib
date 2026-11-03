@@ -86,9 +86,13 @@ async fn main() {
         .expect("Cleric should be able to prepare spells");
     cleric_prepared_list.push(lesser_restoration);
     cleric_prepared_list.push(mass_healing_word);
-    let (sorcerer_known_list, _) = spellcaster
-        .prepare_spells(1)
-        .expect("Sorcerer should be able to learn spells");
+    // sorcerer has known spells rather than prepared spells,
+    // so the spell list is accessed directly
+    let sorcerer_known_list = &mut spellcaster
+        .classes[1].spellcasting
+        .as_mut()
+        .expect("Sorcerer should be able to learn spells")
+        .1;
     sorcerer_known_list.push(sleep);
 
     // cast lesser restoration from the cleric spell list
