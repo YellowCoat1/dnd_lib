@@ -59,11 +59,8 @@
 //!
 //! ## Feature flags
 //!
-//! - `integration` Specifically for testing. Enables all tests.
-//! - `dnd5eapi` - *(enabled by default)* Enables retrieving through the dnd5eapi.co api.
-//! - `item_list` - *(enabled by default)* Enables the constant array of item names retrievable
-//!   through the dnd5eapi.co api, seen at [get::ITEM_NAMES]. This is delegated to a features, as it is ~2.5 kb of data by
-//!   itself.
+//! - `graphql_api` - *(enabled by default)* Enables retrieving through the dnd5eapi.co graphql api.
+//! - `dnd5eapi` -  Enables retrieving through the dnd5eapi.co REST api.
 
 #[cfg(feature = "dnd5eapi")]
 pub mod get;

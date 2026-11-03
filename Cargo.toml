@@ -27,7 +27,6 @@ graphql_client = { version = "0.16.0", optional = true, features = ["reqwest"] }
 [features]
 dnd5eapi = ["tokio", "regex", "reqwest"]
 graphql_api = ["tokio", "reqwest", "graphql_client"]
-item_list = ["dnd5eapi"]
 default = ["graphql_api"]
 disk-tests = []
 network-intensive-tests = ["dnd5eapi"]
