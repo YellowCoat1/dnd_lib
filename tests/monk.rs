@@ -145,7 +145,7 @@ async fn level_3_elf_monk() {
         investigation: 1,
         medicine: 2,
         nature: 1,
-        perception: 2,
+        perception: 4,
         performance: -1,
         persuasion: -1,
         religion: 3,
