@@ -7,7 +7,7 @@ use futures::future::try_join_all;
 
 #[tokio::test]
 async fn level_10_warlock() {
-    let provider = Dnd5eapiGetter::new();
+    let provider = GraphqlProvider::new();
     let tiefling_future = provider.get_race("tiefling");
     let warlock_future = provider.get_class("warlock");
     let acolyte_future = provider.get_background("acolyte");
