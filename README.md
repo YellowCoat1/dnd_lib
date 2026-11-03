@@ -16,12 +16,12 @@ cargo add dnd_lib
 * Serializable datastructures for easy caching
 
 ## Usage
-Creating a simple level 1 character. Do note this takes ~20 seconds, since the api gets are sequential.
+Creating a simple level 1 character. 
 ```rust
 use dnd_lib::prelude::*;
 #[tokio::main]
 async fn main() {
-	let provider = Dnd5eapiGetter::new();
+	let provider = GraphqlProvider::new();
 	
 	let rogue = provider.get_class("rogue").await.unwrap();
 	let human = provider.get_race("human").await.unwrap();
