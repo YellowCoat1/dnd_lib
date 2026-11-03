@@ -201,7 +201,7 @@ async fn level_3_elf_monk() {
         .first()
         .expect("Monk should have a class")
         .get_class_specific()
-        .get("ki points")
+        .get("Ki Points")
         .expect("Monk should have ki points")
         .parse()
         .expect("Ki points should be a number");
