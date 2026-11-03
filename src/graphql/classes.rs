@@ -204,13 +204,13 @@ fn process_multiclassing_requirements(
 
 
 fn process_tracked_fields(response_data: &ClassQueryClass) -> Option<TrackedField> {
-    match response_data.name.as_str() {
-        "Barbarian" => Some(TrackedField {
+    match response_data.name.to_lowercase().as_str() {
+        "barbarian" => Some(TrackedField {
             name: "Rage".to_string(),
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("rage count".to_string()),
+            class_specific_max: Some("Rages".to_string()),
             hard_max: None,
         }),
         "druid" => Some(TrackedField {
@@ -226,7 +226,7 @@ fn process_tracked_fields(response_data: &ClassQueryClass) -> Option<TrackedFiel
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("sorcery points".to_string()),
+            class_specific_max: Some("Sorcery Points".to_string()),
             hard_max: None,
         }),
         "monk" => Some(TrackedField {
@@ -234,7 +234,7 @@ fn process_tracked_fields(response_data: &ClassQueryClass) -> Option<TrackedFiel
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("ki points".to_string()),
+            class_specific_max: Some("Ki Points".to_string()),
             hard_max: None,
         }),
         _ => None,
