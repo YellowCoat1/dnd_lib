@@ -1,8 +1,6 @@
 use crate::{
-    graphql::{classes::class_query::ClassQueryClass, items::ItemError, GraphqlProvider},
-    rules2014::{
-        class::{Class, ClassBuilder, ClassBuilderError},
-        stats::{EquipmentProficiencies, Saves, StatType},
+    graphql::{GraphqlProvider, classes::class_query::ClassQueryClass, items::ItemError}, rules2014::{
+        class::{Class, ClassBuilder, ClassBuilderError, TrackedField}, stats::{EquipmentProficiencies, Saves, StatType},
     },
 };
 use graphql_client::{GraphQLQuery, Response};
@@ -68,6 +66,9 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
     let (skills_num, skills_choices) = skills::process_skills(&response_data)?;
     let class_specific = class_specific::process_class_specific(&response_data)?;
 
+    let tracked_fields = process_tracked_fields(&response_data)
+        .map(|v| vec![v])
+        .unwrap_or(vec![]);
     ClassBuilder::new()
         .name(name.clone())
         .set_hit_die(hit_die)
@@ -81,6 +82,7 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
         .set_spellcasting(spells)
         .set_skill_proficiency_choices(skills_num, skills_choices)
         .add_class_specific_fields(class_specific)
+        .add_tracked_fields(tracked_fields)
         .build()
         .map_err(|v| match v {
             ClassBuilderError::NameMissing => ClassError::parse_error("missing name", name),
@@ -198,4 +200,43 @@ fn process_multiclassing_requirements(
             })
         })
         .collect::<Result<Vec<_>, ClassError>>()
+}
+
+
+fn process_tracked_fields(response_data: &ClassQueryClass) -> Option<TrackedField> {
+    match response_data.name.as_str() {
+        "Barbarian" => Some(TrackedField {
+            name: "Rage".to_string(),
+            long_rest: true,
+            short_rest: false,
+            level_up: false,
+            class_specific_max: Some("rage count".to_string()),
+            hard_max: None,
+        }),
+        "druid" => Some(TrackedField {
+            name: "Wildshape".to_string(),
+            long_rest: true,
+            short_rest: true,
+            level_up: false,
+            class_specific_max: None,
+            hard_max: Some(2),
+        }),
+        "sorcerer" => Some(TrackedField {
+            name: "Sorcery Points".to_string(),
+            long_rest: true,
+            short_rest: false,
+            level_up: false,
+            class_specific_max: Some("sorcery points".to_string()),
+            hard_max: None,
+        }),
+        "monk" => Some(TrackedField {
+            name: "Ki Points".to_string(),
+            long_rest: true,
+            short_rest: false,
+            level_up: false,
+            class_specific_max: Some("ki points".to_string()),
+            hard_max: None,
+        }),
+        _ => None,
+    } 
 }
