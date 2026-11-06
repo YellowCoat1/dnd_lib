@@ -32,15 +32,15 @@
 //!     // john sees an upcoming fight, and equips his dagger.
 //!     john.items[3].equip();
 //!
-//!     // Uh-Oh! John is about to get hit! What's his AC?
+//!     // John is about to get hit. What's his AC?
 //!     let ac = john.ac();
-//!     // looks like it was too small. John gets hit with 3 damage.
+//!     // It was too small. John gets hit with 3 damage.
 //!     john.damage(3);
 //!     // Now it's John's turn. He readies his dagger.
 //!     let dagger_attack = &john.weapon_actions()[0];
 //!     // John tries to attack...
 //!     let attack_roll = rng.random_range(1..=20) as isize + dagger_attack.attack_bonus;
-//!     // And it hits!
+//!     // And it hits. John rolls for damage.
 //!     let damage_roll = dagger_attack.damage_roll;
 //!
 //!     // With the xp from that fight, john levels up.
