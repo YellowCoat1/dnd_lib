@@ -15,10 +15,38 @@ mod spells;
 #[cfg(test)]
 mod class_tests;
 
+/// Gets D&D data from dnd5eapi.co's graphql api.
+///
+/// The following are availible from this api:
+/// - classes: All except artificier
+/// - items: Every basic item, no magic items
+/// - backgrounds: only Acolyte
+/// - races: Dragonborn, Dwarf, Elf, Gnome, Half-elf, Half-orc, Halfing, Human, Tiefling
+///
+/// ```rust
+/// use dnd_lib::graphql::GraphqlProvider;
+/// use dnd_lib::DataProvider;
+/// use dnd_lib::rules2014::{items::Item, spells::Spell};
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let provider = GraphqlProvider::new();
+///
+///     let item: Item = provider.get_item("shortsword")
+///         .await.expect("failed to get shortsword");
+///     assert_eq!(item.name, "Shortsword");
+///
+///     let spell: Spell = provider.get_spell("fireball")
+///         .await.expect("failed to get fireball");
+///     assert_eq!(spell.name, "Fireball");
+///     assert_eq!(spell.range, "150 feet");
+/// }
+/// ```
 pub struct GraphqlProvider {
     equipment_cache: Mutex<(HashMap<String, Item>, bool)>,
 }
 
+/// An error that may occur with a [GraphqlProvider]
 #[derive(Debug, Error)]
 pub enum GraphqlError {
     #[error("Item Error: {0}")]

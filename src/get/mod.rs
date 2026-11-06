@@ -66,7 +66,7 @@ pub use item_list::ITEM_NAMES;
 mod error;
 pub use error::Dnd5eapiError;
 
-/// Gets D&D data from dnd5eapi.co
+/// Gets D&D data from dnd5eapi.co's REST api.
 ///
 /// The following are availible from this api:
 /// - classes: All except artificier
