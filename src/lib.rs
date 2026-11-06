@@ -94,7 +94,7 @@ pub mod prelude {
     #[cfg(feature = "dnd5eapi")]
     pub use crate::get::{Dnd5eapiError, Dnd5eapiGetter};
     #[cfg(feature = "graphql_api")]
-    pub use crate::graphql::{GraphqlProvider, GraphqlError};
+    pub use crate::graphql::{GraphqlError, GraphqlProvider};
     pub use crate::{
         getter::DataProvider,
         rules2014::class::Class,

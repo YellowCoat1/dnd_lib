@@ -1,5 +1,9 @@
 use crate::{
-    graphql::classes::ClassError, rules2014::{features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption}, stats::StatType},
+    graphql::classes::ClassError,
+    rules2014::{
+        features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption},
+        stats::StatType,
+    },
 };
 
 use super::class_query::ClassQueryClass;
@@ -51,8 +55,16 @@ fn effects_from_name(class_name: &str, feature_name: &str) -> Vec<FeatureEffect>
         )],
         (_, "Unarmored Movement") => vec![FeatureEffect::UnarmoredMovement],
         (_, "Expertise") => vec![FeatureEffect::Expertise([None, None])],
-        ("Barbarian", "Unarmored Defense") =>vec![FeatureEffect::UnarmoredDefense(10, StatType::Dexterity, Some(StatType::Constitution))],
-        ("Monk", "Unarmored Defense") =>vec![FeatureEffect::UnarmoredDefense(10, StatType::Dexterity, Some(StatType::Wisdom))],
+        ("Barbarian", "Unarmored Defense") => vec![FeatureEffect::UnarmoredDefense(
+            10,
+            StatType::Dexterity,
+            Some(StatType::Constitution),
+        )],
+        ("Monk", "Unarmored Defense") => vec![FeatureEffect::UnarmoredDefense(
+            10,
+            StatType::Dexterity,
+            Some(StatType::Wisdom),
+        )],
         _ => vec![],
     }
 }

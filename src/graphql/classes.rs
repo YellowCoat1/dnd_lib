@@ -1,6 +1,8 @@
 use crate::{
-    graphql::{GraphqlProvider, classes::class_query::ClassQueryClass, items::ItemError}, rules2014::{
-        class::{Class, ClassBuilder, ClassBuilderError, TrackedField}, stats::{EquipmentProficiencies, Saves, StatType},
+    graphql::{classes::class_query::ClassQueryClass, items::ItemError, GraphqlProvider},
+    rules2014::{
+        class::{Class, ClassBuilder, ClassBuilderError, TrackedField},
+        stats::{EquipmentProficiencies, Saves, StatType},
     },
 };
 use graphql_client::{GraphQLQuery, Response};
@@ -202,7 +204,6 @@ fn process_multiclassing_requirements(
         .collect::<Result<Vec<_>, ClassError>>()
 }
 
-
 fn process_tracked_fields(response_data: &ClassQueryClass) -> Option<TrackedField> {
     match response_data.name.to_lowercase().as_str() {
         "barbarian" => Some(TrackedField {
@@ -238,5 +239,5 @@ fn process_tracked_fields(response_data: &ClassQueryClass) -> Option<TrackedFiel
             hard_max: None,
         }),
         _ => None,
-    } 
+    }
 }

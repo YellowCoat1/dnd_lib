@@ -88,8 +88,8 @@ async fn main() {
     cleric_prepared_list.push(mass_healing_word);
     // sorcerer has known spells rather than prepared spells,
     // so the spell list is accessed directly
-    let sorcerer_known_list = &mut spellcaster
-        .classes[1].spellcasting
+    let sorcerer_known_list = &mut spellcaster.classes[1]
+        .spellcasting
         .as_mut()
         .expect("Sorcerer should be able to learn spells")
         .1;
