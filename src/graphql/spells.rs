@@ -245,6 +245,13 @@ fn process_leveled_damage(
         return Ok(None);
     }
 
+    if name == "Eldritch Blast" {
+        return Ok(Some(vec![(
+            1,
+            DamageRoll::new(1, 10, 0, DamageType::Force),
+        )]));
+    }
+
     if let Some(s) = leveled_damage_edge_cases(response_data) {
         return Ok(Some(s));
     }
@@ -353,5 +360,16 @@ mod spell_tests {
     async fn fireball() {
         let fireball = get_spell("fireball").await.expect("Failed to get fireball");
         assert!(fireball.damage.is_some());
+    }
+
+    #[tokio::test]
+    async fn eldritch_blast() {
+        let eldrich_blast = get_spell("Eldritch Blast")
+            .await
+            .expect("Failed to get Eldritch Blast");
+        assert!(
+            eldrich_blast.leveled_damage.is_some(),
+            "Eldritch Blast had no damage"
+        );
     }
 }
