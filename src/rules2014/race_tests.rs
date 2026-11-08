@@ -1,8 +1,8 @@
 use crate::rules2014::{
     choice::PresentedOption,
     features::{Feature, FeatureEffect},
-    stats::{Size, StatType},
     race::{Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder},
+    stats::{Size, StatType},
 };
 
 #[test]

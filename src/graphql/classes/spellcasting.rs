@@ -39,10 +39,8 @@ pub fn process_spellcasting(
         }
     };
 
-    let spellcasting_ability =
-        StatType::from_str(&spellcasting.spellcasting_ability.name).map_err(|_|
-            ClassError::parse_error("spellcasting ability stat type", name),
-        )?;
+    let spellcasting_ability = StatType::from_str(&spellcasting.spellcasting_ability.name)
+        .map_err(|_| ClassError::parse_error("spellcasting ability stat type", name))?;
     let spells_known_first_level = spellcasting_levels
         .first()
         .ok_or(ClassError::parse_error(

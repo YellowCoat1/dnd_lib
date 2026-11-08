@@ -4,12 +4,11 @@
 //!
 //! ### Specced Data
 //! The major structs ([Classes](Class), [Backgrounds](Background), and [Races](Race)) aren't
-//! stored verbatim in the [Character] struct. They're meant to be static immutable information. 
+//! stored verbatim in the [Character] struct. They're meant to be static immutable information.
 //!
 //! [SpeccedClass], [SpeccedBackground], and [SpeccedRace] are used to represent the (mutable)
 //! information about character's class, race, and background. They're similar to their non-specced
 //! counterparts, with some modifications to allow for player choices.
-
 
 use crate::rules2014::race::RaceBonus;
 
@@ -23,8 +22,8 @@ use super::{
     choice::chosen_ref,
     class::ItemCategory,
     items::{is_proficient_with, ArmorCategory, HeldEquipment, Item},
-    spells::{SpellCastingPreperation, SpellsAvailable},
     race::Subrace,
+    spells::{SpellCastingPreperation, SpellsAvailable},
 };
 
 use super::choice::chosen;

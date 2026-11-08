@@ -99,10 +99,10 @@ pub mod prelude {
         getter::DataProvider,
         rules2014::{
             background::Background,
-            player_character::{Character, CharacterBuilder},
-            stats::Stats,
             class::Class,
+            player_character::{Character, CharacterBuilder},
             race::Race,
+            stats::Stats,
         },
     };
 }

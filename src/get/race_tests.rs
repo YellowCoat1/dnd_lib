@@ -1,6 +1,6 @@
 use crate::rules2014::features::FeatureEffect;
-use crate::rules2014::stats::{Size, StatType};
 use crate::rules2014::race::RaceBonus;
+use crate::rules2014::stats::{Size, StatType};
 use crate::{prelude::*, provider};
 
 #[tokio::test]
