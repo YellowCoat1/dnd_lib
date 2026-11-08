@@ -1,15 +1,14 @@
 use super::get_page::get_raw_json;
-use thiserror::Error;
 use super::json_tools::{string_array, value_name, ValueExt};
 use super::Dnd5eapiError;
 use crate::get::json_tools::parse_string;
 use crate::rules2014::items::{DamageRoll, DamageType};
 use crate::rules2014::spells::Spell;
 use serde_json::Value;
+use thiserror::Error;
 
 type StandardDamage = Vec<Vec<DamageRoll>>;
 type LeveledDamage = Vec<(usize, DamageRoll)>;
-
 
 #[derive(Debug, Error)]
 pub enum SpellError {
@@ -76,9 +75,9 @@ fn spell_damage(
         .and_then(|v| v.first())
         .map(|v| {
             let damage_type_name = v.get_map("damage_type")?.get_str("name")?;
-            let damage_type: DamageType = damage_type_name.parse().map_err(|_| 
-                SpellError::parse_error("damage type", name)
-            )?;
+            let damage_type: DamageType = damage_type_name
+                .parse()
+                .map_err(|_| SpellError::parse_error("damage type", name))?;
 
             let damage_vec: Option<StandardDamage> = v
                 .get_map("damage_at_slot_level")
@@ -107,8 +106,7 @@ fn standard_spell_damage(
     damage_type: DamageType,
     json: &Value,
 ) -> Result<StandardDamage, Dnd5eapiError> {
-    json
-        .as_object()
+    json.as_object()
         .ok_or_else(|| Dnd5eapiError::mismatch("spell damage", "Object", value_name(json)))?
         .values()
         .map(|v| {
@@ -140,8 +138,8 @@ fn leveled_spell_damage(
             let damage_string = damage.as_str().ok_or_else(|| {
                 Dnd5eapiError::mismatch("Cantrip damage", "String", value_name(damage))
             })?;
-            let damage_roll =
-                DamageRoll::from_str(damage_string, damage_type).ok_or(SpellError::parse_error("leveled damage roll", name))?;
+            let damage_roll = DamageRoll::from_str(damage_string, damage_type)
+                .ok_or(SpellError::parse_error("leveled damage roll", name))?;
             Ok((level_num, damage_roll))
         })
         .collect::<Result<Vec<_>, _>>()
