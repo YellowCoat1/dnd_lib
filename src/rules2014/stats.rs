@@ -208,16 +208,7 @@ impl Default for Modifiers {
 
 /// Enumerates all six core ability score types.
 #[derive(
-    Clone,
-    Copy,
-    Debug,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIter,
-    Serialize,
-    Deserialize,
-    StrumDisplay,
+    Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Serialize, Deserialize, StrumDisplay,
 )]
 #[strum(ascii_case_insensitive)]
 pub enum StatType {
@@ -228,7 +219,6 @@ pub enum StatType {
     Wisdom,
     Charisma,
 }
-
 
 impl FromStr for StatType {
     type Err = ();

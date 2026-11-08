@@ -1,4 +1,5 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, str::FromStr};
+use strum::IntoEnumIterator;
 
 use super::stats::*;
 
@@ -79,6 +80,11 @@ fn add_stats() {
     let other_stats = Stats::from(&[1, 3, 2, 1, 2, 2]);
     stats = stats - other_stats;
     assert_eq!(stats, Stats::from(&[19, 7, 14, 9, 10, 12]));
+
+    assert_eq!(
+        <Stats as Into<Vec<_>>>::into(other_stats),
+        vec![1, 3, 2, 1, 2, 2]
+    );
 }
 
 #[test]
@@ -112,24 +118,40 @@ fn equipment() {
 
 #[test]
 fn stat_list_conversion() {
-    let stat_list = vec![
-        StatType::Strength,
-        StatType::Constitution,
-        StatType::Dexterity,
-        StatType::Charisma,
-        StatType::Intelligence,
-        StatType::Wisdom,
-    ];
-    let saves_list = Saves::from_stats(stat_list);
-    assert_eq!(
-        saves_list,
-        Saves {
-            strength: true,
-            constitution: true,
-            dexterity: true,
-            charisma: true,
-            intelligence: true,
-            wisdom: true,
-        }
-    );
+    let saves_list = Saves::from_stats(StatType::iter().collect::<Vec<_>>());
+
+    for stat in StatType::iter() {
+        assert!(saves_list.is_proficient(stat))
+    }
+
+    let mut other_saves_list = Saves::default();
+
+    for stat in StatType::iter() {
+        other_saves_list.add_proficiency_from_type(stat);
+    }
+
+    assert_eq!(saves_list, other_saves_list);
+
+    for stat in StatType::iter() {
+        assert!(StatType::from_str(&stat.to_string()).is_ok())
+    }
+}
+
+#[test]
+fn skill_modifications() {
+    let mut modifiers = SkillModifiers::default();
+    for skill in SkillType::iter() {
+        modifiers[skill] += 10;
+    }
+    for skill in SkillType::iter() {
+        assert_eq!(modifiers[skill], 10);
+    }
+
+    let mut proficiencies = SkillProficiencies::default();
+    for skill in SkillType::iter() {
+        proficiencies[skill].proficiency = true
+    }
+    for skill in SkillType::iter() {
+        assert_eq!(proficiencies[skill].proficiency, true)
+    }
 }
