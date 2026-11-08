@@ -11,7 +11,7 @@
 //! counterparts, with some modifications to allow for player choices.
 
 
-use crate::rules2014::RaceBonus;
+use crate::rules2014::race::RaceBonus;
 
 pub use super::{character_builder::CharacterBuilder, character_etc::*};
 use std::collections::{HashMap, HashSet};
@@ -24,7 +24,7 @@ use super::{
     class::ItemCategory,
     items::{is_proficient_with, ArmorCategory, HeldEquipment, Item},
     spells::{SpellCastingPreperation, SpellsAvailable},
-    Subrace,
+    race::Subrace,
 };
 
 use super::choice::chosen;

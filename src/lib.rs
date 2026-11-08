@@ -97,12 +97,12 @@ pub mod prelude {
     pub use crate::graphql::{GraphqlError, GraphqlProvider};
     pub use crate::{
         getter::DataProvider,
-        rules2014::class::Class,
-        rules2014::stats::Stats,
         rules2014::{
             background::Background,
             player_character::{Character, CharacterBuilder},
-            Race,
+            stats::Stats,
+            class::Class,
+            race::Race,
         },
     };
 }

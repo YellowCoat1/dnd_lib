@@ -3,7 +3,7 @@ use std::error::Error;
 
 use async_trait::async_trait;
 
-use crate::rules2014::{background::Background, class::Class, items::Item, spells::Spell, Race};
+use crate::rules2014::{background::Background, class::Class, items::Item, spells::Spell, race::Race};
 
 /// A trait representing a source capable of retrieving D&D data, e.g. from an api.
 ///

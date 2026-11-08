@@ -3,7 +3,7 @@ use crate::{
     rules2014::{
         features::{Feature, FeatureEffect, PresentedOption},
         stats::{Size, SkillType, StatType},
-        Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder,
+        race::{Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder},
     },
 };
 use graphql_client::{GraphQLQuery, Response};
@@ -202,7 +202,7 @@ async fn request_spell_page(name: &str) -> Option<race_query::ResponseData> {
 
 #[cfg(test)]
 mod graphql_race_tests {
-    use crate::rules2014::{features::FeatureEffect, stats::Size, stats::StatType, RaceBonus};
+    use crate::rules2014::{features::FeatureEffect, stats::Size, stats::StatType, race::RaceBonus};
     #[tokio::test]
     async fn get_dragonborn() {
         let dragonborn = super::get_race("dragonborn")

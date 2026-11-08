@@ -2,7 +2,7 @@ use crate::rules2014::{
     choice::PresentedOption,
     features::{Feature, FeatureEffect},
     stats::{Size, StatType},
-    Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder,
+    race::{Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder},
 };
 
 #[test]

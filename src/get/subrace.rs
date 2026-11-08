@@ -4,7 +4,7 @@ use super::json_tools::ValueExt;
 use super::Dnd5eapiError;
 use crate::get::json_tools::parse_string;
 use crate::rules2014::stats::StatType;
-use crate::rules2014::{Subrace, SubraceBuilder};
+use crate::rules2014::race::{Subrace, SubraceBuilder};
 use serde_json::Value;
 
 pub async fn get_subrace(name: &str) -> Result<Subrace, Dnd5eapiError> {

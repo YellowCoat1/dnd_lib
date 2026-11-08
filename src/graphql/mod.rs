@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use async_trait::async_trait;
 use thiserror::Error;
 
-use crate::rules2014::{background::Background, class::Class, items::Item, spells::Spell, Race};
+use crate::rules2014::{background::Background, class::Class, items::Item, spells::Spell, race::Race};
 
 mod backgrounds;
 mod classes;
