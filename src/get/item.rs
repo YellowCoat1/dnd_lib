@@ -61,7 +61,9 @@ fn weapon(name: &str, map: &Value) -> Result<Weapon, Dnd5eapiError> {
 
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
-    let damage_type = damage_type.parse().map_err(|_| ItemError::parse_error("weapon damage type", name))?;
+    let damage_type = damage_type
+        .parse()
+        .map_err(|_| ItemError::parse_error("weapon damage type", name))?;
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
         .ok_or(ItemError::parse_error("weapon damage roll", name))?;
@@ -94,7 +96,11 @@ fn weapon(name: &str, map: &Value) -> Result<Weapon, Dnd5eapiError> {
     Ok(weapon)
 }
 
-fn properties(name: &str, map: &Value, damage_type: DamageType) -> Result<WeaponProperties, Dnd5eapiError> {
+fn properties(
+    name: &str,
+    map: &Value,
+    damage_type: DamageType,
+) -> Result<WeaponProperties, Dnd5eapiError> {
     let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
     let mut properties = WeaponProperties::default();
@@ -111,8 +117,9 @@ fn properties(name: &str, map: &Value, damage_type: DamageType) -> Result<Weapon
             "special" => properties.special = true,
             "thrown" => properties.thrown = true,
             "two_handed" => properties.two_handed = true,
-            "versitile" => {
-                let damage_val = two_handed_damage.ok_or(ItemError::parse_error("two handed damage", name))?;
+            "versatile" => {
+                let damage_val =
+                    two_handed_damage.ok_or(ItemError::parse_error("two handed damage", name))?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
                     .ok_or(ItemError::parse_error("two handed damage roll", name))?;
                 properties.versatile = Some(damage);
@@ -130,9 +137,7 @@ fn armor(name: &str, map: &Value) -> Result<Armor, Dnd5eapiError> {
         "Light" => ArmorCategory::Light,
         "Medium" => ArmorCategory::Medium,
         "Heavy" => ArmorCategory::Heavy,
-        _ => {
-            return Err(ItemError::parse_error("armor category", name).into())
-        }
+        _ => return Err(ItemError::parse_error("armor category", name).into()),
     };
 
     let strength_minimum = match map.get_usize("str_minimum")? {
@@ -155,7 +160,7 @@ fn armor(name: &str, map: &Value) -> Result<Armor, Dnd5eapiError> {
 #[cfg(test)]
 mod tests {
 
-    use crate::rules2014::items::{ArmorCategory, ItemType, WeaponType};
+    use crate::rules2014::items::{ArmorCategory, DamageRoll, DamageType, ItemType, WeaponType};
 
     use super::get_item;
     #[tokio::test]
@@ -196,5 +201,27 @@ mod tests {
             ItemType::Shield => (),
             _ => panic!("Shield shoud have the shield type"),
         }
+    }
+
+    #[tokio::test]
+    async fn versatile() {
+        let v = get_item("longsword")
+            .await
+            .expect("failed to get longsword");
+
+        let weapon = match v.item_type {
+            ItemType::Weapon(w) => w,
+            _ => panic!("longsword is not a weapon"),
+        };
+
+        let versatile_damage = weapon
+            .properties
+            .versatile
+            .expect("longsword should be versatile");
+
+        assert_eq!(
+            versatile_damage,
+            DamageRoll::from_str("1d10", DamageType::Slashing).unwrap()
+        )
     }
 }
