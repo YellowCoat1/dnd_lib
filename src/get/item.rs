@@ -9,6 +9,17 @@ use crate::rules2014::items::{
 };
 use serde_json::Value;
 
+#[derive(Debug, thiserror::Error)]
+pub enum ItemError {
+    #[error("err {0} with item {1}")]
+    ParseError(String, String),
+}
+
+impl ItemError {
+    fn parse_error(msg: &str, name: &str) -> ItemError {
+        ItemError::ParseError(msg.to_string(), name.to_string())
+    }
+}
 pub async fn get_item(name: &str) -> Result<Item, Dnd5eapiError> {
     let index = parse_string(name);
     get_item_raw(index).await
@@ -30,8 +41,8 @@ async fn get_item_raw(index_name: String) -> Result<Item, Dnd5eapiError> {
     }
 
     let item_type = match catagory.as_str() {
-        "weapon" => ItemType::Weapon(weapon(&item_json)?),
-        "armor" => ItemType::Armor(armor(&item_json)?),
+        "weapon" => ItemType::Weapon(weapon(&name, &item_json)?),
+        "armor" => ItemType::Armor(armor(&name, &item_json)?),
         _ => ItemType::Misc,
     };
 
@@ -45,27 +56,15 @@ async fn get_item_raw(index_name: String) -> Result<Item, Dnd5eapiError> {
     Ok(item)
 }
 
-fn weapon(map: &Value) -> Result<Weapon, Dnd5eapiError> {
+fn weapon(name: &str, map: &Value) -> Result<Weapon, Dnd5eapiError> {
     let damage_map = map.get_map("damage")?;
 
     let damage_type = damage_map.get_map("damage_type")?.get_str("index")?;
 
-    let damage_type = damage_type.parse().map_err(|_| {
-        Dnd5eapiError::mismatch(
-            "damage_type",
-            "DamageType",
-            "irregular string for damage type",
-        )
-    })?;
+    let damage_type = damage_type.parse().map_err(|_| ItemError::parse_error("weapon damage type", name))?;
 
     let damage = DamageRoll::from_str(&damage_map.get_str("damage_dice")?, damage_type)
-        .ok_or_else(|| {
-            Dnd5eapiError::mismatch(
-                "damage roll",
-                "Damage roll string",
-                "irregular string for damage roll",
-            )
-        })?;
+        .ok_or(ItemError::parse_error("weapon damage roll", name))?;
 
     let category_string = map.get_str("category_range")?;
 
@@ -83,7 +82,7 @@ fn weapon(map: &Value) -> Result<Weapon, Dnd5eapiError> {
         }
     };
 
-    let properties = properties(map, damage.damage_type)?;
+    let properties = properties(name, map, damage.damage_type)?;
 
     let weapon = Weapon {
         damage,
@@ -95,7 +94,7 @@ fn weapon(map: &Value) -> Result<Weapon, Dnd5eapiError> {
     Ok(weapon)
 }
 
-fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, Dnd5eapiError> {
+fn properties(name: &str, map: &Value, damage_type: DamageType) -> Result<WeaponProperties, Dnd5eapiError> {
     let arr = map.get_array("properties")?;
     let two_handed_damage = map.get_map("two_handed_damage").ok();
     let mut properties = WeaponProperties::default();
@@ -113,21 +112,9 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
             "thrown" => properties.thrown = true,
             "two_handed" => properties.two_handed = true,
             "versitile" => {
-                let damage_val = two_handed_damage.ok_or_else(|| {
-                    Dnd5eapiError::mismatch(
-                        "versitile damage",
-                        "two_handed_damage",
-                        "no two handed damage",
-                    )
-                })?;
+                let damage_val = two_handed_damage.ok_or(ItemError::parse_error("two handed damage", name))?;
                 let damage = DamageRoll::from_str(&damage_val.get_str("damage_dice")?, damage_type)
-                    .ok_or_else(|| {
-                        Dnd5eapiError::mismatch(
-                            "versitile damage roll",
-                            "two handed damage string",
-                            "irregular damage string",
-                        )
-                    })?;
+                    .ok_or(ItemError::parse_error("two handed damage roll", name))?;
                 properties.versatile = Some(damage);
             }
             _ => (),
@@ -135,7 +122,7 @@ fn properties(map: &Value, damage_type: DamageType) -> Result<WeaponProperties, 
     }
     Ok(properties)
 }
-fn armor(map: &Value) -> Result<Armor, Dnd5eapiError> {
+fn armor(name: &str, map: &Value) -> Result<Armor, Dnd5eapiError> {
     let armor_class_map = map.get_map("armor_class")?;
     let ac = armor_class_map.get_usize("base")? as isize;
 
@@ -144,11 +131,7 @@ fn armor(map: &Value) -> Result<Armor, Dnd5eapiError> {
         "Medium" => ArmorCategory::Medium,
         "Heavy" => ArmorCategory::Heavy,
         _ => {
-            return Err(Dnd5eapiError::mismatch(
-                "armor category",
-                "armor category string",
-                "irregular string",
-            ))
+            return Err(ItemError::parse_error("armor category", name).into())
         }
     };
 
