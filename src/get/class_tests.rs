@@ -10,15 +10,13 @@ use crate::{
     },
 };
 
-use crate::provider;
-
 use crate::getter::DataProvider;
 
 use super::feature::get_feature;
 
 #[tokio::test]
 async fn wizard_retrieval() {
-    let provider = provider();
+    let provider = Dnd5eapiGetter::new();
     let wizard = provider
         .get_class("wizard")
         .await
@@ -143,7 +141,7 @@ fn wizard_subclass(class: &Class) {
 
 #[tokio::test]
 async fn fighter_items() {
-    let provider = provider();
+    let provider = Dnd5eapiGetter::new();
     let fighter = provider
         .get_class("fighter")
         .await
@@ -236,10 +234,10 @@ async fn get_with_class_context(
 
 #[tokio::test]
 async fn fetch_all() {
-    let provider = provider();
+    let provider = Dnd5eapiGetter::new();
     let classes = super::CLASS_NAMES
         .iter()
-        .map(|n| get_with_class_context(n, provider.as_ref()));
+        .map(|n| get_with_class_context(n, &provider));
 
     futures::future::try_join_all(classes)
         .await

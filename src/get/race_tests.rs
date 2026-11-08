@@ -1,11 +1,11 @@
 use crate::rules2014::features::FeatureEffect;
 use crate::rules2014::race::RaceBonus;
 use crate::rules2014::stats::{Size, StatType};
-use crate::{prelude::*, provider};
+use crate::{prelude::*};
 
 #[tokio::test]
 async fn get_elf() {
-    let provider = provider();
+    let provider = Dnd5eapiGetter::new();
     let elf = provider.get_race("elf").await.expect("failed to get elf!");
     assert_eq!(
         (elf.name(), elf.speed(), *elf.size()),
@@ -42,7 +42,7 @@ async fn get_elf() {
 
 #[tokio::test]
 async fn get_dragonborn() {
-    let provider = provider();
+    let provider = Dnd5eapiGetter::new();
     let dragonborn = provider
         .get_race("dragonborn")
         .await
@@ -68,10 +68,10 @@ async fn get_with_race_context(
 
 #[tokio::test]
 async fn fetch_all() {
-    let provider = provider();
+    let provider = Dnd5eapiGetter::new();
     let races = super::RACE_NAMES
         .iter()
-        .map(|n| get_with_race_context(n, provider.as_ref()));
+        .map(|n| get_with_race_context(n, &provider));
 
     futures::future::try_join_all(races)
         .await

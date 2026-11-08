@@ -186,14 +186,14 @@ fn capitalize(s: &mut String) {
 
 #[cfg(test)]
 mod test {
-    use crate::getter::DataProvider;
-    use crate::provider;
+    use crate::get::Dnd5eapiGetter;
+use crate::getter::DataProvider;
     use crate::rules2014::features::PresentedOption;
     use crate::rules2014::stats::SkillType;
 
     #[tokio::test]
     async fn get_acolyte() {
-        let provider = provider();
+        let provider = Dnd5eapiGetter::new();
         let acolyte = provider
             .get_background("acolyte")
             .await
