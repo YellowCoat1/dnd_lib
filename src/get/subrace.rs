@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use super::feature::get_feature_from_trait;
 use super::get_page::get_raw_json;
 use super::json_tools::ValueExt;
@@ -43,7 +45,7 @@ pub fn process_ability_bonuses(
         let ability_score_name = ability_score_map.get_str("name")?;
         let ability_score_bonus: isize = ability_bonus.get_usize("bonus")?.try_into().unwrap();
 
-        let stat_type = StatType::from_shorthand(ability_score_name.as_str()).ok_or_else(|| {
+        let stat_type = StatType::from_str(ability_score_name.as_str()).map_err(|_| {
             Dnd5eapiError::mismatch(
                 "ability score name",
                 "StatType string",

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     graphql::classes::{class_query::ClassQueryClass, ClassError},
     rules2014::{
@@ -38,7 +40,7 @@ pub fn process_spellcasting(
     };
 
     let spellcasting_ability =
-        StatType::from_shorthand(&spellcasting.spellcasting_ability.name).ok_or(
+        StatType::from_str(&spellcasting.spellcasting_ability.name).map_err(|_|
             ClassError::parse_error("spellcasting ability stat type", name),
         )?;
     let spells_known_first_level = spellcasting_levels

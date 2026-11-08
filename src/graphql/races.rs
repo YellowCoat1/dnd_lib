@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     graphql::races::race_query::RaceQueryRace,
     rules2014::{
@@ -144,8 +146,8 @@ fn race_subraces(response_data: &RaceQueryRace) -> Result<Vec<Subrace>, RaceErro
                 })
                 .map(|z| {
                     z.and_then(|(ability, bonus)| {
-                        let stat_type = StatType::from_shorthand(ability)
-                            .ok_or(RaceError::parse_error("Subrace Stat Type", name))?;
+                        let stat_type = StatType::from_str(ability)
+                            .map_err(|_| RaceError::parse_error("Subrace Stat Type", name))?;
                         Ok((Some(stat_type), bonus as isize))
                     })
                 })
@@ -173,8 +175,8 @@ fn process_ability_bonuses(response_data: &RaceQueryRace) -> Result<Vec<RaceBonu
         })
         .map(|v| {
             v.and_then(|(ability, bonus_unparsed)| {
-                let stat_type = StatType::from_shorthand(ability)
-                    .ok_or(RaceError::parse_error("Ability Score Stat Type", name))?;
+                let stat_type = StatType::from_str(ability)
+                    .map_err(|_| RaceError::parse_error("Ability Score Stat Type", name))?;
                 let bonus: isize = bonus_unparsed as isize;
                 Ok(RaceBonus::Specific(stat_type, bonus))
             })

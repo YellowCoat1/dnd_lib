@@ -218,7 +218,6 @@ impl Default for Modifiers {
     Serialize,
     Deserialize,
     StrumDisplay,
-    EnumString,
 )]
 #[strum(ascii_case_insensitive)]
 pub enum StatType {
@@ -230,35 +229,28 @@ pub enum StatType {
     Charisma,
 }
 
+
+impl FromStr for StatType {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "strength" => Ok(StatType::Strength),
+            "dexterity" => Ok(StatType::Dexterity),
+            "constitution" => Ok(StatType::Constitution),
+            "intelligence" => Ok(StatType::Intelligence),
+            "wisdom" => Ok(StatType::Wisdom),
+            "charisma" => Ok(StatType::Charisma),
+            "str" => Ok(StatType::Strength),
+            "dex" => Ok(StatType::Dexterity),
+            "con" => Ok(StatType::Constitution),
+            "int" => Ok(StatType::Intelligence),
+            "wis" => Ok(StatType::Wisdom),
+            "cha" => Ok(StatType::Charisma),
+            _ => Err(()),
+        }
+    }
+}
 impl StatType {
-    /// Getting a StatType from it's shorthand (e.g. "dex")
-    /// if you want to get a StatType from it's full name, just take the first three characters.
-    ///
-    /// Returns the associated [StatType] of a 3 character string, or otherwise returns an `Err(())`.
-    pub fn from_shorthand(shorthand: &str) -> Option<StatType> {
-        match shorthand.to_lowercase().as_str() {
-            "str" => Some(StatType::Strength),
-            "dex" => Some(StatType::Dexterity),
-            "con" => Some(StatType::Constitution),
-            "int" => Some(StatType::Intelligence),
-            "wis" => Some(StatType::Wisdom),
-            "cha" => Some(StatType::Charisma),
-            _ => None,
-        }
-    }
-
-    pub fn from_name(name: &str) -> Option<StatType> {
-        match name.to_lowercase().as_str() {
-            "strength" => Some(StatType::Strength),
-            "dexterity" => Some(StatType::Dexterity),
-            "constitution" => Some(StatType::Constitution),
-            "intelligence" => Some(StatType::Intelligence),
-            "wisdom" => Some(StatType::Wisdom),
-            "charisma" => Some(StatType::Charisma),
-            _ => None,
-        }
-    }
-
     /// Get the shorthand of a stat type.
     ///
     /// this is equivalent to `get_name()[..3]`, and can be used as a deterministic name for the

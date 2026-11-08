@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     rules2014::{
         class::{Class, ItemCategory},
@@ -34,7 +36,7 @@ fn wizard_multiclassing(class: &Class) {
         EquipmentProficiencies::default()
     );
 
-    let v = StatType::from_shorthand("int");
+    let v = StatType::from_str("int");
     let multiclassing_prerequisites = vec![(v.as_ref().unwrap(), &13)];
 
     assert_eq!(

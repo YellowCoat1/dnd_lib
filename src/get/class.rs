@@ -11,7 +11,7 @@ use crate::{
 };
 use heck::ToTitleCase;
 use serde_json::{Map, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use super::Dnd5eapiError;
 use crate::get::{
@@ -128,9 +128,9 @@ fn saves(json: &Value) -> Result<Saves, Dnd5eapiError> {
     let stat_list = array_index_values(saving_throws, "name")
         .unwrap_or_default()
         .into_iter()
-        .map(|s| StatType::from_shorthand(s.as_str()))
+        .map(|s| StatType::from_str(s.as_str()))
         .map(|s| {
-            s.ok_or_else(|| {
+            s.map_err(|_| {
                 Dnd5eapiError::mismatch(
                     "saving throw",
                     "vaild StatType string",
@@ -465,7 +465,7 @@ fn spellcasting_ability(val: &Value) -> Result<Option<StatType>, Dnd5eapiError> 
         .get_map("spellcasting_ability")?
         .get_str("index")?;
 
-    let ability_score = StatType::from_shorthand(&ability_score_string).ok_or_else(|| {
+    let ability_score = StatType::from_str(&ability_score_string).map_err(|_| {
         Dnd5eapiError::mismatch(
             "ability score type",
             "valid StatType string",

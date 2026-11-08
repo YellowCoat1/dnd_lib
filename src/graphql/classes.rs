@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     graphql::{classes::class_query::ClassQueryClass, items::ItemError, GraphqlProvider},
     rules2014::{
@@ -192,8 +194,8 @@ fn process_multiclassing_requirements(
         })
         .map(|z| {
             z.and_then(|(v1, v2)| {
-                StatType::from_shorthand(&v1)
-                    .ok_or(ClassError::parse_error("multiclass stattype parsing", name))
+                StatType::from_str(&v1)
+                    .map_err(|_| ClassError::parse_error("multiclass stattype parsing", name))
                     .and_then(|st| {
                         v2.try_into()
                             .map_err(|_| ClassError::parse_error("multiclass stattype value", name))
