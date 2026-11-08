@@ -10,6 +10,9 @@ pub enum Dnd5eapiError {
     #[error("failed to parse: {0}")]
     Parse(#[from] serde_json::Error),
 
+    #[error("spell")]
+    Spell(#[from] super::spell::SpellError),
+
     /// The api didn't have a required field
     #[error("Value not found: expected {val_type} named {name}")]
     NotFound {

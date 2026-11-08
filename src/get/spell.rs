@@ -1,4 +1,5 @@
 use super::get_page::get_raw_json;
+use thiserror::Error;
 use super::json_tools::{string_array, value_name, ValueExt};
 use super::Dnd5eapiError;
 use crate::get::json_tools::parse_string;
@@ -8,6 +9,19 @@ use serde_json::Value;
 
 type StandardDamage = Vec<Vec<DamageRoll>>;
 type LeveledDamage = Vec<(usize, DamageRoll)>;
+
+
+#[derive(Debug, Error)]
+pub enum SpellError {
+    #[error("Error {0} from spell {0}")]
+    ParseError(String, String),
+}
+
+impl SpellError {
+    fn parse_error(msg: &str, name: &str) -> SpellError {
+        SpellError::ParseError(msg.to_string(), name.to_string())
+    }
+}
 
 pub async fn get_spell(name: &str) -> Result<Spell, Dnd5eapiError> {
     let index = parse_string(name);
@@ -26,20 +40,14 @@ pub async fn get_spell(name: &str) -> Result<Spell, Dnd5eapiError> {
         .get_str("name")?
         .as_str()
         .parse()
-        .map_err(|_| {
-            Dnd5eapiError::mismatch(
-                "spell school",
-                "Valid spell school name",
-                "Invalid spell school name",
-            )
-        })?;
+        .map_err(|_| SpellError::parse_error("invalid school", &name))?;
     let components: Vec<char> = string_array(json.get_array("components")?)?
         .iter()
         .map(|v| v.chars().next().unwrap())
         .collect();
     let material = json.get_str("material").ok();
     let (damage, leveled_damage) =
-        spell_damage(json.get_array("damage").ok()).unwrap_or((None, None));
+        spell_damage(&name, json.get_array("damage").ok()).unwrap_or((None, None));
     let duration = json.get_str("duration")?;
 
     Ok(Spell {
@@ -61,29 +69,26 @@ pub async fn get_spell(name: &str) -> Result<Spell, Dnd5eapiError> {
 }
 
 fn spell_damage(
+    name: &str,
     v: Option<&[Value]>,
 ) -> Result<(Option<StandardDamage>, Option<LeveledDamage>), Dnd5eapiError> {
     v.as_ref()
         .and_then(|v| v.first())
         .map(|v| {
             let damage_type_name = v.get_map("damage_type")?.get_str("name")?;
-            let damage_type: DamageType = damage_type_name.parse().map_err(|_| {
-                Dnd5eapiError::mismatch(
-                    "spell damage type",
-                    "Valid DamageType string",
-                    "Invalid DamageType string",
-                )
-            })?;
+            let damage_type: DamageType = damage_type_name.parse().map_err(|_| 
+                SpellError::parse_error("damage type", name)
+            )?;
 
             let damage_vec: Option<StandardDamage> = v
                 .get_map("damage_at_slot_level")
                 .ok()
-                .map(|v| standard_spell_damage(damage_type, v))
+                .map(|v| standard_spell_damage(name, damage_type, v))
                 .transpose()?;
             let leveled_damage_map: Option<LeveledDamage> = v
                 .get_map("damage_at_character_level")
                 .ok()
-                .map(|v| leveled_spell_damage(damage_type, v))
+                .map(|v| leveled_spell_damage(name, damage_type, v))
                 .transpose()?
                 // sorts the damage by level
                 .map(|mut v| {
@@ -98,10 +103,12 @@ fn spell_damage(
 }
 
 fn standard_spell_damage(
+    name: &str,
     damage_type: DamageType,
     json: &Value,
 ) -> Result<StandardDamage, Dnd5eapiError> {
-    json.as_object()
+    json
+        .as_object()
         .ok_or_else(|| Dnd5eapiError::mismatch("spell damage", "Object", value_name(json)))?
         .values()
         .map(|v| {
@@ -112,19 +119,14 @@ fn standard_spell_damage(
         .into_iter()
         .map(|v| {
             DamageRoll::from_str(v, damage_type)
-                .ok_or_else(|| {
-                    Dnd5eapiError::mismatch(
-                        "spell damage",
-                        "valid DamageRoll string",
-                        "invalid DamageRoll string",
-                    )
-                })
+                .ok_or(SpellError::parse_error("standard damage roll", name).into())
                 .map(|v| vec![v])
         })
         .collect::<Result<Vec<_>, _>>()
 }
 
 fn leveled_spell_damage(
+    name: &str,
     damage_type: DamageType,
     json: &Value,
 ) -> Result<LeveledDamage, Dnd5eapiError> {
@@ -139,13 +141,7 @@ fn leveled_spell_damage(
                 Dnd5eapiError::mismatch("Cantrip damage", "String", value_name(damage))
             })?;
             let damage_roll =
-                DamageRoll::from_str(damage_string, damage_type).ok_or_else(|| {
-                    Dnd5eapiError::mismatch(
-                        "Cantrip damage roll",
-                        "DamageRoll valid string",
-                        "DamageRoll invalid string",
-                    )
-                })?;
+                DamageRoll::from_str(damage_string, damage_type).ok_or(SpellError::parse_error("leveled damage roll", name))?;
             Ok((level_num, damage_roll))
         })
         .collect::<Result<Vec<_>, _>>()
