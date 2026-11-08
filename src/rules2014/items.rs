@@ -1,4 +1,4 @@
-//! D&D items, item types, and damage types.
+//! items, item types, and damage types.
 use std::cmp::PartialEq;
 
 use serde::{Deserialize, Serialize};

@@ -1,17 +1,15 @@
-//! Data for creating a character, and associated data in a character.
+//! charaters, creating characters, and associated data for characters.
 //!
 //! The main feature of this module, and this crate in general, is the [Character] struct.
 //!
 //! ### Specced Data
 //! The major structs ([Classes](Class), [Backgrounds](Background), and [Races](Race)) aren't
-//! stored verbatim in the [Character] struct. They're meant to be static information, instead of
-//! actively used. This is what [SpeccedClass], [SpeccedBackground], and [SpeccedRace] are for.
+//! stored verbatim in the [Character] struct. They're meant to be static immutable information. 
 //!
-//! These structs are similar, but have slightly edited data to represent the choices made for the
-//! character. For example, [Class] has a `Vec<Subclass>` to show the subclasses associated with it, while [SpeccedClass] has a
-//! `PresentedOption<Subclass>` to represent the choice of subclass. Similarly, [Race] has a `usize`
-//! to represent the number of "wildcard" languages, (language options that can be anything) while
-//! the [SpeccedRace] has a `Vec<Option<String>>` to represent the actual languages chosen.
+//! [SpeccedClass], [SpeccedBackground], and [SpeccedRace] are used to represent the (mutable)
+//! information about character's class, race, and background. They're similar to their non-specced
+//! counterparts, with some modifications to allow for player choices.
+
 
 use crate::rules2014::RaceBonus;
 
