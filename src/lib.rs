@@ -75,18 +75,18 @@ pub use getter::DataProvider;
 pub use rules2014::player_character::{Character, CharacterBuilder};
 
 #[cfg_attr(not(test), allow(dead_code))]
-#[cfg(feature = "dnd5eapi")]
+#[cfg(feature = "graphql_api")]
 use std::sync::{Arc, OnceLock};
-#[cfg(feature = "dnd5eapi")]
+#[cfg(feature = "graphql_api")]
 #[cfg_attr(not(test), allow(dead_code))]
-static PROVIDER: OnceLock<Arc<get::Dnd5eapiGetter>> = OnceLock::new();
+static PROVIDER: OnceLock<Arc<graphql::GraphqlProvider>> = OnceLock::new();
 
 // Global api getter for all tests, in order for a shared cache
 #[cfg(test)]
-#[cfg(feature = "dnd5eapi")]
-pub(crate) fn provider() -> Arc<get::Dnd5eapiGetter> {
+#[cfg(feature = "graphql_api")]
+pub(crate) fn provider() -> Arc<graphql::GraphqlProvider> {
     PROVIDER
-        .get_or_init(|| Arc::new(get::Dnd5eapiGetter::new()))
+        .get_or_init(|| Arc::new(graphql::GraphqlProvider::new()))
         .clone()
 }
 
