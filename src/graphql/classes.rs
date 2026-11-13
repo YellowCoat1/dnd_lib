@@ -63,17 +63,15 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
     let (equipment_proficiencies, saving_throw_proficiencies) =
         process_proficiencies(&response_data)?;
 
-    
     let multiclass_prerequisites: Vec<(StatType, usize)>;
-    let multiclass_or: bool;
 
-    if name.to_lowercase().as_str() != "fighter" {
+    let multiclass_or = if name.to_lowercase().as_str() != "fighter" {
         multiclass_prerequisites = process_multiclassing_requirements(&response_data)?;
-        multiclass_or = false
+        false
     } else {
         multiclass_prerequisites = vec![(StatType::Strength, 13), (StatType::Dexterity, 13)];
-        multiclass_or = true
-    }
+        true
+    };
 
     let subclasses = subclasses::process_subclasses(&response_data)?;
     let spells = spellcasting::process_spellcasting(&response_data)?;

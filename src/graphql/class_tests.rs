@@ -1,9 +1,12 @@
 use std::str::FromStr;
 
 use crate::{
-    DataProvider, rules2014::{
-        class::{Class, ItemCategory}, features::PresentedOption, stats::{SkillType, StatType},
+    rules2014::{
+        class::{Class, ItemCategory},
+        features::PresentedOption,
+        stats::{SkillType, StatType},
     },
+    DataProvider,
 };
 
 use super::GraphqlProvider;
@@ -196,7 +199,6 @@ async fn fighter_items() {
 
     let (n, _) = fighter.skill_proficiency_choices();
     assert_eq!(*n, 2);
-
 
     // fighter multiclass stuffs
     let prereqs = fighter.multiclassing_prerequisites();

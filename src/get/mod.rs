@@ -187,7 +187,7 @@ fn capitalize(s: &mut String) {
 #[cfg(test)]
 mod test {
     use crate::get::Dnd5eapiGetter;
-use crate::getter::DataProvider;
+    use crate::getter::DataProvider;
     use crate::rules2014::features::PresentedOption;
     use crate::rules2014::stats::SkillType;
 
