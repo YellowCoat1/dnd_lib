@@ -250,7 +250,7 @@ async fn barbarian_rage() {
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("rage count".to_string()),
+            class_specific_max: Some("Rages".to_string()),
             hard_max: None,
         }
     );
