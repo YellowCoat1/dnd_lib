@@ -1,12 +1,9 @@
 use std::str::FromStr;
 
 use crate::{
-    rules2014::{
-        class::{Class, ItemCategory},
-        features::PresentedOption,
-        stats::SkillType,
+    DataProvider, rules2014::{
+        class::{Class, ItemCategory}, features::PresentedOption, stats::{SkillType, StatType},
     },
-    DataProvider,
 };
 
 use super::GraphqlProvider;
@@ -184,8 +181,6 @@ async fn fighter_items() {
         2,
         "Fighter's second item field should have 2 choices"
     );
-    dbg!(&second_choice);
-    dbg!(&fighter.beginning_items().get(2));
 
     assert_eq!(second_choice[1].len(), 1, "the latter part of fighter's second item field should be only one item (2 martial weapons, 1 unique item type)");
     let two_martial_weapons = &second_choice[1][0];
@@ -201,4 +196,11 @@ async fn fighter_items() {
 
     let (n, _) = fighter.skill_proficiency_choices();
     assert_eq!(*n, 2);
+
+
+    // fighter multiclass stuffs
+    let prereqs = fighter.multiclassing_prerequisites();
+    assert_eq!(prereqs.iter().len(), 2);
+    assert_eq!(prereqs.get(&StatType::Dexterity), Some(&13));
+    assert_eq!(prereqs.get(&StatType::Strength), Some(&13));
 }
