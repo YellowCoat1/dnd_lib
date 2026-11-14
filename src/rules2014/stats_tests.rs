@@ -152,6 +152,6 @@ fn skill_modifications() {
         proficiencies[skill].proficiency = true
     }
     for skill in SkillType::iter() {
-        assert_eq!(proficiencies[skill].proficiency, true)
+        assert!(proficiencies[skill].proficiency)
     }
 }
