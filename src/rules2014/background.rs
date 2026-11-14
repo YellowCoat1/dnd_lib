@@ -28,18 +28,7 @@ impl Background {
         &self.name
     }
 
-    /// Returns the proficiencies granted by the background.
-    ///
-    /// ## Proficiency Representation
-    /// [Classes](crate::rules2014::class::Class), which you may be more familiar with, represent
-    /// skill proficiencies as a tuple of `(usize, PresentedOption<SkillType>)`, where the `usize`
-    /// indicates how many skills you may choose from the presented options. This is because
-    /// classes have a list to choose n skills from, but do not provide any base proficiencies.
-    ///
-    /// This is a `Vec<PresentedOption<SkillType>>` instead, as backgrounds can provide a fixed set
-    /// or a choice of skill proficiencies. For example, the "Acolyte" background provides
-    /// proficiency in two specific skills (Insight and Religion), while the "Charlatan" background
-    /// allows you to choose two skills from a list of options.
+    /// Returns the skill proficiencies granted by the background.
     pub fn proficiencies(&self) -> &Vec<PresentedOption<SkillType>> {
         &self.proficiencies
     }
@@ -75,8 +64,8 @@ impl Background {
 
 /// Represents a single option between languages for a background.
 ///
-/// Prefer using [LanguageOption::new_fixed] and [LanguageOption::new_named_choice] to construct
-/// this, as it handles the string formatting.
+/// Use [LanguageOption::new_fixed] and [LanguageOption::new_named_choice] to normalize
+/// capitalization while constructing these variants.
 ///
 ///
 /// ```
@@ -121,9 +110,10 @@ impl LanguageOption {
     /// This is useful for converting a choice option into a fixed option after the player has made
     /// their selection.
     ///
-    /// # Errors
-    /// Returns false if `self` is `Fixed`, if `s` is not in the list of choices for `NamedChoice`,
-    /// or if `self` is `UnnamedChoice`. The value is not set in these cases.
+    /// Returns false if the option cannot be changed. No modification happens in this case.
+    ///
+    /// This happens if `self` is `Fixed`, if `s` is not in the list of choices for `NamedChoice`,
+    /// or if `self` is `UnnamedChoice`.
     pub fn set_to(&mut self, s: String) -> bool {
         let s = capitalize_first(&s.to_lowercase());
         match self {
@@ -206,11 +196,11 @@ pub enum BackgroundBuildError {
 /// assert!(bg_result.is_ok());
 /// ```
 ///  The following fields are required:
-///  - At least 1 proficiency.
-///  - At least 1 ideal.
-///  - At least 1 bond.
-///  - At least 1 flaw.
-///  - At least 2 personality traits.
+///  - At least one proficiency
+///  - At least one ideal
+///  - At least one bond
+///  - At least one flaw
+///  - At least two personality traits
 pub struct BackgroundBuilder {
     background: Background,
 }
@@ -245,7 +235,6 @@ impl BackgroundBuilder {
         self
     }
 
-    /// Adds equipment to the background's starting equipment.
     pub fn add_equipment(mut self, item: Item, count: usize) -> Self {
         self.background.equipment.push(ItemCount { item, count });
         self
@@ -261,9 +250,6 @@ impl BackgroundBuilder {
         self
     }
 
-    /// Adds equipment to the background's starting equipment. Taking an [ItemCount].
-    ///
-    /// See also: [BackgroundBuilder::add_equipment]
     pub fn add_equipment_count(mut self, item_count: ItemCount) -> Self {
         self.background.equipment.push(item_count);
         self
@@ -344,10 +330,10 @@ impl BackgroundBuilder {
         self
     }
 
-    ///  Builds the background, consuming the builder.
+    ///  Builds the background.
     ///
     ///  # Errors
-    ///  Returns a [BackgroundBuildError] if any required fields are missing or invalid.
+    ///  Returns a [BackgroundBuildError] if any required field is missing.
     ///
     pub fn build(self) -> Result<Background, BackgroundBuildError> {
         use BackgroundBuildError::*;
