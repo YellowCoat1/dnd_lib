@@ -84,7 +84,7 @@ impl Class {
     pub fn equipment_proficiencies(&self) -> &EquipmentProficiencies {
         &self.equipment_proficiencies
     }
-    /// Features that appear on a class's table, rather than text features. 
+    /// Features that appear on a class's table, rather than text features.
     ///
     /// They're indexed by name, and returns the values for all 20 levels.
     pub fn class_specific_leveled(&self) -> &HashMap<String, [String; 20]> {
@@ -115,10 +115,11 @@ impl Class {
     }
 
     /// Class features newly granted at the specified level.
-    pub fn get_specific_features_at_level(&self, level: usize) -> &Vec<PresentedOption<Feature>> {
+    pub fn get_specific_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
         self.features
             .get(level - 1)
-            .expect("Couldn't get class features at level!")
+            .map(|v| v.iter().collect::<Vec<_>>())
+            .unwrap_or(vec![])
     }
 }
 
@@ -450,12 +451,12 @@ mod tests {
         // 1st and 2nd level should individually only have 1st and 2nd level features, respectively
         assert_eq!(
             test_class.get_specific_features_at_level(1),
-            &vec![PresentedOption::Base(feature_1.clone())],
+            vec![&PresentedOption::Base(feature_1.clone())],
             "{error_msg}"
         );
         assert_eq!(
             test_class.get_specific_features_at_level(2),
-            &vec![PresentedOption::Base(feature_2.clone())],
+            vec![&PresentedOption::Base(feature_2.clone())],
             "{error_msg}"
         );
 
