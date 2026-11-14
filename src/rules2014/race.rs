@@ -152,10 +152,6 @@ impl RaceBuilder {
         self
     }
 
-    pub fn add_wildcard_language(mut self) -> Self {
-        self.wildcard_languages += 1;
-        self
-    }
     pub fn add_wildcard_languages(mut self, num: usize) -> Self {
         self.wildcard_languages += num;
         self

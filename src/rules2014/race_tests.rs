@@ -26,7 +26,7 @@ fn custom_race() {
         .add_ability_bonus(RaceBonus::Wildcard(1))
         .add_trait(PresentedOption::Base(animated_armor_slumber))
         .add_language("Elvish".to_string())
-        .add_wildcard_language()
+        .add_wildcard_languages(1)
         .add_subrace(animated_leather)
         .build();
 
