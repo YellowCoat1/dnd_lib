@@ -77,37 +77,30 @@ impl Class {
     pub fn skill_proficiency_choices(&self) -> &(usize, PresentedOption<SkillType>) {
         &self.skill_proficiency_choices
     }
-    /// If the class is a spellcaster. Contains all the relevant information for spellcasting.
+    /// Returns the class's spellcasting information, if any.
     pub fn spellcasting(&self) -> Option<&Spellcasting> {
         self.spellcasting.as_ref()
     }
-    /// The equipment proficiencies granted by the class, e.g. "light armor", "simple weapons",
-    /// "land vehicles"
     pub fn equipment_proficiencies(&self) -> &EquipmentProficiencies {
         &self.equipment_proficiencies
     }
-    /// The features that appear on a class's table, rather than text features. =
+    /// Features that appear on a class's table, rather than text features. 
+    ///
     /// They're indexed by name, and returns the values for all 20 levels.
     pub fn class_specific_leveled(&self) -> &HashMap<String, [String; 20]> {
         &self.class_specific_leveled
     }
-    /// The prerequisites for multiclassing into this class. By default, these are "and"ed together.
+    /// Returns the ability score prerequisites for multiclassing into this class.
     ///
-    /// e.g. (Strength: 13, Dexterity: 13) means "You must have at least 13 Strength and 13
-    /// Dexterity to multiclass into this class".
+    /// All prerequisites must be met unless [`Class::multiclassing_prerequisites_or`] returns `true`.
     pub fn multiclassing_prerequisites(&self) -> &HashMap<StatType, usize> {
         &self.multiclassing_prerequisites
     }
-    /// If true, the prerequisites are "or"ed together rather than "and"ed.
-    ///
-    /// e.g. [Class::multiclassing_prerequisites] as (Strength: 13, Dexterity: 13) with this set to true means "You must have at least 13
-    /// Strength or 13 Dexterity to multiclass into this class".
-    ///
-    /// By default, this is false, meaning the prerequisites are "and"ed together.
+    /// If only one prerequisite (given by [Class::multiclassing_prerequisites]) must be met to multiclass, rather than all of them.
     pub fn multiclassing_prerequisites_or(&self) -> bool {
         self.multiclassing_prerequisites_or
     }
-    /// The proficiencies a character would gain if they multiclassed into this class.
+    /// Proficiencies gained when multiclassing into this class.
     pub fn multiclassing_proficiency_gain(&self) -> &EquipmentProficiencies {
         &self.multiclassing_proficiency_gain
     }
@@ -116,14 +109,12 @@ impl Class {
         &self.tracked_fields
     }
 
-    /// gets the class's features up until a specific level.
-    /// this returns every feature a class would have at the specified level
+    /// Class features from level 1 to the specified level.
     pub fn get_all_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
         self.features[0..level].iter().flatten().collect()
     }
 
-    /// getting the class's features at a specific level.
-    /// this returns only the features that are gained at this level, not features before that.
+    /// Class features newly granted at the specified level.
     pub fn get_specific_features_at_level(&self, level: usize) -> &Vec<PresentedOption<Feature>> {
         self.features
             .get(level - 1)
@@ -134,14 +125,11 @@ impl Class {
 /// A D&D Subclass.
 ///
 /// Subclasses are contained within [Classes](Class).
-/// To add a subclass, push it to the [Class]'s subclasses field.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Subclass {
     pub name: String,
-    /// The subclass's description, split by paragraph.
     pub description: Vec<String>,
     /// Features are per-level, for each of the 20 levels.
-    /// Most of these will be empty vectors, since subclasses don't give features every level.
     pub features: [Vec<PresentedOption<Feature>>; 20],
 }
 
@@ -168,32 +156,31 @@ impl std::fmt::Display for ItemCategory {
     }
 }
 
-/// Tracks a resource that the class uses. Things like the barbarian rages or the druid wildshapes,
+/// Tracks a resource that a class uses. Things like the barbarian rages or the druid wildshapes,
 /// which need to be actively tracked and stored.
 ///
-/// This stores only the metadata about the field; the actual value for a character would be stored
+/// This stores only the metadata about the field; the actual value in a character would be stored
 /// in that character's [SpeccedClass](crate::rules2014::player_character::SpeccedClass).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TrackedField {
     pub name: String,
-    /// restore on long rest
+    /// Whether this field is restored upon a long rest.
     pub long_rest: bool,
-    /// restore on short rest
+    /// Whether this field is restored upon a short rest.
     pub short_rest: bool,
-    /// restore on level up
+    /// Whether this field is restored upon a level up.
     pub level_up: bool,
     /// a class specific field that acts as the maximum.
     ///
-    /// For example, the class specific field of "rage count" for barbarian at level 5 is 3, and so
+    /// For example, the class specific field of "Rages" for barbarian at level 5 is 3, and so
     /// with a Some("rage count") for this field, the max would be 3 if they're level 5.
     pub class_specific_max: Option<String>,
-    /// A hard set maximum. If both class_specific_max and hard_max are set, then hard_max takes
-    /// precedent.
+    /// A hard set maximum. Takes precedence over [Self::class_specific_max].
     pub hard_max: Option<usize>,
 }
 
 impl TrackedField {
-    /// Get the maximum at level 1. Useful for getting the beginning value
+    /// The maximum value at level 1 in a given class.
     pub fn get_base_max(&self, class: &Class) -> Option<usize> {
         let level_1_fields: HashMap<&String, &String> = class
             .class_specific_leveled
@@ -268,13 +255,11 @@ impl ClassBuilder {
         self
     }
 
-    /// Adds a subclass to the list of subclasses.
     pub fn add_subclass(mut self, subclass: Subclass) -> Self {
         self.subclasses.push(subclass);
         self
     }
 
-    /// Sets the subclasses to the provided list.
     pub fn add_subclasses<T>(mut self, subclasses: T) -> Self
     where
         T: IntoIterator<Item = Subclass>,
@@ -288,13 +273,11 @@ impl ClassBuilder {
         self
     }
 
-    /// Adds a beginning item to the list of beginning items.
     pub fn add_beginning_item(mut self, item: PresentedOption<Vec<(ItemCategory, usize)>>) -> Self {
         self.beginning_items.push(item);
         self
     }
 
-    /// Adds multiple beginning items to the list of beginning items.
     pub fn add_beginning_items<T>(mut self, items: T) -> Self
     where
         T: IntoIterator<Item = PresentedOption<Vec<(ItemCategory, usize)>>>,
