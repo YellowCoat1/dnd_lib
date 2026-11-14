@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use super::stats::Size;
 
-/// A static race that can be used by a character.
+/// A race that provides static character creation data
 ///
 /// This is static information which can't be modified after creation, save for subraces.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,27 +29,35 @@ impl PartialEq for Race {
 }
 
 impl Race {
+    /// Returns the race's name.
     pub fn name(&self) -> &str {
         &self.name
     }
+    /// Returns the race's walking speed in feet.
     pub fn speed(&self) -> usize {
         self.speed
     }
+    /// Returns the ability bonuses granted by the race.
     pub fn ability_bonuses(&self) -> &Vec<RaceBonus> {
         &self.ability_bonuses
     }
+    /// Returns the race's size.
     pub fn size(&self) -> &Size {
         &self.size
     }
+    /// Returns the features granted by the race.
     pub fn traits(&self) -> &Vec<PresentedOption<Feature>> {
         &self.traits
     }
+    /// Returns the subraces availible to use with the race.
     pub fn subraces(&self) -> &Vec<Subrace> {
         &self.subraces
     }
+    /// Returns the languages you gain by taking the race.
     pub fn languages(&self) -> &Vec<String> {
         &self.languages
     }
+    /// Returns the number of additional languages you can choose when you take the race.
     pub fn wildcard_languages(&self) -> usize {
         self.wildcard_languages
     }
@@ -199,6 +207,8 @@ impl Subrace {
     }
 
     /// Returns mutable references to unchosen ability bonuses.
+    ///
+    /// Each returned bonus has a `None` ability score and can be assigned by the caller.
     pub fn ability_bonuses_unchosen(&mut self) -> Vec<(&mut Option<StatType>, isize)> {
         self.ability_bonuses
             .iter_mut()
@@ -216,6 +226,7 @@ impl Subrace {
         &self.traits
     }
 
+    /// Returns the [FeatureEffect]s of all selected trait options.
     pub fn trait_effects_mut(&mut self) -> Vec<&mut FeatureEffect> {
         self.traits
             .iter_mut()
@@ -284,10 +295,11 @@ impl SubraceBuilder {
     }
 }
 
-// An ability score bonus given by a race
+// An ability score bonus granted by a race.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum RaceBonus {
+    /// Grants a bonus to a specific ability score.
     Specific(StatType, isize),
-    /// Can be chosen by the character to be any stat
+    /// Grants a bonus to an ability score chosen by the character.
     Wildcard(isize),
 }

@@ -212,7 +212,6 @@ pub enum ClassBuilderError {
 /// - name
 /// - features
 /// - hit_die
-/// - skill_proficiency_choices
 ///  
 pub struct ClassBuilder {
     name: Option<String>,
