@@ -150,8 +150,7 @@ pub struct Character {
     /// Lists active pact magic slots. These can be spent. Separate from regular spell slots.
     pub available_pact_slots: Option<PactSlots>,
     base_stats: Stats,
-    /// Extra features from etc sources that aren't listed otherwise. Feel free to append on any
-    /// extra feature you want your character to have.
+    /// Extra features from extra sources not represented elsewhere.
     pub bonus_features: Vec<Feature>,
     /// The items the character possesses.
     pub items: Vec<HeldEquipment>,
@@ -165,9 +164,9 @@ pub struct Character {
 
     pub background: SpeccedBackground,
 
-    /// Etc field for describing the character's story, enemies, personality, etc
+    /// Narritive Information for describing the character's story, enemies, personality, etc
     pub story: CharacterStory,
-    /// Etc field for describing the character's personal traits (eye color, height, alignment)
+    /// Attributes describing the character's personal traits (eye color, height, alignment)
     pub descriptors: CharacterDescriptors,
 
     /// heroic inspiration
@@ -179,9 +178,9 @@ pub struct Character {
 }
 
 impl Character {
-    /// Builds a level 1 character with base equipment from the class and background.
+    /// Creates a level 1 character.
     ///
-    /// Typically using [CharacterBuilder] is preferred over this.
+    /// For more configurable character creation, use [CharacterBuilder].
     pub fn new(
         name: String,
         class: &Class,
@@ -271,10 +270,9 @@ impl Character {
         &self.unchosen_items
     }
 
-    /// Chooses an item option from the unchosen items.
-    /// `index` is which unchosen item to choose from.
-    /// `choice_index` is which choice to pick from that option.
-    /// So, `character.choose_items(0, 2)` would choose the 3rd option from the first unchosen item.
+    /// Selects an item choice within a starting-equipment option.
+    /// `index` identifies an entry in [Self::unchosen_items]
+    /// `choice_index` identifies the choice within that entry.
     pub fn choose_items(&mut self, index: usize, choice_index: usize) {
         if let Some(option) = self.unchosen_items.get_mut(index) {
             option.choose_in_place(choice_index);
