@@ -1,4 +1,4 @@
-//! charaters, creating characters, and associated data for characters.
+//! Characters, creating characters, and associated data for characters.
 //!
 //! The main feature of this module, and this crate in general, is the [Character] struct.
 //!
@@ -120,29 +120,15 @@ use super::stats::{
 /// #### Items
 ///
 /// Items can be chosen either by using [Character::choose_items] and
-/// [Character::set_unchosen_category], or by directly mainpulating the [Character::items] list.
+/// [Character::set_unchosen_category], or by directly mainpulating the [Character::unchosen_items] list.
 /// After choosing items through either method, you must call [Character::add_chosen_items] to
-/// add them to the character's item list.
+/// add them to the character's [item list](Character::items).
 ///
-/// The beginning item choices is a list of options, each of which are lists of item categories.
-/// So, for example, "a shortsword or any simple melee weapon" would be represented as
-/// `PresentedOption::Base([ (ItemCategory::Item(shortsword), 1),
-/// (ItemCategory::Weapon(Simple), 1) ])`. This would be one option in the
-/// `Character::unchosen_items` list.
-///
-/// When you use methods to choose items, you first choose the option, then choose the category
-/// within that option. After choosing, you must call [Character::add_chosen_items] to add them to
-/// the character's item list.
-///
-/// First, you choose the option. So, out of "a shortsword" or "any simple melee weapon", you
-/// choose either the first or the second option. This is done with [Character::choose_items].
-///
-/// Then, you choose the category, (if there is any) so "any simple melee weapon" could be chosen as a "dagger".
-/// This is done with [Character::set_unchosen_category]. Do note that you would need to retrieve
-/// the data for a dagger yourself, (likely using `provider.get_item("dagger")` with a [GraphqlProvider](crate::prelude::GraphqlProvider))  once you know the simple weapon you want is a dagger.
-///
-/// Finally, you call [Character::add_chosen_items] to add the chosen items to the character's item
-/// list.
+/// To select an item to add:
+/// 1. Choose which option from the list using [Character::choose_items].
+/// 2. Choose which item in the category you want (if any, e.g. club for simple weapons) using
+///    [Character::set_unchosen_category]. Do note you'll need the [Item] you wish.
+/// 3. Use [Character::add_chosen_items] to add the choices to the item list.
 ///
 /// #### Minor features
 ///
@@ -161,15 +147,15 @@ pub struct Character {
     pub race: SpeccedRace,
     /// Lists active spell slots. These can be spent.
     pub available_spell_slots: Option<SpellSlots>,
-    /// Lists active pact magic slots. These can be spent. Seperate from regular spell slots.
+    /// Lists active pact magic slots. These can be spent. Separate from regular spell slots.
     pub available_pact_slots: Option<PactSlots>,
     base_stats: Stats,
     /// Extra features from etc sources that aren't listed otherwise. Feel free to append on any
     /// extra feature you want your character to have.
     pub bonus_features: Vec<Feature>,
-    /// The items the character has.
+    /// The items the character possesses.
     pub items: Vec<HeldEquipment>,
-    /// See the [documentation for items](Character#items).
+    /// See the [documentation for selecting items.](Character#items).
     pub unchosen_items: Vec<PresentedOption<Vec<(ItemCategory, usize)>>>,
     equipment_proficiencies: EquipmentProficiencies,
     pub class_skill_proficiencies: Vec<PresentedOption<SkillType>>,
