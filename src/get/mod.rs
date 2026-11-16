@@ -40,6 +40,7 @@ pub use datastore::Dnd5eapiDatastore;
 mod datastore_tests;
 
 use async_trait::async_trait;
+use heck::ToTitleCase;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -134,7 +135,7 @@ impl crate::getter::DataProvider<Dnd5eapiError> for Dnd5eapiGetter {
             return Ok(cached.clone());
         }
         let mut item = get_item_inner(name).await?;
-        capitalize(&mut item.name);
+        item.name = item.name.to_title_case();
         self.item_cache
             .lock()
             .unwrap()
@@ -143,7 +144,7 @@ impl crate::getter::DataProvider<Dnd5eapiError> for Dnd5eapiGetter {
     }
     async fn get_spell(&self, name: &str) -> Result<Spell, Dnd5eapiError> {
         let mut s = get_spell_inner(name).await?;
-        capitalize(&mut s.name);
+        s.name = s.name.to_title_case();
         Ok(s)
     }
 }
@@ -177,12 +178,6 @@ impl Default for Dnd5eapiGetter {
 mod class_tests;
 #[cfg(test)]
 mod race_tests;
-
-// Capitalize the first character of a string
-fn capitalize(s: &mut String) {
-    let c = s.remove(0);
-    s.insert(0, c.to_ascii_uppercase());
-}
 
 #[cfg(test)]
 mod test {
