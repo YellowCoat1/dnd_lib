@@ -92,7 +92,7 @@ use super::stats::{
 /// Languages can be really anything, so instead of a concrete list of choices, you can just fill
 /// it with any string.
 ///
-/// The following can be found manually, but is provided as a convinience.
+/// The following can be found manually, but is provided as a convenience.
 ///
 /// #### Major features
 ///
@@ -120,7 +120,7 @@ use super::stats::{
 /// #### Items
 ///
 /// Items can be chosen either by using [Character::choose_items] and
-/// [Character::set_unchosen_category], or by directly mainpulating the [Character::unchosen_items] list.
+/// [Character::set_unchosen_category], or by directly manipulating the [Character::unchosen_items] list.
 /// After choosing items through either method, you must call [Character::add_chosen_items] to
 /// add them to the character's [item list](Character::items).
 ///
@@ -132,7 +132,7 @@ use super::stats::{
 ///
 /// #### Minor features
 ///
-/// Various strings for describing the character's story are availiable at [Character::story].
+/// Various strings for describing the character's story are available at [Character::story].
 /// Similarly, strings about the character's personality and appearance are at
 /// [Character::descriptors].
 ///
@@ -457,7 +457,7 @@ impl Character {
     pub fn ability_score_increases(&mut self) -> Vec<&AbilityScoreIncrease> {
         self.classes
             .iter()
-            // iter over each class's feature list
+            // iterate over each class's feature list
             .flat_map(|v| v.current_class_features.iter())
             // then over each feature
             .flatten()
@@ -702,7 +702,7 @@ impl Character {
     /// Gets total pact magic slots, the base pact magic slots the class has access to after a
     /// short or long rest.
     ///
-    /// Pact slots are treated differenty than spell slots. For regular spell slots, see
+    /// Pact slots are treated differently than spell slots. For regular spell slots, see
     /// [Character::spell_slots].
     ///
     /// ```rust
@@ -959,11 +959,11 @@ impl Character {
 
     /// Returns the current ac of the character based off features and equipped items.
     ///
-    /// If the character has armor equipped, it uses the ac of that armor, plus any dex bonus that
+    /// If the character has armor equipped, it uses the ac of that armor, plus any dexterity bonus that
     /// armor would get.
     /// If the character has no armor and an unarmored defense feature, the character has the ac of
     /// that unarmored defense.
-    /// If the character has no armor an no unarmoed defense, as per D&D 5e rules the character's
+    /// If the character has no armor an no unarmored defense, as per D&D 5e rules the character's
     /// ac is 10 plus their dexterity modifier.
     ///
     /// Afterwards, bonuses from other features (and a shield, if any) are added.
@@ -1124,7 +1124,7 @@ impl Character {
 
     /// The different speeds of the character, e.g. flying and climbing.
     ///
-    /// Aarococra have flying speed, for example, so an aarococra character would have `character.speeds().flying
+    /// Aarococra have flying speed, for example, so an Aarococra character would have `character.speeds().flying
     /// == Some(30)`. A human would have `character.speeds().flying == None`.
     pub fn speeds(&self) -> Speeds {
         let mut speeds = Speeds {
@@ -1411,12 +1411,12 @@ impl Character {
     ///
     /// A weapon may represent multiple [WeaponAction]s. Light weapons have both a [WeaponAction] for
     /// their main attack, and a [WeaponAction] for their second attack, which will be marked as
-    /// such and will not have the ability modifer added to the damage of the roll.
+    /// such and will not have the ability modifier added to the damage of the roll.
     ///
-    /// Versitile weapons will also represent multiple [WeaponAction]s, one for one-handed and
+    /// Versatile weapons will also represent multiple [WeaponAction]s, one for one-handed and
     /// another for two-handed.
     ///
-    /// If the weapon is versitile, it will use whichever is highest between strength and
+    /// If the weapon is versatile, it will use whichever is highest between strength and
     /// dexterity.
     pub fn weapon_actions(&self) -> Vec<WeaponAction> {
         let modifiers = self.stats().modifiers();
@@ -1449,7 +1449,7 @@ impl Character {
     }
 
     /// Gets the attacks possible from all spells prepared in any class. The resulting
-    /// [SpellAction] has the final calculated attack modifer and damage roll needed to preform an
+    /// [SpellAction] has the final calculated attack modifier and damage roll needed to preform an
     ///  attack.
     ///
     /// Each spell that can deal damage will represent one [SpellAction] for each level it can be
@@ -1459,7 +1459,7 @@ impl Character {
     /// Spells may also have multiple for each level. Chromatic orb, for example, can attack with
     /// one of many types, so it would have many spell actions.
     ///
-    /// If the character is a warlock, it still returns everthing up until their maximum spell
+    /// If the character is a warlock, it still returns everything up until their maximum spell
     /// level, since they're still able to downcast below their spell slot's level.
     pub fn spell_actions(&self) -> Vec<SpellAction> {
         let modifiers = self.stats().modifiers();
@@ -1573,7 +1573,7 @@ impl Character {
     /// The 2nd argument is an optional manual override of the hit die rolls, which otherwise are
     /// just the averages. This is before constitution is added, so it's just the base dice rolls.
     ///
-    /// Returns a bool of it it succeeded or not. The function fails if the amount of hit die are
+    /// Returns true if it succeeded. The function fails if the amount of hit die are
     /// more than what's available, or if the hit die override has a different length than the amount of hit die spent.
     ///
     /// ```
@@ -1945,7 +1945,7 @@ fn weapon_actions_inner(
 /// A class as it's used for a character. This contains all the relevant information from a class
 /// for a character at their level.
 ///
-/// Classes are bulky, and are the largest datastructure in the crate, aside from characters. A
+/// Classes are bulky, and are the largest data structure in the crate, aside from characters. A
 /// SpeccedClass is like a fragment of that class, which has only the relevant information for a
 /// character.
 ///
@@ -1970,7 +1970,7 @@ pub struct SpeccedClass {
     pub subclass: PresentedOption<Subclass>,
     /// The class's spellcasting. Each class in D&D has it's own prepared spell list and spell
     /// DC/attack modifier, so they're listed in the [SpeccedClass] instead of a field in the
-    /// [Character]. Spell slots are dependent on the character rather than the indiviudal class,
+    /// [Character]. Spell slots are dependent on the character rather than the individual class,
     /// so they're listed as a [Character] field in [Character::available_spell_slots].
     ///
     /// The [Option] is [None] if the class isn't a spellcaster. The first field is the
@@ -2117,7 +2117,7 @@ impl SpeccedRace {
         &self.ability_bonuses
     }
 
-    // returns mutable refrences to every unchosen ability bonus
+    // returns mutable references to every unchosen ability bonus
     pub fn ability_bonuses_unchosen(&mut self) -> Vec<(&mut Option<StatType>, isize)> {
         self.ability_bonuses
             .iter_mut()
