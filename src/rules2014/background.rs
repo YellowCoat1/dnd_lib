@@ -107,7 +107,7 @@ impl LanguageOption {
     /// This happens if `self` is `Fixed`, if `s` is not in the list of choices for `NamedChoice`,
     /// or if `self` is `UnnamedChoice`.
     pub fn set_to(&mut self, s: String) -> bool {
-        let s = s.to_title_case();
+        let s = s.to_lowercase().to_title_case();
         match self {
             LanguageOption::Fixed(_) => return false,
             LanguageOption::NamedChoice(choices) => {
@@ -124,11 +124,14 @@ impl LanguageOption {
 
     /// Constructs a fixed language option with proper capitalization.
     pub fn new_fixed(s: String) -> Self {
-        LanguageOption::Fixed(s.to_title_case())
+        LanguageOption::Fixed(s.to_lowercase().to_title_case())
     }
     /// Constructs a named choice language option with proper capitalization.
     pub fn new_named_choice(choices: Vec<String>) -> Self {
-        let choices: Vec<String> = choices.into_iter().map(|s| s.to_title_case()).collect();
+        let choices: Vec<String> = choices
+            .into_iter()
+            .map(|s| s.to_lowercase().to_title_case())
+            .collect();
         LanguageOption::NamedChoice(choices)
     }
 }
