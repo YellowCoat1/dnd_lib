@@ -166,7 +166,7 @@ pub enum BackgroundBuildError {
 ///
 /// // a fixed language option that the background always provides
 /// let elvish = LanguageOption::Fixed("Elvish".to_string());
-/// // similarly, a fixed atheltics skill proficiency
+/// // similarly, a fixed athletics skill proficiency
 /// let athletics = PresentedOption::Base(SkillType::Athletics);
 /// // and a fixed perception skill proficiency
 /// let perception = PresentedOption::Base(SkillType::Perception);

@@ -1,4 +1,4 @@
-//! Defines stats, saving throws, skills, and proficieny.
+//! Defines stats, saving throws, skills, and proficiency.
 
 use std::{
     collections::HashSet,
@@ -73,12 +73,12 @@ impl Stats {
         }
     }
 
-    /// Returns a mutable refrence to the value of the given stat type.
+    /// Returns a mutable reference to the value of the given stat type.
     pub fn get_stat_type_mut(&mut self, stat_type: &StatType) -> &mut isize {
         &mut self[*stat_type]
     }
 
-    /// Returns a refrence to the value of the given stat type.
+    /// Returns a reference to the value of the given stat type.
     pub fn get_stat_type(&self, stat_type: &StatType) -> &isize {
         &self[*stat_type]
     }
@@ -254,7 +254,7 @@ impl StatType {
 ///
 /// A "true" field means the character is proficient in that save.
 ///
-/// If you need the numeric modfier of a save, use [modifiers](Saves::modifiers).
+/// If you need the numeric modifier of a save, use [modifiers](Saves::modifiers).
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Saves {
     pub strength: bool,
@@ -266,10 +266,10 @@ pub struct Saves {
 }
 
 impl Saves {
-    /// Returns the total saving throw modifiers, combining ability modifiers and any proficieny
+    /// Returns the total saving throw modifiers, combining ability modifiers and any proficiency
     /// bonuses.
     pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> Modifiers {
-        // essentially just takes the base stats, converts it to the modfiers, then adds
+        // essentially just takes the base stats, converts it to the modifiers, then adds
         // proficiency to the fields that are proficient.
 
         let calc_bonus = |b| if b { proficiency_bonus } else { 0 };
@@ -411,7 +411,7 @@ pub enum SkillType {
 }
 
 impl SkillType {
-    // converts from string name to skill type. non case sensitive.
+    // converts from string name to skill type. Not case sensitive.
     pub fn from_name(name: &str) -> Option<SkillType> {
         Self::from_str(&name.to_lowercase()).ok()
     }
@@ -522,7 +522,7 @@ impl IndexMut<SkillType> for SkillProficiencies {
 impl SkillProficiencies {
     /// Computes total modifiers for all skills based on ability modifiers and proficiency bonuses.
     ///
-    /// Proficency in a skill adds proficiency once. Expertise adds the proficency bonus again.
+    /// Proficiency in a skill adds proficiency once. Expertise adds the proficiency bonus again.
     pub fn modifiers(&self, stats: &Stats, proficiency_bonus: isize) -> SkillModifiers {
         // stat modifiers. Shorthanded name since it's a very short lived and highly used var.
         let sm = stats.modifiers();
