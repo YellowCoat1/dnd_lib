@@ -7,9 +7,11 @@ use crate::{
         stats::{EquipmentProficiencies, Saves, StatType},
     },
 };
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::GraphQLQuery;
 use heck::ToKebabCase;
 use thiserror::Error;
+
+use super::get_page::request_graphql_page;
 
 mod class_specific;
 mod equipment;
@@ -45,7 +47,10 @@ impl ClassError {
 }
 
 pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, ClassError> {
-    let response_data = request_class_page(name)
+    let vars = class_query::Variables {
+        index: name.to_kebab_case(),
+    };
+    let response_data = request_graphql_page::<ClassQuery>(vars)
         .await
         .ok_or(ClassError::ConnectionError)?
         .class
@@ -101,24 +106,6 @@ pub async fn get_class(name: &str, provider: &GraphqlProvider) -> Result<Class, 
             ClassBuilderError::HitDieMissing => ClassError::parse_error("hit die missing", name),
             ClassBuilderError::FeaturesMissing => ClassError::parse_error("features missing", name),
         })
-}
-
-async fn request_class_page(name: &str) -> Option<class_query::ResponseData> {
-    //get data
-    let vars = class_query::Variables {
-        index: name.to_kebab_case(),
-    };
-    let request_body = ClassQuery::build_query(vars);
-
-    let client = reqwest::Client::new();
-    let res = client
-        .post("https://www.dnd5eapi.co/graphql")
-        .json(&request_body)
-        .send()
-        .await
-        .ok()?;
-    let response_body: Response<class_query::ResponseData> = res.json().await.ok()?;
-    response_body.data
 }
 
 fn process_proficiencies(

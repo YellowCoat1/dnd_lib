@@ -1,10 +1,13 @@
 use std::str::FromStr;
 
-use crate::rules2014::{
-    items::{DamageRoll, DamageType},
-    spells::{School, Spell},
+use crate::{
+    graphql::get_page::request_graphql_page,
+    rules2014::{
+        items::{DamageRoll, DamageType},
+        spells::{School, Spell},
+    },
 };
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::GraphQLQuery;
 use heck::ToKebabCase;
 use thiserror::Error;
 
@@ -33,7 +36,10 @@ impl SpellError {
 }
 
 pub async fn get_spell(name: &str) -> Result<Spell, SpellError> {
-    let response_data = request_spell_page(name)
+    let vars = spell_query::Variables {
+        index: name.to_kebab_case(),
+    };
+    let response_data = request_graphql_page::<SpellQuery>(vars)
         .await
         .ok_or(SpellError::ConnectionError)?
         .spell
@@ -155,24 +161,6 @@ fn process_damage(
         .transpose()?
         .map(transpose);
     Ok(damage)
-}
-
-async fn request_spell_page(name: &str) -> Option<spell_query::ResponseData> {
-    //get data
-    let vars = spell_query::Variables {
-        index: name.to_kebab_case(),
-    };
-    let request_body = SpellQuery::build_query(vars);
-
-    let client = reqwest::Client::new();
-    let res = client
-        .post("https://www.dnd5eapi.co/graphql")
-        .json(&request_body)
-        .send()
-        .await
-        .ok()?;
-    let response_body: Response<spell_query::ResponseData> = res.json().await.ok()?;
-    response_body.data
 }
 
 // The api errors on leveled cantrips that can't be upcasted, so this is a hardcoded workaround

@@ -1,10 +1,10 @@
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::GraphQLQuery;
 use std::{collections::HashMap, str::FromStr};
 
 use thiserror::Error;
 
 use crate::{
-    graphql::items::equipment_query::{EquipmentQueryEquipments, ResponseData},
+    graphql::{get_page::request_graphql_page, items::equipment_query::EquipmentQueryEquipments},
     rules2014::items::{
         Armor, DamageRoll, DamageType, Item, ItemType, Weapon, WeaponProperties, WeaponType,
     },
@@ -37,7 +37,8 @@ impl ItemError {
 }
 
 pub async fn new_database() -> Result<HashMap<String, Item>, ItemError> {
-    let response = request_equipment()
+    let vars = equipment_query::Variables;
+    let response = request_graphql_page::<EquipmentQuery>(vars)
         .await
         .ok_or(ItemError::ConnectionError)?;
     response
@@ -45,22 +46,6 @@ pub async fn new_database() -> Result<HashMap<String, Item>, ItemError> {
         .iter()
         .map(process_equipment)
         .collect::<Result<HashMap<String, Item>, ItemError>>()
-}
-
-async fn request_equipment() -> Option<ResponseData> {
-    //get data
-    let vars = equipment_query::Variables;
-    let request_body = EquipmentQuery::build_query(vars);
-
-    let client = reqwest::Client::new();
-    let res = client
-        .post("https://www.dnd5eapi.co/graphql")
-        .json(&request_body)
-        .send()
-        .await
-        .ok()?;
-    let response_body: Response<equipment_query::ResponseData> = res.json().await.ok()?;
-    response_body.data
 }
 
 fn process_equipment(

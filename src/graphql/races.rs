@@ -1,14 +1,14 @@
 use std::str::FromStr;
 
 use crate::{
-    graphql::races::race_query::RaceQueryRace,
+    graphql::{get_page::request_graphql_page, races::race_query::RaceQueryRace},
     rules2014::{
         features::{Feature, FeatureEffect, PresentedOption},
         race::{Race, RaceBonus, RaceBuilder, Subrace, SubraceBuilder},
         stats::{Size, SkillType, StatType},
     },
 };
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::GraphQLQuery;
 use heck::ToKebabCase;
 use thiserror::Error;
 
@@ -37,7 +37,10 @@ impl RaceError {
 pub struct RaceQuery;
 
 pub async fn get_race(name: &str) -> Result<Race, RaceError> {
-    let response_data = request_spell_page(name)
+    let vars = race_query::Variables {
+        index: name.to_kebab_case(),
+    };
+    let response_data = request_graphql_page::<RaceQuery>(vars)
         .await
         .ok_or(RaceError::ConnectionError)?
         .race
@@ -182,24 +185,6 @@ fn process_ability_bonuses(response_data: &RaceQueryRace) -> Result<Vec<RaceBonu
             })
         })
         .collect::<Result<Vec<_>, _>>()
-}
-
-async fn request_spell_page(name: &str) -> Option<race_query::ResponseData> {
-    //get data
-    let vars = race_query::Variables {
-        index: name.to_kebab_case(),
-    };
-    let request_body = RaceQuery::build_query(vars);
-
-    let client = reqwest::Client::new();
-    let res = client
-        .post("https://www.dnd5eapi.co/graphql")
-        .json(&request_body)
-        .send()
-        .await
-        .ok()?;
-    let response_body: Response<race_query::ResponseData> = res.json().await.ok()?;
-    response_body.data
 }
 
 #[cfg(test)]

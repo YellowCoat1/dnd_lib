@@ -10,6 +10,7 @@ use crate::rules2014::{
 
 mod backgrounds;
 mod classes;
+mod get_page;
 mod items;
 mod races;
 mod spells;

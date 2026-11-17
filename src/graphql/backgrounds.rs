@@ -1,4 +1,4 @@
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::GraphQLQuery;
 use heck::ToKebabCase;
 use thiserror::Error;
 
@@ -8,6 +8,8 @@ use crate::rules2014::{
     items::{Item, ItemType},
     stats::SkillType,
 };
+
+use super::get_page::request_graphql_page;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -34,7 +36,10 @@ impl BackgroundError {
 }
 
 pub async fn get_background(name: &str) -> Result<Background, BackgroundError> {
-    let response_data = request_background_page(name)
+    let vars = background_query::Variables {
+        index: name.to_kebab_case(),
+    };
+    let response_data = request_graphql_page::<BackgroundQuery>(vars)
         .await
         .ok_or(BackgroundError::ConnectionError)?
         .background
@@ -177,24 +182,6 @@ pub fn bg_languages(
         .try_into()
         .map_err(|_| BackgroundError::parse_error("Language count", name))?;
     Ok(vec![lang_choice; count])
-}
-
-async fn request_background_page(name: &str) -> Option<background_query::ResponseData> {
-    //get data
-    let vars = background_query::Variables {
-        index: name.to_kebab_case(),
-    };
-    let request_body = BackgroundQuery::build_query(vars);
-
-    let client = reqwest::Client::new();
-    let res = client
-        .post("https://www.dnd5eapi.co/graphql")
-        .json(&request_body)
-        .send()
-        .await
-        .ok()?;
-    let response_body: Response<background_query::ResponseData> = res.json().await.ok()?;
-    response_body.data
 }
 
 #[cfg(test)]
