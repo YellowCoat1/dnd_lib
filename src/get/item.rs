@@ -224,4 +224,12 @@ mod tests {
             DamageRoll::from_str("1d10", DamageType::Slashing).unwrap()
         )
     }
+
+    #[tokio::test]
+    async fn dungeoneers_pack() {
+        let item = get_item("dungeoneers-pack")
+            .await
+            .expect("failed to get dungeoneer's pack");
+        assert_eq!(item.name, "Dungeoneer's Pack");
+    }
 }

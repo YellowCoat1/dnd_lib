@@ -134,8 +134,7 @@ impl crate::getter::DataProvider<Dnd5eapiError> for Dnd5eapiGetter {
         if let Some(cached) = self.item_cache.lock().unwrap().get(name) {
             return Ok(cached.clone());
         }
-        let mut item = get_item_inner(name).await?;
-        item.name = item.name.to_title_case();
+        let item = get_item_inner(name).await?;
         self.item_cache
             .lock()
             .unwrap()
