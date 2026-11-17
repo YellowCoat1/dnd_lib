@@ -53,7 +53,7 @@ fn class_specific_from_data(class_specific_fields: &ClassSpecificList) -> Vec<(S
     if let Some(martial_arts) = &class_specific_fields.martial_arts {
         vec.push((
             "Martial Arts".to_string(),
-            format!("{}d{}", martial_arts.dice_value, martial_arts.dice_count),
+            format!("{}d{}", martial_arts.dice_count, martial_arts.dice_value),
         ));
     }
 
