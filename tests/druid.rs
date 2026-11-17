@@ -1,4 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
+use std::error::Error;
+
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::background::LanguageOption;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
@@ -9,8 +11,18 @@ use dnd_lib::rules2014::stats::Speeds;
 use futures::future::try_join_all;
 
 #[tokio::test]
-async fn level_3_druid() {
+async fn level_3_druid_graphql() {
     let provider = GraphqlProvider::new();
+    level_3_druid(provider).await;
+}
+
+#[tokio::test]
+async fn level_3_druid_http() {
+    let provider = Dnd5eapiGetter::new();
+    level_3_druid(provider).await;
+}
+
+async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
     let human_future = provider.get_race("human");
     let druid_future = provider.get_class("druid");
     let acolyte_future = provider.get_background("acolyte");

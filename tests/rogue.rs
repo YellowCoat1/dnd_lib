@@ -1,5 +1,7 @@
 #![cfg(feature = "network-intensive-tests")]
 
+use std::error::Error;
+
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{CustomAction, Feature, FeatureEffect};
 use dnd_lib::rules2014::items::{ArmorCategory, DamageRoll, DamageType, WeaponType};
@@ -7,8 +9,19 @@ use dnd_lib::rules2014::spells::SpellAction;
 use dnd_lib::rules2014::stats::{Modifiers, Size, SkillModifiers, SkillType, StatType};
 
 #[tokio::test]
-async fn level_5_halfling_rogue() {
+async fn level_5_halfling_graphql() {
     let provider = GraphqlProvider::new();
+    level_5_halfling_rogue(provider).await;
+}
+
+#[tokio::test]
+async fn level_5_halfling_http() {
+    let provider = Dnd5eapiGetter::new();
+    level_5_halfling_rogue(provider).await;
+}
+
+
+async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
     let halfling_future = provider.get_race("halfling");
     let rogue_future = provider.get_class("rogue");
     let acolyte_future = provider.get_background("acolyte");

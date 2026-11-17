@@ -1,4 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
+use std::error::Error;
+
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect};
 use dnd_lib::rules2014::{spells::PactSlots, stats::StatType};
@@ -6,8 +8,19 @@ use dnd_lib::rules2014::{spells::PactSlots, stats::StatType};
 use futures::future::try_join_all;
 
 #[tokio::test]
-async fn level_10_warlock() {
+async fn level_5_halfling_graphql() {
     let provider = GraphqlProvider::new();
+    level_10_warlock(provider).await;
+}
+
+#[tokio::test]
+async fn level_5_halfling_http() {
+    let provider = Dnd5eapiGetter::new();
+    level_10_warlock(provider).await;
+}
+
+
+async fn level_10_warlock<E: Error, T: DataProvider<E>>(provider: T) {
     let tiefling_future = provider.get_race("tiefling");
     let warlock_future = provider.get_class("warlock");
     let acolyte_future = provider.get_background("acolyte");

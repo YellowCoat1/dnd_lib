@@ -1,11 +1,24 @@
 #![cfg(feature = "network-intensive-tests")]
+use std::error::Error;
+
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
 use dnd_lib::rules2014::stats::{SkillModifiers, SkillType};
 
 #[tokio::test]
-async fn level_3_elf_monk() {
+async fn level_3_elf_graphql() {
     let provider = GraphqlProvider::new();
+    level_3_elf_monk(provider).await;
+}
+
+#[tokio::test]
+async fn level_3_elf_http() {
+    let provider = Dnd5eapiGetter::new();
+    level_3_elf_monk(provider).await;
+}
+
+
+async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     let elf_future = provider.get_race("elf");
     let monk_future = provider.get_class("monk");
     let acolyte_future = provider.get_background("acolyte");
