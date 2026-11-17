@@ -20,7 +20,6 @@ async fn level_5_halfling_http() {
     level_5_halfling_rogue(provider).await;
 }
 
-
 async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
     let halfling_future = provider.get_race("halfling");
     let rogue_future = provider.get_class("rogue");

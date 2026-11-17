@@ -17,7 +17,6 @@ async fn level_3_elf_http() {
     level_3_elf_monk(provider).await;
 }
 
-
 async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     let elf_future = provider.get_race("elf");
     let monk_future = provider.get_class("monk");

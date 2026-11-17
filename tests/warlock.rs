@@ -19,7 +19,6 @@ async fn level_5_halfling_http() {
     level_10_warlock(provider).await;
 }
 
-
 async fn level_10_warlock<E: Error, T: DataProvider<E>>(provider: T) {
     let tiefling_future = provider.get_race("tiefling");
     let warlock_future = provider.get_class("warlock");
