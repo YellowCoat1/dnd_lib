@@ -106,7 +106,6 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     georg.race.choose_subrace(0);
 
     // making sure the monk has zero ki points at level 1
-    dbg!(&georg.classes[0].tracked_fields);
     assert_eq!(
         georg.classes[0].tracked_fields.len(),
         1,
@@ -115,6 +114,10 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     assert_eq!(
         georg.classes[0].tracked_fields[0].1, 0,
         "monk should have 0 ki points at level 1"
+    );
+    assert_eq!(
+        georg.classes[0].get_class_specific().get("Martial Arts"),
+        Some(&"1d4".to_string())
     );
 
     // level georg to level 3
