@@ -4,3 +4,4 @@
 /mutants.out
 /mutants.out.old
 /.test_http_cache
+/.test_graphql_cache
