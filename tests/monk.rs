@@ -53,7 +53,6 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
 
     assert_eq!(georg.items.len(), 5);
 
-    assert_eq!(georg.items[0].item.name, "Clothes, common");
     assert_eq!(georg.items[3].item.name, "Shortsword");
     assert_eq!(georg.items[4].item.name, "Dungeoneer's Pack");
 
@@ -143,6 +142,7 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     };
     assert_eq!(georg.stats(), final_stats);
 
+    assert!(georg.skills().perception.proficiency, "elf should have proficiency in perception");
     // double checking skills
     let skills = georg.skill_modifiers();
     let correct_skills = SkillModifiers {

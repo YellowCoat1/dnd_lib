@@ -2,7 +2,7 @@ use super::get_page::get_raw_json;
 use super::json_tools::{choice, parse_string, value_name, ValueExt};
 use super::Dnd5eapiError;
 use crate::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect, PresentedOption};
-use crate::rules2014::stats::StatType;
+use crate::rules2014::stats::{StatType, SkillType};
 use regex::Regex;
 use serde_json::Value;
 
@@ -143,6 +143,7 @@ fn feature_effects(index_name: &str) -> Vec<FeatureEffect> {
             FeatureEffect::LeveledHpIncrease,
             FeatureEffect::UnarmoredDefense(13, StatType::Dexterity, None),
         ],
+        "keen-senses" => vec![FeatureEffect::AddSkillProficiency(SkillType::Perception)],
         "dwarven-toughness" => vec![FeatureEffect::LeveledHpIncrease],
         "unarmored-movement-1" => vec![FeatureEffect::UnarmoredMovement],
         _ => vec![],
