@@ -528,7 +528,7 @@ fn class_specific(levels: [&Value; 20]) -> Result<HashMap<String, [String; 20]>,
         if key == "creating_spell_slots" {
             continue;
         } // sorcerer useless field
-        map.insert(key.replace("_", " "), vec![]);
+        map.insert(key.to_title_case(), vec![]);
     }
 
     for level in levels {
@@ -557,7 +557,7 @@ fn class_specific(levels: [&Value; 20]) -> Result<HashMap<String, [String; 20]>,
                 }
             };
 
-            map.get_mut(&key.replace("_", " "))
+            map.get_mut(&key.to_title_case())
                 .ok_or_else(|| {
                     Dnd5eapiError::not_found(
                         "Vec of class specific values",
@@ -692,7 +692,7 @@ fn etc_class_field_option(name: &str) -> Option<TrackedField> {
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("rage count".to_string()),
+            class_specific_max: Some("Rage Count".to_string()),
             hard_max: None,
         }),
         "druid" => Some(TrackedField {
@@ -708,7 +708,7 @@ fn etc_class_field_option(name: &str) -> Option<TrackedField> {
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("sorcery points".to_string()),
+            class_specific_max: Some("Sorcery Points".to_string()),
             hard_max: None,
         }),
         "monk" => Some(TrackedField {
@@ -716,7 +716,7 @@ fn etc_class_field_option(name: &str) -> Option<TrackedField> {
             long_rest: true,
             short_rest: false,
             level_up: false,
-            class_specific_max: Some("ki points".to_string()),
+            class_specific_max: Some("Ki Points".to_string()),
             hard_max: None,
         }),
         _ => None,

@@ -120,7 +120,7 @@ async fn wizard_features(class: &Class) {
 fn wizard_class_specific(class: &Class) {
     let arcane_recovery = class
         .class_specific_leveled()
-        .get("arcane recovery levels")
+        .get("Arcane Recovery Levels")
         .expect("wizard should have class specific fields!");
     let arcane_recovery_nums: Vec<usize> =
         arcane_recovery.iter().map(|v| v.parse().unwrap()).collect();

@@ -106,6 +106,7 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     georg.race.choose_subrace(0);
 
     // making sure the monk has zero ki points at level 1
+    dbg!(&georg.classes[0].tracked_fields);
     assert_eq!(
         georg.classes[0].tracked_fields.len(),
         1,
@@ -142,7 +143,10 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
     };
     assert_eq!(georg.stats(), final_stats);
 
-    assert!(georg.skills().perception.proficiency, "elf should have proficiency in perception");
+    assert!(
+        georg.skills().perception.proficiency,
+        "elf should have proficiency in perception"
+    );
     // double checking skills
     let skills = georg.skill_modifiers();
     let correct_skills = SkillModifiers {
@@ -207,6 +211,7 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
         "character should have died to sufficient damage."
     );
 
+    dbg!(georg.classes.first().unwrap().get_class_specific());
     // finding the monk's ki points
     let ki_points: usize = georg
         .classes
