@@ -113,13 +113,11 @@ impl Class {
     }
 
     /// Returns class features granted from level 1 through `level`.
-    ///
-    /// `level` is one-based and must be in the range `1..=20`.
     pub fn get_all_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
         self.features[0..level].iter().flatten().collect()
     }
 
-    /// Returns class features newly granted at the specified one-based level.
+    /// Returns class features newly granted at the specified level.
     pub fn get_specific_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
         self.features
             .get(level - 1)
@@ -128,7 +126,7 @@ impl Class {
     }
 }
 
-/// A D&D subclass and its features by character level.
+/// A D&D subclass.
 ///
 /// Subclasses are contained within [Classes](Class).
 #[derive(Serialize, Deserialize, Clone, Debug)]
