@@ -1,7 +1,13 @@
-//! The needed rules and etc factors to make a character in 5e 2014 D&D.
+//! Data types and rules needed to build and manage a 2014 D&D 5e character.
 //!
-//! Every struct here implements serde serialize and deserialize, allowing for easy sending or
-//! saving.
+//! The module is organized around immutable source data ([`class::Class`],
+//! [`background::Background`], and [`race::Race`]) and the mutable
+//! [`player_character::Character`] assembled from that data. Builders are provided for
+//! homebrew content, while [`features::PresentedOption`] represents choices that still need
+//! to be made during character creation.
+//!
+//! Most public data types implement `Serialize` and `Deserialize`, making character data
+//! convenient to save or send over an API.
 pub mod background;
 mod character_builder;
 mod character_etc;

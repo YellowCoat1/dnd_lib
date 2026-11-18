@@ -1,11 +1,9 @@
-//! Features, or etc listed effects.
+//! Features and other descriptive effects granted by races, classes, and backgrounds.
 //!
-//! Most character effects that are descriptive rather than numerical are listed under here.
-//! As of right now, that only includes the [Feature] struct, and the many surrounding
-//! datastructures around it.
+//! Most character effects that are descriptive rather than numerical are represented here.
 //!
-//! Another major part of this module is the [PresentedOption] enum, which is used throughout the
-//! crate to describe a choice between options that the character can pick.
+//! [`PresentedOption`] is also re-exported here because it is used throughout the crate to
+//! describe choices a character can make.
 
 use super::background::LanguageOption;
 
@@ -58,6 +56,7 @@ pub enum AbilityScoreIncrease {
 }
 
 impl AbilityScoreIncrease {
+    /// Sets this increase to one or two chosen ability scores.
     pub fn set_stat_increase(&mut self, first: StatType, second: Option<StatType>) {
         *self = AbilityScoreIncrease::StatIncrease(Some(first), second);
     }
@@ -131,7 +130,7 @@ pub enum FeatureEffect {
     WeaponProficiency(WeaponType),
     /// Gives proficiency in an armor type
     ArmorProficiency(ArmorCategory),
-    /// Gives proficiency in an etc tool or weapon
+    /// Gives proficiency in another tool or weapon category.
     EtcProficiency(String),
     /// Gives proficiency in a skill
     AddSkillProficiency(SkillType),

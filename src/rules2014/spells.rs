@@ -6,7 +6,7 @@ use super::{
 };
 use serde::{Deserialize, Serialize};
 
-/// A D&D 5e spell.
+/// A D&D 5e spell and its descriptive casting data.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Spell {
     /// e.g. "Fireball"
@@ -104,9 +104,9 @@ pub enum School {
     Transmutation,
 }
 
-/// Represents the spell slots for levels 0-9.
+/// Represents spell slots for spell levels 1 through 9.
 ///
-/// 0th levels is cantrips, so instead of spell slots, it's cantrips know.
+/// Cantrips are tracked separately in [`Spellcasting::cantrips_per_level`].
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SpellSlots(pub [usize; 9]);
 
@@ -148,21 +148,21 @@ impl From<(usize, usize)> for PactSlots {
     }
 }
 
-/// Spellcasting data for a class, including slots, ability, and spell lists.
+/// Spellcasting data for a class, including its ability and spell lists.
 ///
-/// Cantrips but not spell slots are included, since cantrips are class-wide and spell slots are
-/// charachter-wide.
+/// Cantrips are included because they are class-wide; spell slots are calculated for the character
+/// and are therefore not stored here.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Spellcasting {
-    /// How many cantrips for every level
+    /// Number of cantrips known at each class level.
     pub cantrips_per_level: [usize; 20],
     /// The ability type used for spellcasting (e.g. Intelligence, Wisdom, Charisma)
     pub spellcasting_ability: StatType,
-    /// The list of spells availible for each spell level (1-9)
+    /// The list of spells available at each spell level (1-9).
     pub spell_list: [Vec<String>; 10],
-    /// Cantrips availible per level
+    /// The type of caster and its spell-slot progression.
     pub spellcaster_type: SpellCasterType,
-    /// If the caster knows or prepares their spells.
+    /// Whether the caster knows or prepares spells.
     pub preperation_type: SpellCastingPreperation,
 }
 
@@ -172,7 +172,7 @@ pub enum SpellCasterType {
     Full,
     Half,
     Quarter,
-    /// Warlocks get a special case, since they have a seperate spell slots list.
+    /// Warlocks use a separate pact-magic spell-slot list.
     Warlock,
 }
 

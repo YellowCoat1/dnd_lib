@@ -1,4 +1,4 @@
-//! items, item types, and damage types.
+//! Items, equipment categories, actions, and damage types used by characters.
 use std::cmp::PartialEq;
 
 use serde::{Deserialize, Serialize};
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use super::{features::Feature, stats::EquipmentProficiencies};
 use strum::{Display as StrumDisplay, EnumString};
 
-/// Lists the names of all regular D&D simple weapons. Ranged weapons are listed seperately.
+/// Lists the names of all regular D&D simple melee weapons.
 pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
     "club",
     "dagger",
@@ -19,7 +19,7 @@ pub const SIMPLE_WEAPONS_MELEE: [&str; 9] = [
     "spear",
 ];
 
-/// Lists the names of all regular D&D ranged simple weapons.
+/// Lists the names of all regular D&D simple ranged weapons.
 ///
 /// See [SIMPLE_WEAPONS_MELEE].
 pub const SIMPLE_WEAPONS_RANGED: [&str; 4] = ["crossbow light ", "dart", "shortbow", "sling"];
@@ -60,7 +60,7 @@ pub const fn martial_weapons() -> [&'static str; 23] {
     weapons
 }
 
-/// Lists the names of all regular D&D melee martial weapons. Ranged weapons are listed seperately.
+/// Lists the names of all regular D&D martial melee weapons.
 pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
     "battleaxe",
     "flail",
@@ -82,7 +82,7 @@ pub const MARTIAL_WEAPONS_MELEE: [&str; 18] = [
     "whip",
 ];
 
-/// Lists the names of all regular D&D ranged martial weapons.
+/// Lists the names of all regular D&D martial ranged weapons.
 ///
 /// See [MARTIAL_WEAPONS_MELEE].
 pub const MARTIAL_WEAPONS_RANGED: [&str; 5] = [
@@ -350,8 +350,8 @@ impl std::fmt::Display for DamageRoll {
 
 /// An action that a character could take.
 ///
-/// This only covers damage-dealing actions, like a shortsword attack or a magic missle, and not
-/// etc actions, like a push.
+/// This only covers damage-dealing actions, such as a shortsword attack or a magic missile, not
+/// narrative actions such as a push.
 pub trait Action {
     fn name(&self) -> &str;
     fn attack_bonus(&self) -> isize;

@@ -3,7 +3,11 @@ use crate::prelude::*;
 
 type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 
-/// Builds a character from parts.
+/// Builds a [`Character`] from a class, background, race, and ability scores.
+///
+/// The class, background, and race are borrowed while the builder is in use, but the resulting
+/// character owns its data. Item choices may be resolved in the builder or after construction
+/// through [`Character::choose_items`] and [`Character::set_unchosen_category`].
 ///
 /// ```rust
 /// # #[cfg(feature = "dnd5eapi")] {
@@ -75,6 +79,7 @@ pub struct CharacterBuilder<'a, 'b, 'c> {
 }
 
 impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
+    /// Creates an empty builder for a character named `name`.
     pub fn new(name: &str) -> Self {
         CharacterBuilder {
             name: name.to_string(),
@@ -86,21 +91,25 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         }
     }
 
+    /// Sets the character's class.
     pub fn class(mut self, class: &'a Class) -> Self {
         self.iclass = Some(class);
         self
     }
 
+    /// Sets the character's background.
     pub fn background(mut self, background: &'b Background) -> Self {
         self.ibackground = Some(background);
         self
     }
 
+    /// Sets the character's race.
     pub fn race(mut self, race: &'c Race) -> Self {
         self.irace = Some(race);
         self
     }
 
+    /// Sets the character's base ability scores.
     pub fn stats(mut self, stats: Stats) -> Self {
         self.istats = Some(stats);
         self
@@ -186,7 +195,12 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
         self
     }
 
-    /// Builds the character. Panics if one or all of the fields have not been set.
+    /// Builds the character.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error naming the first required field that was not set. Despite the historical
+    /// wording in this method's implementation, this method does not panic for missing fields.
     pub fn build(self) -> Result<Character, &'static str> {
         let class = self.iclass.ok_or("Missing class")?;
         let background = self.ibackground.ok_or("Missing background")?;
