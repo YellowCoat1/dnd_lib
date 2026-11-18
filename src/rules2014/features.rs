@@ -2,7 +2,7 @@
 //!
 //! Most character effects that are descriptive rather than numerical are represented here.
 //!
-//! [`PresentedOption`] is also re-exported here because it is used throughout the crate to
+//! [`PresentedOption`] is also used throughout the crate to
 //! describe choices a character can make.
 
 use super::background::LanguageOption;
@@ -130,7 +130,7 @@ pub enum FeatureEffect {
     WeaponProficiency(WeaponType),
     /// Gives proficiency in an armor type
     ArmorProficiency(ArmorCategory),
-    /// Gives proficiency in another tool or weapon category.
+    /// Gives proficiency in another tool or uncategorized weapon.
     EtcProficiency(String),
     /// Gives proficiency in a skill
     AddSkillProficiency(SkillType),

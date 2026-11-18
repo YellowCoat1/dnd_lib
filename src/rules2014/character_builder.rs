@@ -5,10 +5,6 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 
 /// Builds a [`Character`] from a class, background, race, and ability scores.
 ///
-/// The class, background, and race are borrowed while the builder is in use, but the resulting
-/// character owns its data. Item choices may be resolved in the builder or after construction
-/// through [`Character::choose_items`] and [`Character::set_unchosen_category`].
-///
 /// ```rust
 /// # #[cfg(feature = "dnd5eapi")] {
 /// # use dnd_lib::prelude::*;
@@ -199,8 +195,7 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
     ///
     /// # Errors
     ///
-    /// Returns an error naming the first required field that was not set. Despite the historical
-    /// wording in this method's implementation, this method does not panic for missing fields.
+    /// Returns an error naming the first required field that was not set. 
     pub fn build(self) -> Result<Character, &'static str> {
         let class = self.iclass.ok_or("Missing class")?;
         let background = self.ibackground.ok_or("Missing background")?;
