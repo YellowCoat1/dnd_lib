@@ -8,8 +8,8 @@ use std::future::Future;
 /// - `Base(T)`: a single, concrete choice
 /// - `Choice(Vec<T>)`: a list of sub-options to choose from
 ///
-/// This is used widely throughout the crate. For example, for a class's equipment options
-/// or an ability score increase.
+/// This is used throughout the crate for class equipment, ability score increases, and other
+/// character-creation decisions.
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PresentedOption<T> {
@@ -111,6 +111,8 @@ impl<T> PresentedOption<T> {
     }
 
     /// Maps a `PresentedOption<T>` to a `PresentedOption<U>` within an asynchronous closure.
+    ///
+    /// For a `Choice`, children are processed sequentially in their existing order.
     pub async fn map_async<'b, U, F, Fut>(self, f: F) -> PresentedOption<U>
     where
         T: 'b,
@@ -152,7 +154,7 @@ impl<T> PresentedOption<Option<T>> {
 
 impl<T, U> PresentedOption<Result<T, U>> {
     /// Converts a `PresentedOption<Result<T, U>>` to a `Result<PresentedOption<T>, U>`.
-    /// Useful for api parsing.
+    /// Useful for API parsing.
     pub fn collect_result(self) -> Result<PresentedOption<T>, U> {
         match self {
             PresentedOption::Base(Ok(v)) => Ok(PresentedOption::Base(v)),
@@ -195,8 +197,8 @@ pub fn chosen<T>(presented: &[PresentedOption<T>]) -> Vec<&T> {
         .collect()
 }
 
-/// Returns references to all [PresentedOption::Base] values within a slice of references to
-/// [PresentedOption]s.
+/// Returns references to all [`PresentedOption::Base`] values within a slice of references to
+/// [`PresentedOption`]s.
 pub fn chosen_ref<'a, T>(presented: &[&'a PresentedOption<T>]) -> Vec<&'a T> {
     presented
         .iter()
@@ -210,9 +212,9 @@ pub fn chosen_ref<'a, T>(presented: &[&'a PresentedOption<T>]) -> Vec<&'a T> {
         .collect()
 }
 
-/// Returns two lists: One with refrences to all `Base` values, and one with refrences to all
-/// `Choice` values.
-/// `split(t).0` is equivalent to `chosen(t)`.
+/// Returns two lists: references to all `Base` values and references to all `Choice` values.
+///
+/// `split(t).0` is equivalent to [`chosen(t)`].
 pub fn split<T>(presented: &[PresentedOption<T>]) -> (Vec<&T>, Vec<&Vec<T>>) {
     let mut chosen = vec![];
     let mut unchosen = vec![];

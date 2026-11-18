@@ -9,7 +9,7 @@ use heck::ToTitleCase;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-// unarmored movement
+// Unarmored movement by class level.
 pub(crate) const UNARMORED_MOVEMENT: [usize; 20] = [
     0, 10, 10, 10, 10, 15, 15, 15, 15, 20, 20, 20, 20, 25, 25, 25, 25, 30, 30, 30,
 ];
@@ -38,12 +38,13 @@ pub struct Class {
 }
 
 impl Class {
+    /// Returns the class name.
     pub fn name(&self) -> &str {
         &self.name
     }
     /// Gets the class's features.
     ///
-    /// features are listed by level.
+    /// Features are listed by character level, from level 1 through level 20.
     pub fn features(&self) -> &[Vec<PresentedOption<Feature>>; 20] {
         &self.features
     }
@@ -65,7 +66,7 @@ impl Class {
     pub fn saving_throw_proficiencies(&self) -> &Saves {
         &self.saving_throw_proficiencies
     }
-    /// Gets the dice size of a hit die, e.g. 12 is 1d12.
+    /// Gets the number of faces on the class's hit die, e.g. `12` represents `1d12`.
     pub fn hit_die(&self) -> usize {
         self.hit_die
     }
@@ -104,17 +105,21 @@ impl Class {
     pub fn multiclassing_proficiency_gain(&self) -> &EquipmentProficiencies {
         &self.multiclassing_proficiency_gain
     }
-    /// Fields that must be actively tracked by the character. See [TrackedField] for more information.
+    /// Fields that must be actively tracked by the character.
+    ///
+    /// See [`TrackedField`] for more information.
     pub fn tracked_fields(&self) -> &Vec<TrackedField> {
         &self.tracked_fields
     }
 
-    /// Class features from level 1 to the specified level.
+    /// Returns class features granted from level 1 through `level`.
+    ///
+    /// `level` is one-based and must be in the range `1..=20`.
     pub fn get_all_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
         self.features[0..level].iter().flatten().collect()
     }
 
-    /// Class features newly granted at the specified level.
+    /// Returns class features newly granted at the specified one-based level.
     pub fn get_specific_features_at_level(&self, level: usize) -> Vec<&PresentedOption<Feature>> {
         self.features
             .get(level - 1)
@@ -123,7 +128,7 @@ impl Class {
     }
 }
 
-/// A D&D Subclass.
+/// A D&D subclass and its features by character level.
 ///
 /// Subclasses are contained within [Classes](Class).
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -134,7 +139,7 @@ pub struct Subclass {
     pub features: [Vec<PresentedOption<Feature>>; 20],
 }
 
-/// Category of an item, used for class item lists.
+/// Category of an item used in class starting-equipment choices.
 ///
 /// E.g. "A longbow", "Light armor", "A simple weapon".
 /// Can be filled in by the user into the base ([ItemCategory::Item]) type.
@@ -206,7 +211,7 @@ pub enum ClassBuilderError {
     HitDieMissing,
 }
 
-/// A builder for [Class].
+/// A builder for [`Class`].
 ///
 /// The following fields are required before building:
 /// - name
@@ -231,6 +236,7 @@ pub struct ClassBuilder {
 }
 
 impl ClassBuilder {
+    /// Creates an empty class builder with default proficiencies and no optional data.
     pub fn new() -> Self {
         Self {
             name: None,
@@ -375,6 +381,11 @@ impl ClassBuilder {
         self
     }
 
+    /// Builds the class after validating its required fields.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClassBuilderError`] if the name, 20-level feature table, or hit die is missing.
     pub fn build(self) -> Result<Class, ClassBuilderError> {
         Ok(Class {
             name: self.name.ok_or(ClassBuilderError::NameMissing)?,

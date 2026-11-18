@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use super::stats::Size;
 
-/// A race that provides static character creation data
+/// A race that provides static character-creation data.
 ///
 /// This is static information which can't be modified after creation, save for subraces.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -49,7 +49,7 @@ impl Race {
     pub fn traits(&self) -> &Vec<PresentedOption<Feature>> {
         &self.traits
     }
-    /// Returns the subraces availible to use with the race.
+    /// Returns the subraces available for the race.
     pub fn subraces(&self) -> &Vec<Subrace> {
         &self.subraces
     }
@@ -291,7 +291,7 @@ impl SubraceBuilder {
     }
 }
 
-// An ability score bonus granted by a race.
+/// An ability score bonus granted by a race.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum RaceBonus {
     /// Grants a bonus to a specific ability score.

@@ -7,7 +7,7 @@ use heck::ToTitleCase;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-/// A D&D Character background.
+/// A D&D character background and the choices it provides during creation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Background {
     name: String,
@@ -43,15 +43,19 @@ impl Background {
         &self.features
     }
 
+    /// Returns the background's personality-trait options.
     pub fn personality_traits(&self) -> &Vec<String> {
         &self.personality_traits
     }
+    /// Returns the background's ideal options.
     pub fn ideals(&self) -> &Vec<String> {
         &self.ideals
     }
+    /// Returns the background's bond options.
     pub fn bonds(&self) -> &Vec<String> {
         &self.bonds
     }
+    /// Returns the background's flaw options.
     pub fn flaws(&self) -> &Vec<String> {
         &self.flaws
     }
@@ -62,7 +66,7 @@ impl Background {
     }
 }
 
-/// Represents a single option between languages for a background.
+/// Represents one language option granted by a background.
 ///
 /// Use [LanguageOption::new_fixed] and [LanguageOption::new_named_choice] to normalize
 /// capitalization while constructing these variants.
