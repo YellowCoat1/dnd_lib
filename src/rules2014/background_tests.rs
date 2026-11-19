@@ -156,3 +156,53 @@ fn test_background_builder_failure() {
         "Expected InsufficientPersonalityTraits error"
     );
 }
+
+#[test]
+fn bonds_and_flaws_preserved() {
+    let background = BackgroundBuilder::new("Test Background")
+        .add_proficiency(PresentedOption::Base(SkillType::Athletics))
+        .add_personality_traits(vec!["Trait one".to_string(), "Trait two".to_string()])
+        .add_ideal("Ideal".to_string())
+        .add_bond("Bond one".to_string())
+        .add_bond("Bond two".to_string())
+        .add_flaw("Flaw one".to_string())
+        .add_flaw("Flaw two".to_string())
+        .build()
+        .expect("background should build");
+
+
+    assert_eq!(background.proficiencies(), &vec![PresentedOption::Base(SkillType::Athletics)]);
+
+    assert_eq!(
+        background.personality_traits(),
+        &vec!["Trait one".to_string(), "Trait two".to_string()]
+    );
+
+    assert_eq!(
+        background.bonds(),
+        &vec!["Bond one".to_string(), "Bond two".to_string()]
+    );
+    assert_eq!(
+        background.flaws(),
+        &vec!["Flaw one".to_string(), "Flaw two".to_string()]
+    );
+}
+
+#[test]
+fn language_option_false_positives() {
+    let mut language = LanguageOption::new_named_choice(vec![
+        "Dwarvish".to_string(),
+        "Halfling".to_string(),
+    ]);
+
+    assert!(!language.set_to("Elvish".to_string()));
+    assert_eq!(
+        language,
+        LanguageOption::new_named_choice(vec![
+            "Dwarvish".to_string(),
+            "Halfling".to_string(),
+        ])
+    );
+    assert!(language.set_to("dWaRvIsH".to_string()));
+    assert_eq!(language, LanguageOption::new_fixed("Dwarvish".to_string()));
+}
