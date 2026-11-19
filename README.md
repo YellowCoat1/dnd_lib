@@ -1,5 +1,5 @@
 ![Coverage: 92.22%](https://img.shields.io/badge/Coverage-91.01%25-green?style=plastic)
-[![license: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=plastic)](https://github.com/YellowCoat1/dnd_lib/blob/master/LICENSE)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue?style=plastic)](https://github.com/YellowCoat1/dnd_lib/blob/master/LICENSE)
 
 # DnD Lib 
 A rust library for creating and managing Dungeons & Dragons characters.
