@@ -5,7 +5,7 @@ use dnd_lib::prelude::*;
 use dnd_lib::rules2014::background::LanguageOption;
 use dnd_lib::rules2014::features::{Feature, FeatureEffect};
 use dnd_lib::rules2014::items::{HeldEquipment, Item};
-use dnd_lib::rules2014::spells::{SpellSlots, SpellsAvailable, CASTER_SLOTS};
+use dnd_lib::rules2014::spells::{CASTER_SLOTS, SpellCasterType, SpellSlots, SpellsAvailable};
 
 use dnd_lib::rules2014::stats::Speeds;
 use futures::future::try_join_all;
@@ -141,6 +141,10 @@ async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
             "darkvision"
         ]
     );
+
+    // assert that druid is a full spellcaster
+    let caster_type = boopo.classes[0].spellcasting.as_ref().unwrap().0.spellcaster_type;
+    assert_eq!(caster_type, SpellCasterType::Full);
 
     let spell_attacks = boopo.spell_actions();
     // macro to help test spell attack damage
