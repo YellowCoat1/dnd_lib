@@ -72,6 +72,10 @@ fn choose() {
     let mut option5 = PresentedOption::Base("Option Z");
     let result = option5.choose_in_place(0);
     assert!(!result, "expected choose_in_place to fail on Base option");
+
+    let mut option6 = PresentedOption::Choice(vec!["Option A", "Option B", "Option C"]);
+    assert!(!option6.choose_in_place(3));
+    assert_eq!(option6, PresentedOption::Choice(vec!["Option A", "Option B", "Option C"]));
 }
 
 #[test]
