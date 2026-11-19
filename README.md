@@ -1,44 +1,53 @@
 ![Coverage: 92.22%](https://img.shields.io/badge/Coverage-91.01%25-green?style=plastic)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue?style=plastic)](https://github.com/YellowCoat1/dnd_lib/blob/master/LICENSE)
 
-# DnD Lib 
-A rust library for creating and managing Dungeons & Dragons characters.
+# DnD Lib
 
-The main goal of this library is to model D&D characters, and have an easy interface for using those characters.
-
+`dnd_lib` is a Rust library for creating and managing Dungeons & Dragons 5e
+characters. It provides character-building utilities, multiclassing support, and
+an API client for all basic classes and races.
 
 ## Installation
-Just add the latest version through `cargo add`:
-```bash
+
+Add the latest published version to your project with Cargo:
+
+```sh
 cargo add dnd_lib
 ```
-## Features
-* Multiclasing
-* Homebrew classes, races, items, and more
-* Open-ended api trait
-* Serializable datastructures for easy caching
 
-## Usage
-Creating a simple level 1 character. 
+## Features
+
+- Building and Managing D&D 5e characters
+- Multiclassing
+- Homebrew classes, races, items, and other rules
+- Open-ended `DataProvider` trait for retrieving D&D API data
+
+## Quick start
+
+The following example loads a race, class, and background from the default
+GraphQL provider, then uses them to build a level 1 character:
+
 ```rust
 use dnd_lib::prelude::*;
+
 #[tokio::main]
 async fn main() {
-	let provider = GraphqlProvider::new();
-	
-	let rogue = provider.get_class("rogue").await.unwrap();
-	let human = provider.get_race("human").await.unwrap();
-	let acolyte = provider.get_background("acolyte").await.unwrap();
+    let provider = GraphqlProvider::new();
 
-	let john = CharacterBuilder::new("John")
-		.race(&human)
-		.background(&acolyte)
-		.class(&rogue)
-		.stats(Stats::default())
-		.build().unwrap();
-		
-	println!("John's ac is {}", john.ac());
-	println!("John has {} strength", john.stats().strength);
+    let rogue = provider.get_class("rogue").await?;
+    let human = provider.get_race("human").await?;
+    let acolyte = provider.get_background("acolyte").await?;
+
+    let john = CharacterBuilder::new("John")
+        .race(&human)
+        .background(&acolyte)
+        .class(&rogue)
+        .stats(Stats::default())
+        .build()?;
+
+    println!("John's armor class is {}", john.ac());
+    println!("John's Strength score is {}", john.stats().strength);
+
+    Ok::<(), Box<dyn std::error::Error>>(())
 }
-
 ```
