@@ -1,5 +1,6 @@
 #![cfg(feature = "network-intensive-tests")]
 use super::player_character::Character;
+use super::spells::{SpellCasterType, SpellSlots, CASTER_SLOTS};
 use super::stats::Stats;
 use super::{
     class::TrackedField,
@@ -215,6 +216,54 @@ async fn druid_wildshape() {
             class_specific_max: None,
             hard_max: Some(2),
         }
+    );
+    bingus.classes[0].tracked_fields[0].1 = 0;
+    bingus.long_rest();
+    assert_eq!(
+        bingus.classes[0].tracked_fields[0].1, 2,
+        "Tracked features with long_rest should be replenished"
+    );
+}
+
+#[tokio::test]
+async fn half_and_quarter_caster_spell_slots() {
+    let provider = provider();
+    let paladin = provider.get_class("paladin").await.unwrap();
+    let acolyte = provider.get_background("acolyte").await.unwrap();
+    let human = provider.get_race("human").await.unwrap();
+
+    let mut paladin_character = Character::new(
+        "Paladin".to_string(),
+        &paladin,
+        &acolyte,
+        &human,
+        Stats::default(),
+    );
+    paladin_character.level_up_to_level(&paladin, 4);
+    assert_eq!(
+        paladin_character.spell_slots(),
+        Some(SpellSlots(CASTER_SLOTS[1])),
+        "A 4th-level paladin should have 2nd-level caster-slot capacity"
+    );
+
+    let mut quarter_character = Character::new(
+        "Quarter".to_string(),
+        &paladin,
+        &acolyte,
+        &human,
+        Stats::default(),
+    );
+    quarter_character.level_up_to_level(&paladin, 3);
+    quarter_character.classes[0]
+        .spellcasting
+        .as_mut()
+        .unwrap()
+        .0
+        .spellcaster_type = SpellCasterType::Quarter;
+    assert_eq!(
+        quarter_character.spell_slots(),
+        Some(SpellSlots(CASTER_SLOTS[0])),
+        "A 3rd-level quarter caster should receive one quarter-caster slot level"
     );
 }
 

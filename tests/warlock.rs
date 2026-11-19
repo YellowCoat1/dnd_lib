@@ -87,7 +87,18 @@ async fn level_10_warlock<E: Error, T: DataProvider<E>>(provider: T) {
     // item categories
     let unchosen_items = baroopa.get_unchosen_categories();
     assert_eq!(unchosen_items.len(), 1);
-    baroopa.set_unchosen_category(3, 0, club);
+    assert!(
+        baroopa.set_unchosen_category(3, 0, club),
+        "A valid unchosen item category should be selectable"
+    );
+    assert!(
+        !baroopa.set_unchosen_category(3, 0, baroopa.items[0].item.clone()),
+        "An already selected item category should not be replaceable"
+    );
+    assert!(
+        !baroopa.set_unchosen_category(usize::MAX, 0, baroopa.items[0].item.clone()),
+        "An out-of-bounds category index should fail"
+    );
     baroopa.add_chosen_items();
 
     baroopa.level_up_to_level(&warlock, 10);
@@ -259,6 +270,14 @@ async fn level_10_warlock<E: Error, T: DataProvider<E>>(provider: T) {
     assert!(
         !hellish_rebuke_slots_result,
         "Warlock should not be able to cast spells using regular spell slots"
+    );
+    let impossible_pact_level = SpellAction {
+        spell_level: 6,
+        ..hellish_rebuke.clone()
+    };
+    assert!(
+        !baroopa.cast(&impossible_pact_level, Some(true)),
+        "A pact slot should not be usable below the requested spell level"
     );
 
     // Casting blight at 5th level

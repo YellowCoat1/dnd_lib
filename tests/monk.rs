@@ -177,6 +177,10 @@ async fn level_3_elf_monk<E: Error, T: DataProvider<E>>(provider: T) {
 
     let ac = georg.ac();
     assert_eq!(ac, 15, "monk should have 15 ac");
+    assert!(
+        !georg.subrace_features().is_empty(),
+        "The chosen high elf subrace should contribute features"
+    );
 
     let ac_bonus = Feature {
         name: String::new(),
