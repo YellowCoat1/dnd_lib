@@ -383,3 +383,108 @@ async fn builder_test() {
         "Building character without stats should fail"
     );
 }
+
+#[test]
+fn specced_data_preserve_values() {
+    use super::{
+        background::{BackgroundBuilder, LanguageOption},
+        class::{ClassBuilder, Subclass},
+        features::{Feature, FeatureEffect, PresentedOption},
+        player_character::{SpeccedBackground, SpeccedClass, SpeccedRace},
+        race::{RaceBonus, RaceBuilder, SubraceBuilder},
+        stats::{SkillType, StatType},
+    };
+
+    let subclass_feature = Feature {
+        name: "Subclass Feature".to_string(),
+        description: vec![],
+        effects: vec![FeatureEffect::ACBonus(2)],
+    };
+    let mut subclass_levels: [Vec<PresentedOption<Feature>>; 20] = Default::default();
+    subclass_levels[0] = vec![PresentedOption::Base(subclass_feature.clone())];
+    let class = ClassBuilder::new()
+        .name("Test Class".to_string())
+        .set_features(Default::default())
+        .set_hit_die(8)
+        .add_subclass(Subclass {
+            name: "Test Subclass".to_string(),
+            description: vec![],
+            features: subclass_levels,
+        })
+        .build()
+        .unwrap();
+    let mut specced_class = SpeccedClass::from_class(&class, 1);
+    assert!(specced_class.subclass.choose_in_place(0));
+    assert_eq!(
+        specced_class.get_subclass_features().unwrap(),
+        vec![&subclass_feature]
+    );
+
+    let race_feature = Feature {
+        name: "Race Trait".to_string(),
+        description: vec![],
+        effects: vec![FeatureEffect::ACBonus(1)],
+    };
+    let race = RaceBuilder::new("Test Race")
+        .speed(35)
+        .add_ability_bonus(RaceBonus::Specific(StatType::Strength, 2))
+        .add_ability_bonus(RaceBonus::Wildcard(1))
+        .add_trait(PresentedOption::Base(race_feature))
+        .add_language("Elvish".to_string())
+        .add_wildcard_languages(2)
+        .add_subrace(
+            SubraceBuilder::new("Test Subrace")
+                .add_trait(PresentedOption::Base(Feature {
+                    name: "Subrace Trait".to_string(),
+                    description: vec![],
+                    effects: vec![FeatureEffect::SpeedBonus(5)],
+                }))
+                .build(),
+        )
+        .build();
+    let mut specced_race = SpeccedRace::new(&race);
+    assert_eq!(specced_race.name(), "Test Race");
+    assert_eq!(specced_race.speed(), 35);
+    assert_eq!(
+        specced_race.ability_bonuses(),
+        &vec![(Some(StatType::Strength), 2), (None, 1)]
+    );
+    assert_eq!(specced_race.ability_bonuses_unchosen().len(), 1);
+    assert_eq!(specced_race.traits().len(), 1);
+    assert_eq!(specced_race.trait_features().len(), 1);
+    assert_eq!(specced_race.trait_features_mut().len(), 1);
+    assert_eq!(specced_race.languages(), &vec!["Elvish".to_string()]);
+    assert_eq!(specced_race.wildcard_languages(), &vec![None, None]);
+    assert_eq!(specced_race.wildcard_languages_mut().len(), 2);
+    assert!(specced_race.subrace().is_none());
+    assert!(specced_race.choose_subrace(0));
+    assert!(specced_race.subrace().is_some());
+
+    let background = BackgroundBuilder::new("Test Background")
+        .add_proficiency(PresentedOption::Base(SkillType::Athletics))
+        .add_feature(Feature {
+            name: "Background Feature".to_string(),
+            description: vec![],
+            effects: vec![FeatureEffect::ACBonus(2)],
+        })
+        .add_language_option(LanguageOption::new_fixed("Elvish".to_string()))
+        .add_language_option(LanguageOption::new_named_choice(vec![
+            "Dwarvish".to_string(),
+            "Halfling".to_string(),
+        ]))
+        .add_personality_traits(vec!["Trait one".to_string(), "Trait two".to_string()])
+        .add_ideal("Ideal".to_string())
+        .add_bond("Bond".to_string())
+        .add_flaw("Flaw".to_string())
+        .build()
+        .unwrap();
+    let mut specced_background = SpeccedBackground::new(&background);
+    assert_eq!(specced_background.name(), "Test Background");
+    assert_eq!(specced_background.features().len(), 1);
+    assert_eq!(specced_background.feature_effects().len(), 1);
+    assert_eq!(specced_background.feature_effects_mut().len(), 1);
+    assert_eq!(specced_background.languages(), vec!["Elvish"]);
+    assert_eq!(specced_background.unchosen_language_options().len(), 1);
+    assert!(specced_background.choose_language_option(1, "Dwarvish"));
+    assert_eq!(specced_background.unchosen_language_options().len(), 0);
+}
