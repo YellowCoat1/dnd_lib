@@ -499,4 +499,54 @@ mod tests {
         assert_eq!(simple_weapon.to_string(), "any simple weapon");
         assert_eq!(light_armor.to_string(), "any light armor");
     }
+
+    #[test]
+    fn builder_preserves_all_collection_fields() {
+        let subclass = Subclass {
+            name: "Test Subclass".to_string(),
+            description: vec!["A subclass".to_string()],
+            features: Default::default(),
+        };
+        let item = PresentedOption::Base(vec![(ItemCategory::Weapon(WeaponType::Simple), 1)]);
+        let tracked = TrackedField {
+            name: "Charges".to_string(),
+            long_rest: true,
+            short_rest: false,
+            level_up: true,
+            class_specific_max: None,
+            hard_max: Some(3),
+        };
+        let mut class_specific: [String; 20] = Default::default();
+        class_specific[0] = "2".to_string();
+
+        let class = ClassBuilder::new()
+            .name("test class".to_string())
+            .set_features(Default::default())
+            .set_hit_die(8)
+            .add_subclass(subclass.clone())
+            .add_beginning_item(item.clone())
+            .add_class_specific_field("resource".to_string(), class_specific.clone())
+            .add_multiclassing_prerequisite(StatType::Strength, 13)
+            .add_tracked_field(tracked.clone())
+            .add_multiclassing_proficiency(EquipmentProficiencies {
+                martial_weapons: true,
+                ..Default::default()
+            })
+            .build()
+            .expect("Class should build");
+
+        assert_eq!(class.subclasses.len(), 1);
+        assert_eq!(class.subclasses[0].name, subclass.name);
+        assert_eq!(class.beginning_items(), &vec![item]);
+        assert_eq!(
+            class.class_specific_leveled().get("Resource"),
+            Some(&class_specific)
+        );
+        assert_eq!(
+            class.multiclassing_prerequisites().get(&StatType::Strength),
+            Some(&13)
+        );
+        assert_eq!(class.tracked_fields(), &vec![tracked]);
+        assert!(class.multiclassing_proficiency_gain().martial_weapons);
+    }
 }
