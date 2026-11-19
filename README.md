@@ -24,8 +24,7 @@ cargo add dnd_lib
 
 ## Quick start
 
-The following example loads a race, class, and background from the default
-GraphQL provider, then uses them to build a level 1 character:
+The following example builds a simple level 1 character:
 
 ```rust
 use dnd_lib::prelude::*;
