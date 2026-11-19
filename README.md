@@ -1,3 +1,5 @@
+![Coverage: 91.01%](https://img.shields.io/badge/Coverage-91.01%25-green?style=plastic)
+
 # DnD Lib 
 A rust library for creating and managing Dungeons & Dragons characters.
 
