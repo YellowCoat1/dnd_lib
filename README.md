@@ -42,7 +42,8 @@ async fn main() {
         .background(&acolyte)
         .class(&rogue)
         .stats(Stats::default())
-        .build()?;
+        .build()
+	.unwrap();
 
     println!("John's armor class is {}", john.ac());
     println!("John's Strength score is {}", john.stats().strength);
