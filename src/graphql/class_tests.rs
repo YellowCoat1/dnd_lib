@@ -1,12 +1,9 @@
 use std::str::FromStr;
 
 use crate::{
-    rules2014::{
-        class::{Class, ItemCategory},
-        features::PresentedOption,
-        stats::{SkillType, StatType},
+    DataProvider, rules2014::{
+        class::{Class, ItemCategory}, features::{FeatureEffect, PresentedOption}, items::ArmorCategory, stats::{SkillType, StatType},
     },
-    DataProvider,
 };
 
 use super::GraphqlProvider;
@@ -205,4 +202,24 @@ async fn fighter_items() {
     assert_eq!(prereqs.iter().len(), 2);
     assert_eq!(prereqs.get(&StatType::Dexterity), Some(&13));
     assert_eq!(prereqs.get(&StatType::Strength), Some(&13));
+}
+
+
+#[tokio::test]
+async fn cleric_subclass() {
+    let provider = GraphqlProvider::new();
+    let cleric = provider.get_class("cleric").await.expect("Failed to get cleric");
+
+    let life_domain = cleric.subclasses
+        .first()
+        .expect("Cleric should have a subclass");
+
+    let mut life_domain_features = life_domain.features[0].iter()
+        .map(|feature_option| feature_option.as_base().expect("Subclass feature should be a base"))
+        .collect::<Vec<_>>();
+    life_domain_features.sort_by_key(|feature| &feature.name);
+    assert_eq!(life_domain_features.len(), 2, "Life domain cleric should have 2 features at level 1");
+
+    assert_eq!(life_domain_features[0].name, "Bonus Proficiency");
+    assert_eq!(life_domain_features[0].effects, vec![FeatureEffect::ArmorProficiency(ArmorCategory::Heavy)]);
 }
