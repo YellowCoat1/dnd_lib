@@ -7,7 +7,7 @@ use heck::ToTitleCase;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-/// A D&D character background 
+/// A D&D character background
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Background {
     name: String,

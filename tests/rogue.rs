@@ -305,6 +305,17 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
         Some(30),
         "rogue should have a swim speed"
     );
+    let walking_speed_feature = Feature {
+        name: String::from("Swiftness"),
+        description: vec![],
+        effects: vec![FeatureEffect::SpeedBonus(5)],
+    };
+    bingus.bonus_features.push(walking_speed_feature);
+    assert_eq!(
+        bingus.speed(),
+        30,
+        "A walking speed bonus should increase the rogue's speed"
+    );
 
     // make sure bingus cannot cast spells
     let spell = SpellAction {
@@ -321,6 +332,17 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
 
     bingus.damage(30);
     assert_eq!(bingus.hp, 8, "Character had not taken damage properly");
+
+    assert!(
+        !bingus.short_rest(bingus.level() + 1, None),
+        "Should not be able to use more hit dice during a short rest than is available"
+    );
+    assert_eq!(bingus.hp, 8, "A rejected short rest should not heal");
+    assert!(
+        !bingus.short_rest(1, Some(vec![2, 3])),
+        "Short rest should reject a mismatched manual roll count"
+    );
+    //TODO: Test against invalid (e.g. 10 on a d8) rolls
 
     bingus.short_rest(0, None);
     assert_eq!(
@@ -339,14 +361,15 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
         bingus.spent_hit_dice, 2,
         "Incorrect amount of spent hit dice"
     );
+    bingus.spent_hit_dice = 4;
     bingus.long_rest();
     assert_eq!(
         bingus.hp, 38,
         "Character did not heal to full health on long rest"
     );
     assert_eq!(
-        bingus.spent_hit_dice, 0,
-        "Character did not regain correct hit dice"
+        bingus.spent_hit_dice, 1,
+        "Character did not regain exactly half their level, rounded up, in hit dice"
     );
 
     // Weapon Actions
@@ -357,6 +380,18 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
         .get_mut(3)
         .expect("Rogue should have a dagger")
         .equip(); // dagger
+    bingus.items[3].item.features.push(Feature {
+        name: String::from("Dagger Enchantment"),
+        description: vec![],
+        effects: vec![FeatureEffect::ACBonus(1)],
+    });
+    assert!(
+        bingus
+            .item_features()
+            .iter()
+            .any(|feature| feature.name == "Dagger Enchantment"),
+        "Character should have the features of equipped items",
+    );
     bingus
         .items
         .get_mut(5)
@@ -376,6 +411,15 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
     // one should have second attack, and one shouldn't.
     assert!(!weapon_actions[0].second_attack || !weapon_actions[1].second_attack);
     assert!(weapon_actions[0].second_attack || weapon_actions[1].second_attack);
+
+    let second_attack = weapon_actions
+        .iter()
+        .find(|action| action.second_attack)
+        .expect("Dagger should have a second light-weapon attack");
+    assert_eq!(
+        second_attack.damage_roll.bonus, 0,
+        "A double-handed attack should have no damage roll bonus",
+    );
 
     assert_eq!(weapon_actions[2].name, "Rapier");
     assert_eq!(weapon_actions[2].attack_bonus, 3 + 4);

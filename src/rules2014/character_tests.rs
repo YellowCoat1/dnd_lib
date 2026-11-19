@@ -192,7 +192,7 @@ async fn druid_wildshape() {
     let acolyte = acolyte_future.await.unwrap();
     let human = human_future.await.unwrap();
 
-    let bingus = Character::new(
+    let mut bingus = Character::new(
         String::from("John"),
         &druid,
         &acolyte,
@@ -216,7 +216,38 @@ async fn druid_wildshape() {
             hard_max: Some(2),
         }
     );
+    bingus.classes[0].tracked_fields[0].1 = 0;
+    bingus.long_rest();
+    assert_eq!(
+        bingus.classes[0].tracked_fields[0].1, 2,
+        "Tracked features with long_rest should be replenished"
+    );
 }
+
+// Test temporarily shelved while paladin is fixed
+/*
+#[tokio::test]
+async fn half_caster_spell_slots() {
+    let provider = provider();
+    let paladin = provider.get_class("paladin").await.unwrap();
+    let acolyte = provider.get_background("acolyte").await.unwrap();
+    let human = provider.get_race("human").await.unwrap();
+
+    let mut blorko = Character::new(
+        "Blorko".to_string(),
+        &paladin,
+        &acolyte,
+        &human,
+        Stats::default(),
+    );
+    blorko.level_up_to_level(&paladin, 4);
+    assert_eq!(
+        blorko.spell_slots(),
+        Some(SpellSlots(CASTER_SLOTS[1])),
+        "A 4th-level paladin should have 2nd-level spell slots."
+    );
+}
+*/
 
 #[tokio::test]
 async fn barbarian_rage() {
