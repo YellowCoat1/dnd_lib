@@ -83,7 +83,7 @@ async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
     boopo.classes[0].subclass.choose_in_place(0);
     assert!(
         !boopo.subclass_features().is_empty(),
-        "The chosen druid subclass should contribute features"
+        "The first druid subclass should contain features"
     );
 
     assert_eq!(boopo.spell_slots(), Some(SpellSlots(CASTER_SLOTS[2])));
@@ -193,18 +193,6 @@ async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
         "Spell slots after long rest did not match expected value"
     );
 
-    // A level 1 spell slot should remain unavailable after every slot is spent.
-    for _ in 0..4 {
-        assert!(
-            boopo.cast_prepared(0, "cure wounds", Some(1), None),
-            "A remaining level 1 slot should allow curing wounds"
-        );
-    }
-    assert!(
-        !boopo.cast_prepared(0, "cure wounds", Some(1), None),
-        "No level 1 slot should remain after all four are spent"
-    );
-
     // try to upcast moonbeam to an impossible level
     let result = boopo.cast_prepared(0, "moonbeam", Some(3), None);
     assert!(!result, "upcasting to an impossible level should've failed");
@@ -216,6 +204,20 @@ async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
         boopo.cast_prepared(0, "moonbeam", Some(2), None),
         "Upcasting to the spell's base level should succeed"
     );
+
+    // A level 1 spell slot should remain unavailable after every slot is spent.
+    for _ in 0..4 {
+        assert!(
+            boopo.cast_prepared(0, "cure wounds", Some(1), None),
+            "Casting cure wounds should be possible with an open spell slot"
+        );
+    }
+    assert!(
+        !boopo.cast_prepared(0, "cure wounds", Some(1), None),
+        "Casing cure wounds shoudn't be possible after spending all spell slots"
+    );
+
+    
     // testing languages
 
     let language_feature = Feature {
@@ -264,22 +266,22 @@ async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
     assert_eq!(
         boopo.level_up_to_level(&druid, 21),
         None,
-        "Levels above 20 should be rejected"
+        "Should not be able to level up beyond level 20"
     );
     assert_eq!(
         boopo.level_up_to_level(&druid, 3),
         None,
-        "A character should not level up to its current level"
+        "Should not be able to level up to current level"
     );
     assert_eq!(
         boopo.level_up_to_level(&druid, 2),
         None,
-        "A character should not level down"
+        "Should not be able to level up to a lower level"
     );
     assert_eq!(
         boopo.max_hp(),
         24 + boopo.level(),
-        "Health wasn't affected by a leveled health increase."
+        "Health wasn't affected by a leveled health increase"
     );
 
     // Movement Speeds

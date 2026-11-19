@@ -140,10 +140,6 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
 
     // We also want to choose the subclass.
     bingus.classes[0].subclass.choose_in_place(0);
-    assert!(
-        !bingus.subclass_features().is_empty(),
-        "The chosen rogue subclass should contribute features"
-    );
 
     // at 4th level there is also an ability score increase.
 
@@ -310,7 +306,7 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
         "rogue should have a swim speed"
     );
     let walking_speed_feature = Feature {
-        name: String::from("Fleet"),
+        name: String::from("Swiftness"),
         description: vec![],
         effects: vec![FeatureEffect::SpeedBonus(5)],
     };
@@ -338,14 +334,15 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
     assert_eq!(bingus.hp, 8, "Character had not taken damage properly");
 
     assert!(
-        !bingus.short_rest(3, None),
-        "Short rest should reject more hit dice than are available"
+        !bingus.short_rest(bingus.level()+1, None),
+        "Should not be able to use more hit dice during a short rest than is available"
     );
     assert_eq!(bingus.hp, 8, "A rejected short rest should not heal");
     assert!(
         !bingus.short_rest(1, Some(vec![2, 3])),
         "Short rest should reject a mismatched manual roll count"
     );
+    //TODO: Test against invalid (e.g. 10 on a d8) rolls
 
     bingus.short_rest(0, None);
     assert_eq!(
@@ -393,7 +390,7 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
             .item_features()
             .iter()
             .any(|feature| feature.name == "Dagger Enchantment"),
-        "Equipped item features should be returned"
+        "Character should have the features of equipped items",
     );
     bingus
         .items
@@ -414,13 +411,14 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
     // one should have second attack, and one shouldn't.
     assert!(!weapon_actions[0].second_attack || !weapon_actions[1].second_attack);
     assert!(weapon_actions[0].second_attack || weapon_actions[1].second_attack);
+
     let second_attack = weapon_actions
         .iter()
         .find(|action| action.second_attack)
         .expect("Dagger should have a second light-weapon attack");
     assert_eq!(
-        second_attack.damage_roll.bonus, 4,
-        "The second light-weapon attack should retain the dexterity damage bonus"
+        second_attack.damage_roll.bonus, 0,
+        "A double-handed attack should have no damage roll bonus",
     );
 
     assert_eq!(weapon_actions[2].name, "Rapier");

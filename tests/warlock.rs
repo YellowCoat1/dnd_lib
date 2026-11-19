@@ -3,6 +3,7 @@ use std::error::Error;
 
 use dnd_lib::prelude::*;
 use dnd_lib::rules2014::features::{AbilityScoreIncrease, Feature, FeatureEffect};
+use dnd_lib::rules2014::spells::SpellAction;
 use dnd_lib::rules2014::{spells::PactSlots, stats::StatType};
 
 use futures::future::try_join_all;
