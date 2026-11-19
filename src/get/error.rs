@@ -89,3 +89,30 @@ impl Dnd5eapiError {
         }
     }
 }
+
+
+// test module 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_prepend() {
+        let err = Dnd5eapiError::not_found("spell", "fireball");
+        let err = err.prepend("Error: ");
+        assert_eq!(
+            format!("{}", err),
+            "Value not found: expected spell named Error: fireball"
+        );
+    }
+
+    #[test]
+    fn test_append() {
+        let err = Dnd5eapiError::not_found("spell", "fireball");
+        let err = err.append(" (check your spelling)");
+        assert_eq!(
+            format!("{}", err),
+            "Value not found: expected spell named fireball (check your spelling)"
+        );
+    }
+}
