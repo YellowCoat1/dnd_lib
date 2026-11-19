@@ -57,13 +57,11 @@ pub fn process_spellcasting(
         .iter()
         .map(|z| {
             z.cantrips_known
-                .ok_or(ClassError::parse_error("no cantrips", name))
+                .unwrap_or_default()
         })
         .map(|y| {
-            y.and_then(|z| {
-                z.try_into()
-                    .map_err(|_| ClassError::parse_error("cantrip count parsing", name))
-            })
+            y.try_into()
+                .map_err(|_| ClassError::parse_error("cantrip count parsing", name))
         })
         .collect::<Result<Vec<_>, _>>()?
         .try_into()

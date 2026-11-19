@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{
     DataProvider, rules2014::{
-        class::{Class, ItemCategory}, features::{FeatureEffect, PresentedOption}, items::ArmorCategory, stats::{SkillType, StatType},
+        class::{Class, ItemCategory}, features::{FeatureEffect, PresentedOption}, items::ArmorCategory, spells::SpellCasterType, stats::{SkillType, StatType},
     },
 };
 
@@ -222,4 +222,12 @@ async fn cleric_subclass() {
 
     assert_eq!(life_domain_features[0].name, "Bonus Proficiency");
     assert_eq!(life_domain_features[0].effects, vec![FeatureEffect::ArmorProficiency(ArmorCategory::Heavy)]);
+}
+
+#[tokio::test]
+async fn paladin() {
+    let provider = GraphqlProvider::new();
+    let paladin = provider.get_class("paladin").await.expect("Failed to get paladin");
+    assert_eq!(paladin.name(), "Paladin");
+    assert_eq!(paladin.spellcasting().unwrap().spellcaster_type, SpellCasterType::Half);
 }
