@@ -34,9 +34,9 @@ use dnd_lib::prelude::*;
 async fn main() {
     let provider = GraphqlProvider::new();
 
-    let rogue = provider.get_class("rogue").await?;
-    let human = provider.get_race("human").await?;
-    let acolyte = provider.get_background("acolyte").await?;
+    let rogue = provider.get_class("rogue").await.unwrap();
+    let human = provider.get_race("human").await.unwrap();
+    let acolyte = provider.get_background("acolyte").await.unwrap();
 
     let john = CharacterBuilder::new("John")
         .race(&human)
@@ -47,7 +47,5 @@ async fn main() {
 
     println!("John's armor class is {}", john.ac());
     println!("John's Strength score is {}", john.stats().strength);
-
-    Ok::<(), Box<dyn std::error::Error>>(())
 }
 ```
