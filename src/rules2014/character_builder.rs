@@ -195,7 +195,7 @@ impl<'a, 'b, 'c> CharacterBuilder<'a, 'b, 'c> {
     ///
     /// # Errors
     ///
-    /// Returns an error naming the first required field that was not set. 
+    /// Returns an error naming the first required field that was not set.
     pub fn build(self) -> Result<Character, &'static str> {
         let class = self.iclass.ok_or("Missing class")?;
         let background = self.ibackground.ok_or("Missing background")?;

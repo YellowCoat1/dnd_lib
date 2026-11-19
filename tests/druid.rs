@@ -217,7 +217,6 @@ async fn level_3_druid<E: Error, T: DataProvider<E>>(provider: T) {
         "Casing cure wounds shoudn't be possible after spending all spell slots"
     );
 
-    
     // testing languages
 
     let language_feature = Feature {

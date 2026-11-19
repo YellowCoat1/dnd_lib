@@ -334,7 +334,7 @@ async fn level_5_halfling_rogue<E: Error, T: DataProvider<E>>(provider: T) {
     assert_eq!(bingus.hp, 8, "Character had not taken damage properly");
 
     assert!(
-        !bingus.short_rest(bingus.level()+1, None),
+        !bingus.short_rest(bingus.level() + 1, None),
         "Should not be able to use more hit dice during a short rest than is available"
     );
     assert_eq!(bingus.hp, 8, "A rejected short rest should not heal");
