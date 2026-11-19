@@ -222,7 +222,7 @@ mod tests {
         action2.name = "Different Name".to_string();
         assert_ne!(action1, action2);
 
-        let computed1 = null_computed_action();
+        let mut computed1 = null_computed_action();
         let mut computed2 = null_computed_action();
         assert_eq!(computed1, computed2);
         computed2.name = "Different Name".to_string();
@@ -231,5 +231,9 @@ mod tests {
         assert_eq!(computed1.name(), "Null Action");
         assert_eq!(computed1.attack_bonus(), 0);
         assert_eq!(computed1.damage_roll(), action1.damage_roll);
+
+        computed1.attack_bonus = 3;
+        assert_eq!(computed1.attack_bonus(), 3);
     }
+
 }

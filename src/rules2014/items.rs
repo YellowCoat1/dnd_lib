@@ -674,4 +674,19 @@ mod tests {
             WeaponProperties::from_list(empty_property_list, DamageType::Bludgeoning);
         assert_eq!(weapon_properties_empty, WeaponProperties::default());
     }
+
+    #[test]
+    fn versatile_parses_properly() {
+        let malformed = WeaponProperties::from_list(["versatile"], DamageType::Slashing);
+        assert_eq!(malformed.versatile, None);
+
+        let unrelated = WeaponProperties::from_list(["reach"], DamageType::Slashing);
+        assert_eq!(unrelated.versatile, None);
+
+        let valid = WeaponProperties::from_list(["versatile (1d10)"], DamageType::Slashing);
+        assert_eq!(
+            valid.versatile,
+            Some(DamageRoll::new(1, 10, 0, DamageType::Slashing))
+        );
+    }
 }
