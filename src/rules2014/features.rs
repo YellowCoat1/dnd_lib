@@ -235,5 +235,4 @@ mod tests {
         computed1.attack_bonus = 3;
         assert_eq!(computed1.attack_bonus(), 3);
     }
-
 }

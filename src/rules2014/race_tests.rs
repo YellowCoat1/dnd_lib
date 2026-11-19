@@ -81,9 +81,7 @@ fn animated_subraces() -> (Subrace, Subrace) {
 
 #[test]
 fn wildcard_languages() {
-    let race = RaceBuilder::new("Human")
-        .add_wildcard_languages(2)
-        .build();
+    let race = RaceBuilder::new("Human").add_wildcard_languages(2).build();
 
     assert_eq!(race.wildcard_languages(), 2);
 }
