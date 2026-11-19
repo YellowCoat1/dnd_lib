@@ -104,6 +104,12 @@ mod tests {
             format!("{}", err),
             "Value not found: expected spell named Error: fireball"
         );
+        let err2 = Dnd5eapiError::mismatch("level", "integer", "string");
+        let err2 = err2.prepend("Error: ");
+        assert_eq!(
+            format!("{}", err2),
+            "type mismatch for field Error: level: expected integer, got string"
+        );
     }
 
     #[test]
@@ -113,6 +119,12 @@ mod tests {
         assert_eq!(
             format!("{}", err),
             "Value not found: expected spell named fireball (check your spelling)"
+        );
+        let err2 = Dnd5eapiError::mismatch("level", "integer", "string");
+        let err2 = err2.append(" (check your data)");
+        assert_eq!(
+            format!("{}", err2),
+            "type mismatch for field level (check your data): expected integer, got string"
         );
     }
 }
