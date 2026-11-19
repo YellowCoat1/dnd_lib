@@ -155,3 +155,154 @@ fn skill_modifications() {
         assert!(proficiencies[skill].proficiency)
     }
 }
+
+#[test]
+fn stats_addition() {
+    let left = Stats {
+        strength: 1,
+        dexterity: 2,
+        constitution: 3,
+        wisdom: 4,
+        intelligence: 5,
+        charisma: 6,
+    };
+    let right = Stats {
+        strength: 6,
+        dexterity: 5,
+        constitution: 4,
+        wisdom: 3,
+        intelligence: 2,
+        charisma: 1,
+    };
+
+    assert_eq!(
+        left + right,
+        Stats {
+            strength: 7,
+            dexterity: 7,
+            constitution: 7,
+            wisdom: 7,
+            intelligence: 7,
+            charisma: 7,
+        }
+    );
+}
+
+#[test]
+fn modifiers_as_ref_and_as_mut_preserve_their_values() {
+    let mut modifiers = Modifiers {
+        stats: Stats {
+            strength: 1,
+            dexterity: 2,
+            constitution: 3,
+            wisdom: 4,
+            intelligence: 5,
+            charisma: 6,
+        },
+    };
+
+    assert_eq!(
+        modifiers.as_ref(),
+        &Stats {
+            strength: 1,
+            dexterity: 2,
+            constitution: 3,
+            wisdom: 4,
+            intelligence: 5,
+            charisma: 6,
+        }
+    );
+
+    modifiers.as_mut().strength = 9;
+    assert_eq!(modifiers.stats.strength, 9);
+}
+
+#[test]
+fn saves_modifiers_include_only_each_proficiency() {
+    let stats = Stats {
+        strength: 20,
+        dexterity: 18,
+        constitution: 16,
+        wisdom: 14,
+        intelligence: 12,
+        charisma: 10,
+    };
+    let saves = Saves {
+        constitution: true,
+        wisdom: true,
+        ..Saves::default()
+    };
+
+    let modifiers = saves.modifiers(&stats, 3);
+    assert_eq!(modifiers.stats.constitution, 6);
+    assert_eq!(modifiers.stats.wisdom, 5);
+    assert_eq!(modifiers.stats.strength, 5);
+    assert_eq!(modifiers.stats.dexterity, 4);
+    assert_eq!(modifiers.stats.intelligence, 1);
+    assert_eq!(modifiers.stats.charisma, 0);
+
+    assert!(saves.is_proficient(StatType::Constitution));
+    assert!(saves.is_proficient(StatType::Wisdom));
+    assert!(!saves.is_proficient(StatType::Strength));
+}
+
+#[test]
+fn proficiency_and_expertise_modifiers() {
+    let stats = Stats {
+        strength: 14,
+        dexterity: 14,
+        constitution: 14,
+        wisdom: 14,
+        intelligence: 14,
+        charisma: 14,
+    };
+    let mut proficiencies = SkillProficiencies::default();
+    for skill in SkillType::iter() {
+        proficiencies.add_proficiency_from_type(skill);
+        proficiencies.add_expertise_from_type(skill);
+    }
+
+    let modifiers = proficiencies.modifiers(&stats, 3);
+
+    for skill in SkillType::iter() {
+        assert_eq!(*modifiers.get_skill_type(skill), 8);
+    }
+}
+
+#[test]
+fn equipment_proficiency_unions() {
+    let left_only = EquipmentProficiencies {
+        martial_weapons: true,
+        medium_armor: true,
+        heavy_armor: true,
+        shields: true,
+        ..EquipmentProficiencies::default()
+    };
+    let right_only = EquipmentProficiencies {
+        martial_weapons: false,
+        medium_armor: false,
+        heavy_armor: false,
+        shields: false,
+        ..EquipmentProficiencies::default()
+    };
+
+    let added = left_only.clone() + right_only.clone();
+    assert!(added.martial_weapons);
+    assert!(added.medium_armor);
+    assert!(added.heavy_armor);
+    assert!(added.shields);
+
+    let mut added_assign = right_only.clone();
+    added_assign += left_only.clone();
+    assert!(added_assign.martial_weapons);
+    assert!(added_assign.medium_armor);
+    assert!(added_assign.heavy_armor);
+    assert!(added_assign.shields);
+
+    let mut reverse_assign = left_only.clone();
+    reverse_assign += right_only;
+    assert!(reverse_assign.martial_weapons);
+    assert!(reverse_assign.medium_armor);
+    assert!(reverse_assign.heavy_armor);
+    assert!(reverse_assign.shields);
+}

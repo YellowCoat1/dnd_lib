@@ -78,3 +78,41 @@ fn animated_subraces() -> (Subrace, Subrace) {
     assert_ne!(animated_leather, animated_plate);
     (animated_leather, animated_plate)
 }
+
+#[test]
+fn wildcard_languages() {
+    let race = RaceBuilder::new("Human")
+        .add_wildcard_languages(2)
+        .build();
+
+    assert_eq!(race.wildcard_languages(), 2);
+}
+
+#[test]
+fn subrace_choices_and_unchosen_bonuses_are_available() {
+    let mut subrace = SubraceBuilder::new("Variant")
+        .add_ability_bonus(None, 2)
+        .add_ability_bonus(Some(StatType::Strength), 1)
+        .add_trait(PresentedOption::Choice(vec![
+            Feature {
+                name: "First".to_string(),
+                description: vec![],
+                effects: vec![FeatureEffect::ACBonus(1)],
+            },
+            Feature {
+                name: "Second".to_string(),
+                description: vec![],
+                effects: vec![FeatureEffect::ACBonus(2)],
+            },
+        ]))
+        .build();
+
+    assert_eq!(subrace.traits().len(), 1);
+    assert_eq!(subrace.traits()[0].choices().unwrap().len(), 2);
+
+    let mut unchosen = subrace.ability_bonuses_unchosen();
+    assert_eq!(unchosen.len(), 1);
+    assert_eq!(unchosen[0].1, 2);
+    *unchosen[0].0 = Some(StatType::Dexterity);
+    assert_eq!(subrace.ability_bonuses()[0].0, Some(StatType::Dexterity));
+}
