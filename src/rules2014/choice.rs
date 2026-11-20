@@ -213,8 +213,6 @@ pub fn chosen_ref<'a, T>(presented: &[&'a PresentedOption<T>]) -> Vec<&'a T> {
 }
 
 /// Returns two lists: references to all `Base` values and references to all `Choice` values.
-///
-/// `split(t).0` is equivalent to [`chosen(t)`].
 pub fn split<T>(presented: &[PresentedOption<T>]) -> (Vec<&T>, Vec<&Vec<T>>) {
     let mut chosen = vec![];
     let mut unchosen = vec![];
