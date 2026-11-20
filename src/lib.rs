@@ -51,8 +51,7 @@
 //! ```
 //!
 //! This crate stores different choices for a character as different structs. For example, a
-//! [rules2014::class::Class] would be a Wizard, or a Figter, or a Monk. If you wanted to store every D&D class a
-//! character could take, you'd need a `Vec<Class>`. These rules must be parsed from an api and constructed.
+//! [rules2014::class::Class] would be a Wizard, or a Fighter, or a Monk. These rules must be parsed from an api and constructed.
 //!
 //! This is what [graphql::GraphqlProvider] is for. You first get the required rules (class, background,
 //! race) from the api, then you build a character with that.
