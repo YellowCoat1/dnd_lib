@@ -8,6 +8,7 @@ use super::{
 };
 use crate::getter::DataProvider;
 
+use crate::rules2014::spells::{CASTER_SLOTS, SpellSlots};
 use crate::{provider, CharacterBuilder};
 
 #[tokio::test]
@@ -224,8 +225,6 @@ async fn druid_wildshape() {
     );
 }
 
-// Test temporarily shelved while paladin is fixed
-/*
 #[tokio::test]
 async fn half_caster_spell_slots() {
     let provider = provider();
@@ -247,7 +246,6 @@ async fn half_caster_spell_slots() {
         "A 4th-level paladin should have 2nd-level spell slots."
     );
 }
-*/
 
 #[tokio::test]
 async fn barbarian_rage() {
