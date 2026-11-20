@@ -72,7 +72,6 @@ pub mod save;
 
 // re-export trait
 pub use getter::DataProvider;
-pub use rules2014::player_character::{Character, CharacterBuilder};
 
 #[cfg_attr(not(test), allow(dead_code))]
 #[cfg(feature = "graphql_api")]
