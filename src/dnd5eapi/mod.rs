@@ -175,7 +175,7 @@ mod race_tests;
 
 #[cfg(test)]
 mod test {
-    use crate::get::Dnd5eapiGetter;
+    use crate::dnd5eapi::Dnd5eapiGetter;
     use crate::getter::DataProvider;
     use crate::rules2014::features::PresentedOption;
     use crate::rules2014::stats::SkillType;

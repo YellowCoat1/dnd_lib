@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use super::Dnd5eapiError;
 use crate::{
-    get::Dnd5eapiGetter,
+    dnd5eapi::Dnd5eapiGetter,
     rules2014::{
         class::{Class, ItemCategory},
         features::PresentedOption,

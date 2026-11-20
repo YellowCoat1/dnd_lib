@@ -3,7 +3,7 @@ use super::get_page::get_raw_json;
 use super::json_tools::{parse_string, ValueExt};
 use super::subrace::get_subrace;
 use super::Dnd5eapiError;
-use crate::get::subrace::ability_bonus_choice;
+use crate::dnd5eapi::subrace::ability_bonus_choice;
 use crate::rules2014::race::{Race, RaceBonus, RaceBuilder, Subrace};
 use crate::rules2014::stats::Size;
 use serde_json::Value;

@@ -1,5 +1,5 @@
 use crate::{
-    get::json_tools::parse_skilltype,
+    dnd5eapi::json_tools::parse_skilltype,
     getter::DataProvider,
     rules2014::{
         class::{Class, ClassBuilder, ItemCategory, Subclass, TrackedField},
@@ -14,7 +14,7 @@ use serde_json::{Map, Value};
 use std::{collections::HashMap, str::FromStr};
 
 use super::Dnd5eapiError;
-use crate::get::{
+use crate::dnd5eapi::{
     feature::get_feature,
     get_page::get_raw_json,
     json_tools::{

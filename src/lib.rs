@@ -63,7 +63,7 @@
 //! - `dnd5e_api` -  Enables retrieving through the dnd5eapi.co REST api.
 
 #[cfg(feature = "dnd5e_api")]
-pub mod get;
+pub mod dnd5eapi;
 mod getter;
 #[cfg(feature = "graphql_api")]
 pub mod graphql;
@@ -91,7 +91,7 @@ pub(crate) fn provider() -> Arc<graphql::GraphqlProvider> {
 
 pub mod prelude {
     #[cfg(feature = "dnd5e_api")]
-    pub use crate::get::{Dnd5eapiError, Dnd5eapiGetter};
+    pub use crate::dnd5eapi::{Dnd5eapiError, Dnd5eapiGetter};
     #[cfg(feature = "graphql_api")]
     pub use crate::graphql::{GraphqlError, GraphqlProvider};
     pub use crate::{
