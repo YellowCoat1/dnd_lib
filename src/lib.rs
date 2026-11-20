@@ -1,11 +1,11 @@
 //! A library to assist in creating and managing D&D 5e characters.
 //!
-//! The main feature of this crate is the [Character] struct. Most of the
+//! The main feature of this crate is the [Character](prelude::Character) struct. Most of the
 //! other datastructures in this crate (found in the [rules2014] module) are centered around it,
 //! building the foundations for a complete D&D character.
 //!
 //! ```
-//! # #[cfg(feature = "dnd5eapi")] {
+//! # #[cfg(feature = "dnd5e_api")] {
 //! # #[cfg(feature = "rand")] {
 //! #[tokio::main]
 //! async fn main() {
@@ -60,9 +60,9 @@
 //! ## Feature flags
 //!
 //! - `graphql_api` - *(enabled by default)* Enables retrieving through the dnd5eapi.co graphql api.
-//! - `dnd5eapi` -  Enables retrieving through the dnd5eapi.co REST api.
+//! - `dnd5e_api` -  Enables retrieving through the dnd5eapi.co REST api.
 
-#[cfg(feature = "dnd5eapi")]
+#[cfg(feature = "dnd5e_api")]
 pub mod get;
 mod getter;
 #[cfg(feature = "graphql_api")]
@@ -90,7 +90,7 @@ pub(crate) fn provider() -> Arc<graphql::GraphqlProvider> {
 }
 
 pub mod prelude {
-    #[cfg(feature = "dnd5eapi")]
+    #[cfg(feature = "dnd5e_api")]
     pub use crate::get::{Dnd5eapiError, Dnd5eapiGetter};
     #[cfg(feature = "graphql_api")]
     pub use crate::graphql::{GraphqlError, GraphqlProvider};

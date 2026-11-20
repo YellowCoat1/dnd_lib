@@ -50,7 +50,7 @@ use super::stats::{
 /// or build them from scratch in the case of homebrew.
 ///
 /// ```
-/// # #[cfg(feature = "dnd5eapi")] {
+/// # #[cfg(feature = "dnd5e_api")] {
 /// # use tokio::runtime::Runtime;
 /// # let rt = Runtime::new().unwrap();
 /// # rt.block_on(async {
@@ -476,7 +476,7 @@ impl Character {
     /// This is not saving throw modifiers. For that, see [Character::save_mods].
     ///
     /// ```
-    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[cfg(feature = "dnd5e_api")] {
     /// # use tokio::runtime::Runtime;
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
@@ -604,7 +604,7 @@ impl Character {
     /// Returns a [None] if the character is not a spellcaster.
     ///
     /// ```rust
-    ///     # #[cfg(feature = "dnd5eapi")] {
+    ///     # #[cfg(feature = "dnd5e_api")] {
     ///     # use tokio::runtime::Runtime;
     ///     # let rt = Runtime::new().unwrap();
     ///     # rt.block_on(async {
@@ -704,7 +704,7 @@ impl Character {
     /// [Character::spell_slots].
     ///
     /// ```rust
-    ///   # #[cfg(feature = "dnd5eapi")] {
+    ///   # #[cfg(feature = "dnd5e_api")] {
     ///   # use tokio::runtime::Runtime;
     ///   # let rt = Runtime::new().unwrap();
     ///   # rt.block_on(async {
@@ -1332,7 +1332,7 @@ impl Character {
     /// Level up until the total level (not class level) is equal to the given number.
     ///
     /// ```rust
-    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[cfg(feature = "dnd5e_api")] {
     /// # use tokio::runtime::Runtime;
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
@@ -1575,7 +1575,7 @@ impl Character {
     /// more than what's available, or if the hit die override has a different length than the amount of hit die spent.
     ///
     /// ```
-    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[cfg(feature = "dnd5e_api")] {
     /// # use tokio::runtime::Runtime;
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {
@@ -1733,7 +1733,7 @@ impl Character {
     ///
     /// ```rust
     ///
-    /// # #[cfg(feature = "dnd5eapi")] {
+    /// # #[cfg(feature = "dnd5e_api")] {
     /// # use tokio::runtime::Runtime;
     /// # let rt = Runtime::new().unwrap();
     /// # rt.block_on(async {

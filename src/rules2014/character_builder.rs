@@ -6,7 +6,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// Builds a [`Character`] from a class, background, race, and ability scores.
 ///
 /// ```rust
-/// # #[cfg(feature = "dnd5eapi")] {
+/// # #[cfg(feature = "dnd5e_api")] {
 /// # use dnd_lib::prelude::*;
 /// # use tokio::runtime::Runtime;
 /// # let rt = Runtime::new().unwrap();
@@ -31,7 +31,7 @@ type ItemChoice = PresentedOption<Vec<(ItemCategory, usize)>>;
 /// [set_unchosen_category](CharacterBuilder::set_unchosen_category).
 ///
 /// ```rust
-/// # #[cfg(feature = "dnd5eapi")] {
+/// # #[cfg(feature = "dnd5e_api")] {
 /// # use dnd_lib::prelude::*;
 /// # use tokio::runtime::Runtime;
 /// # let rt = Runtime::new().unwrap();

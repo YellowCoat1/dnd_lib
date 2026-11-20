@@ -3,8 +3,7 @@
 //! The module is organized around immutable source data ([`class::Class`],
 //! [`background::Background`], and [`race::Race`]) and the mutable
 //! [`player_character::Character`] assembled from that data. Builders are provided for
-//! homebrew content, while [`features::PresentedOption`] represents choices that still need
-//! to be made during character creation.
+//! homebrew content. 
 //!
 //! Most public data types implement `Serialize` and `Deserialize`, making character data
 //! convenient to save or send over an API.

@@ -1,5 +1,5 @@
 #![cfg(feature = "network-intensive-tests")]
-use super::player_character::Character;
+use crate::prelude::*;
 use super::stats::Stats;
 use super::{
     class::TrackedField,
@@ -9,7 +9,7 @@ use super::{
 use crate::getter::DataProvider;
 
 use crate::rules2014::spells::{CASTER_SLOTS, SpellSlots};
-use crate::{provider, CharacterBuilder};
+use crate::{provider};
 
 #[tokio::test]
 async fn char_stats() {

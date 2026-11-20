@@ -1,7 +1,7 @@
 //! A simple helper to save other data to a file.
 //!
 //! ```
-//! # #[cfg(feature = "dnd5eapi")] {
+//! # #[cfg(feature = "dnd5e_api")] {
 //! use dnd_lib::prelude::*;
 //! use dnd_lib::rules2014::items::Item;
 //! use dnd_lib::save::{save_serialized, get_serialized};
