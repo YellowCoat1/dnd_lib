@@ -410,3 +410,18 @@ query SpellQuery($index: String!) {
     range
   }
 }
+
+query Names {
+  classes {
+    name
+  }
+  backgrounds {
+    name
+  }
+  spells {
+    name
+  }
+  races {
+    name
+  }
+}

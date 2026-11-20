@@ -4,9 +4,9 @@ use std::sync::Mutex;
 use async_trait::async_trait;
 use thiserror::Error;
 
-use crate::rules2014::{
+use crate::{DataProvider, rules2014::{
     background::Background, class::Class, items::Item, race::Race, spells::Spell,
-};
+}};
 
 mod backgrounds;
 mod classes;
@@ -14,6 +14,7 @@ mod get_page;
 mod items;
 mod races;
 mod spells;
+mod names;
 
 #[cfg(test)]
 mod class_tests;
@@ -21,7 +22,7 @@ mod class_tests;
 /// Gets D&D data from dnd5eapi.co's graphql api.
 ///
 /// The following are availible from this api:
-/// - classes: All except artificier
+/// - classes: All except artificer
 /// - items: Every basic item, no magic items
 /// - backgrounds: only Acolyte
 /// - races: Dragonborn, Dwarf, Elf, Gnome, Half-elf, Half-orc, Halfing, Human, Tiefling
@@ -116,5 +117,29 @@ impl crate::getter::DataProvider<GraphqlError> for GraphqlProvider {
     }
     async fn get_spell(&self, name: &str) -> Result<Spell, GraphqlError> {
         spells::get_spell(name).await.map_err(|v| v.into())
+    }
+}
+
+impl GraphqlProvider {
+    /// The names of the spells available from the provider. Retrieved from the API.
+    pub async fn spell_names(&self) -> Option<Vec<String>> {
+        names::spell_names().await
+    }
+    /// The names of the classes available from the provider. Retrieved from the API.
+    pub async fn class_names(&self) -> Option<Vec<String>> {
+        names::class_names().await
+    }
+    /// The names of the races available from the provider. Retrieved from the API.
+    pub async fn race_names(&self) -> Option<Vec<String>> {
+        names::race_names().await
+    }
+    /// The names of the backgrounds available from the provider. Retrieved from the API.
+    pub async fn background_names(&self) -> Option<Vec<String>> {
+        names::background_names().await
+    }
+    /// The names of the items available from the provider. Retrieved from the API.
+    pub async fn item_names(&self) -> Option<Vec<String>> {
+        let _ = self.get_item(".").await; // dummy get to fill database if empty
+        self.equipment_cache.lock().ok()?.0.keys().cloned().collect::<Vec<String>>().into()
     }
 }
